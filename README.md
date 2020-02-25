@@ -25,7 +25,7 @@ R packages needed:
 
 #### An overview of the data.
 Get the sequencing clean data from `MgR_data`.  
-The representation of `ID` can be found in /sample_list.md 
+The representation of `ID` can be found in [`sample_list.md`](/sample_list.md).
 ```shell script
 ln -sf /home/wyf/MgR_data/${ID}/R1.fq.gz data/${PREFIX}/R1.fq.gz
 ln -sf /home/wyf/MgR_data/${ID}/R2.fq.gz data/${PREFIX}/R2.fq.gz
