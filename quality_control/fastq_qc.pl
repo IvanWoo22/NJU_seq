@@ -4,7 +4,10 @@ use warnings;
 use autodie;
 
 use File::Basename;
+use Getopt::Long;
 use PerlIO::gzip;
+
+
 
 my $dirname = dirname(__FILE__);
 
