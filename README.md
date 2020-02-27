@@ -1,7 +1,7 @@
 # 2OMG
  A brand new version of MgR_seq.
 
-## 1. Prepare
+## 1. Preparation
 #### Install packages and software.
 
 Software managed by [brew](https://brew.sh/).
@@ -39,7 +39,7 @@ ln -sf /home/wyf/MgR_data/${ID}/R2.fq.gz data/${PREFIX}/R2.fq.gz
 
 ```
 
-## 3. Build Index
+## 3. Reference and Index
 #### Download reference.
 Get reference sequence of species from [GENCODE](https://www.gencodegenes.org/) and [Ensembl](http://plants.ensembl.org/Arabidopsis_thaliana/Info/Index?db=core).
 ```shell script
@@ -56,11 +56,11 @@ wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/gff3/arabidopsis_thal
 wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz -O data/ath.fa.gz
 ```
 
-#### 
-Make index for mapping.
+#### Build index
+Make index for mapping with `bowtie2-build`.
 ```shell script
 # rRNA index
-cat data/ath_rrna/* > data/ath_rrna.fa
+cat data/ath_rrna/* >data/ath_rrna.fa
 bowtie2-build data/ath_rrna.fa index/ath_rrna
 
 # Protein coding mRNA index
@@ -69,6 +69,40 @@ pigz -dc data/gencode.vM24.transcripts.fa.gz |
   -s "transcript_biotype:protein_coding" --stdin \
   >data/mmu_protein_coding.fa
 bowtie2-build data/mmu_protein_coding.fa index/mmu_protein_coding
+```
+
+## 4. Alignment and Count
+Use `bowtie2` to align the data file.
+```shell script
+time bowtie2 -p 8 -a -t \
+  --end-to-end -D 20 -R 3 \
+  -N 0 -L 10 -i S,1,0.50 --np 0 \
+  --xeq -x index/ath_rrna \
+  -1 data/${PREFIX}/R1.fq.gz -2 data/${PREFIX}/R2.fq.gz \
+  -S data/${PREFIX}/rrna.raw.sam \
+  2>&1 |
+  tee data/${PREFIX}/rrna.bowtie2.log
+
+time pigz -p 8 data/${PREFIX}/rrna.raw.sam
+```
+Filter and count alignment result.
+```shell script
+time cat data/${PREFIX}/rrna.raw.sam |
+  parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j 6 \
+    perl -nla -F"\t" -e '\''
+      $F[5] ne qq(*) or next;
+      $F[6] eq qq(=) or next;
+      print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
+    '\'' |
+    perl rrna_analyse_scripts/rrna_judge.pl |
+    perl rrna_analyse_scripts/rrna_more_judge.pl \
+  >data/${PREFIX}/rrna.out.sam
+
+time parallel -j 3 \
+  perl rrna_analyse_scripts/rrna_count.pl \
+    data/ath_rrna/{}.fa data/${PREFIX}/rrna.out.sam {} \
+    >data/${PREFIX}/rrna_{}.tsv \
+  ::: 28s 18s 5-8s
 ```
 
 
