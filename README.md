@@ -28,6 +28,8 @@ Get the sequencing clean data from `MgR_data`.
 ```shell script
 ID=NJU45
 PREFIX=Ath_stem_NC
+mkdir -p data/${PREFIX}
+
 ln -sf /home/wyf/MgR_data/${ID}/R1.fq.gz data/${PREFIX}/R1.fq.gz
 ln -sf /home/wyf/MgR_data/${ID}/R2.fq.gz data/${PREFIX}/R2.fq.gz
 ```
@@ -87,22 +89,23 @@ time pigz -p 8 data/${PREFIX}/rrna.raw.sam
 ```
 Filter and count alignment result.
 ```shell script
-time cat data/${PREFIX}/rrna.raw.sam |
-  parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j 6 \
+time gzip -dcf data/${PREFIX}/rrna.raw.sam.gz |
+  parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j 6 '
     perl -nla -F"\t" -e '\''
       $F[5] ne qq(*) or next;
       $F[6] eq qq(=) or next;
       print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
     '\'' |
     perl rrna_analyse_scripts/rrna_judge.pl |
-    perl rrna_analyse_scripts/rrna_more_judge.pl \
+    perl rrna_analyse_scripts/rrna_more_judge.pl
+  ' \
   >data/${PREFIX}/rrna.out.sam
 
 time parallel -j 3 \
   perl rrna_analyse_scripts/rrna_count.pl \
     data/ath_rrna/{}.fa data/${PREFIX}/rrna.out.sam {} \
     >data/${PREFIX}/rrna_{}.tsv \
-  ::: 28s 18s 5-8s
+  ::: 25s 18s 5-8s
 ```
 
 
