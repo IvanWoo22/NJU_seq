@@ -7,14 +7,12 @@ use File::Basename;
 use Getopt::Long;
 use PerlIO::gzip;
 
-
-
 my $dirname = dirname(__FILE__);
 
 sub TAIL_BASE_COUNT {
     my %SEQ = @_;
     my ( $A_COUNT, $G_COUNT, $C_COUNT, $T_COUNT, $TOTAL_COUNT ) =
-        ( 0, 0, 0, 0, 0 );
+      ( 0, 0, 0, 0, 0 );
     foreach ( keys(%SEQ) ) {
         chomp( my $SEQ_STRING = $_ );
         $TOTAL_COUNT += $SEQ{$_};
@@ -38,7 +36,7 @@ sub TAIL_BASE_COUNT {
 sub HEAD_BASE_COUNT {
     my %SEQ = @_;
     my ( $A_COUNT, $G_COUNT, $C_COUNT, $T_COUNT, $TOTAL_COUNT ) =
-        ( 0, 0, 0, 0, 0 );
+      ( 0, 0, 0, 0, 0 );
     foreach ( keys(%SEQ) ) {
         chomp( my $SEQ_STRING = $_ );
         $TOTAL_COUNT += $SEQ{$_};
@@ -62,7 +60,7 @@ sub HEAD_BASE_COUNT {
 sub BODY_BASE_COUNT {
     my %SEQ = @_;
     my ( $A_COUNT, $G_COUNT, $C_COUNT, $T_COUNT, $TOTAL_COUNT ) =
-        ( 0, 0, 0, 0, 0 );
+      ( 0, 0, 0, 0, 0 );
     foreach ( keys(%SEQ) ) {
         chomp( my $SEQ_STRING = $_ );
         my @SEQ = split( //, $SEQ_STRING );
@@ -97,7 +95,7 @@ my (
 );
 
 foreach my $sample ( 0 .. $#ARGV - 1 ) {
-    open(my $in_fh,"<:gzip",$ARGV[$sample]) or die"$!";
+    open( my $in_fh, "<:gzip", $ARGV[$sample] ) or die "$!";
     my %seq;
     $reads_count[$sample] = 0;
     while (<$in_fh>) {
@@ -133,11 +131,11 @@ foreach my $sample ( 0 .. $#ARGV - 1 ) {
         if ( exists( $length_distribution{ $ARGV[$sample] . "\t" . $length } ) )
         {
             $length_distribution{ $ARGV[$sample] . "\t" . $length } +=
-                $seq{$seq_string};
+              $seq{$seq_string};
         }
         else {
             $length_distribution{ $ARGV[$sample] . "\t" . $length } =
-                $seq{$seq_string};
+              $seq{$seq_string};
         }
         $short = $length if ( $short > $length );
         $long  = $length if ( $long < $length );
@@ -189,7 +187,7 @@ foreach ( sort { $a cmp $b } keys %length_distribution ) {
 }
 
 system(
-    "Rscript $dirname/draw_picture.R $ARGV[-1]_body.tsv $ARGV[-1]_head.tsv $ARGV[-1]_tail.tsv $ARGV[-1]_length.tsv $ARGV[-1]_summary.tsv $ARGV[-1].pdf"
+"Rscript $dirname/picture_draw.R $ARGV[-1]_body.tsv $ARGV[-1]_head.tsv $ARGV[-1]_tail.tsv $ARGV[-1]_length.tsv $ARGV[-1]_summary.tsv $ARGV[-1].pdf"
 );
 
 __END__
