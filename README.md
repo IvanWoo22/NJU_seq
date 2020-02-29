@@ -77,6 +77,7 @@ Get the sequencing clean data from `MgR_data`.
 ID=NJU45
 PREFIX=Ath_stem_NC
 mkdir -p data/${PREFIX}
+mkdir -p output/${PREFIX}
 
 ln -sf /home/wyf/MgR_data/${ID}/R1.fq.gz data/${PREFIX}/R1.fq.gz
 ln -sf /home/wyf/MgR_data/${ID}/R2.fq.gz data/${PREFIX}/R2.fq.gz
@@ -94,7 +95,7 @@ perl ~/2OMG/quality_control/fastq_qc.pl \
   temp/Ath_stem_1.fq \
   temp/Ath_stem_2.fq \
   temp/Ath_stem_3.fq \
-  data/Ath_stem
+  output/Ath_stem
 ```
 
 ## 4. Alignment and Count
@@ -105,9 +106,9 @@ time bowtie2 -p 8 -a -t \
   -N 0 -L 10 -i S,1,0.50 --np 0 \
   --xeq -x index/ath_rrna \
   -1 data/${PREFIX}/R1.fq.gz -2 data/${PREFIX}/R2.fq.gz \
-  -S data/${PREFIX}/rrna.raw.sam \
+  -S output/${PREFIX}/rrna.raw.sam \
   2>&1 |
-  tee data/${PREFIX}/rrna.bowtie2.log
+  tee output/${PREFIX}/rrna.bowtie2.log
 
 time pigz -p 8 data/${PREFIX}/rrna.raw.sam
 ```
