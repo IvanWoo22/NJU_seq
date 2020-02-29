@@ -11,7 +11,7 @@ sub REV_COMP {
 
 open( my $in_fh1, "<:gzip", $ARGV[0] );
 open( my $in_fh2, "<:gzip", $ARGV[1] );
-open( my $out_fh, ">",      $ARGV[2] );
+open( my $out_fh, ">:gzip", $ARGV[2] );
 
 my $all    = 0;
 my $proper = 0;

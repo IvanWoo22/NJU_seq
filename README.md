@@ -89,13 +89,14 @@ Input a `FastQ` file or a `GZ` file of `FastQ` and then get some quality informa
 # For pair-end sequence data, we firstly turn them to single-end file.
 perl ~/2OMG/quality_control/pe_consistency.pl \
   data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
-  temp/${PREFIX}.fq
+  temp/${PREFIX}.fq.gz
 perl ~/2OMG/quality_control/fastq_qc.pl \
-  temp/Ath_stem_NC.fq \
-  temp/Ath_stem_1.fq \
-  temp/Ath_stem_2.fq \
-  temp/Ath_stem_3.fq \
-  output/Ath_stem
+  temp/Ath_stem_NC.fq.gz \
+  temp/Ath_stem_1.fq.gz \
+  temp/Ath_stem_2.fq.gz \
+  temp/Ath_stem_3.fq.gz \
+  output \
+  Ath_stem
 ```
 
 ## 4. Alignment and Count

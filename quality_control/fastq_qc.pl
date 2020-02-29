@@ -204,6 +204,8 @@ system(
 
 system("mv $ARGV[-1].pdf $ARGV[-2]/$ARGV[-1].pdf");
 
-system("tar zcvf $ARGV[-1]_fastqc.tar.gz $ARGV[-1]_*.tsv");
+system(
+"tar zcvf $ARGV[-2]/$ARGV[-1]_fastqc.tar.gz $ARGV[-2]/$ARGV[-1]_*.tsv --remove-files"
+);
 
 __END__
