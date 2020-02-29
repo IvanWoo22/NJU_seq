@@ -6,8 +6,10 @@ use autodie;
 use File::Basename;
 use Getopt::Long;
 use PerlIO::gzip;
+use Cwd;
 
 my $dirname = dirname(__FILE__);
+my $dir = getcwd;
 
 sub TAIL_BASE_COUNT {
     my %SEQ = @_;
@@ -194,12 +196,12 @@ close($length_dist);
 
 system(
     "Rscript $dirname/picture_draw.R \
-    $ARGV[-1]_body.tsv \
-    $ARGV[-1]_head.tsv \
-    $ARGV[-1]_tail.tsv \
-    $ARGV[-1]_length.tsv \
-    $ARGV[-1]_summary.tsv \
-    $ARGV[-1].pdf"
+    $dir/$ARGV[-1]_body.tsv \
+    $dir/$ARGV[-1]_head.tsv \
+    $dir/$ARGV[-1]_tail.tsv \
+    $dir/$ARGV[-1]_length.tsv \
+    $dir/$ARGV[-1]_summary.tsv \
+    $dir/$ARGV[-1].pdf"
 );
 
 system(
