@@ -65,8 +65,8 @@ rm data/ath_rrna.fa
 pigz -dc data/ath_transcript.fa.gz |
   perl ~/2OMG/tool/fetch_fasta.pl \
   --stdin -s "transcript_biotype:protein_coding" \
-  >data/mmu_protein_coding.fa
-bowtie2-build data/mmu_protein_coding.fa index/mmu_protein_coding
+  >data/ath_protein_coding.fa
+bowtie2-build data/ath_protein_coding.fa index/ath_protein_coding
 ```
 
 ## 3. Data Selection and quality overview
