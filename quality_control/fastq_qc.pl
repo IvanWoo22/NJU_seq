@@ -95,7 +95,7 @@ my (
 );
 
 foreach my $sample ( 0 .. $#ARGV - 1 ) {
-    open( my $in_fh, "<:gzip", $ARGV[$sample] ) or die "$!";
+    open( my $in_fh, "<:gzip", $ARGV[$sample] );
     my %seq;
     $reads_count[$sample] = 0;
     while (<$in_fh>) {
@@ -145,7 +145,7 @@ foreach my $sample ( 0 .. $#ARGV - 1 ) {
     $long[$sample]         = $long;
 }
 
-my $name = join( "\t", @ARGV[ 0 .. $#ARGV - 1 ] );
+my $name = join( "\t", @ARGV[ 0 .. $#ARGV - 2 ] );
 
 my $body_a   = join( "\t", @body_a );
 my $body_g   = join( "\t", @body_g );
@@ -168,11 +168,11 @@ my $tail_sum = join( "\t", @tail_sum );
 my $reads_count  = join( "\t", @reads_count );
 my $length_range = join( "\t", @length_range );
 
-open( my $body,        ">", $ARGV[-1] . "_body.tsv" );
-open( my $head,        ">", $ARGV[-1] . "_head.tsv" );
-open( my $tail,        ">", $ARGV[-1] . "_tail.tsv" );
-open( my $summary,     ">", $ARGV[-1] . "_summary.tsv" );
-open( my $length_dist, ">", $ARGV[-1] . "_length.tsv" );
+open( my $body,        ">", $ARGV[-2] . "/" . $ARGV[-1] . "_body.tsv" );
+open( my $head,        ">", $ARGV[-2] . "/" . $ARGV[-1] . "_head.tsv" );
+open( my $tail,        ">", $ARGV[-2] . "/" . $ARGV[-1] . "_tail.tsv" );
+open( my $summary,     ">", $ARGV[-2] . "/" . $ARGV[-1] . "_summary.tsv" );
+open( my $length_dist, ">", $ARGV[-2] . "/" . $ARGV[-1] . "_length.tsv" );
 
 print $body ("$name\n$body_a\n$body_g\n$body_c\n$body_t\n$body_sum\n");
 
@@ -194,13 +194,15 @@ close($length_dist);
 
 system(
     "Rscript $dirname/picture_draw.R \
-    $ARGV[-1]_body.tsv \
-    $ARGV[-1]_head.tsv \
-    $ARGV[-1]_tail.tsv \
-    $ARGV[-1]_length.tsv \
-    $ARGV[-1]_summary.tsv \
+    $ARGV[-2]/$ARGV[-1]_body.tsv \
+    $ARGV[-2]/$ARGV[-1]_head.tsv \
+    $ARGV[-2]/$ARGV[-1]_tail.tsv \
+    $ARGV[-2]/$ARGV[-1]_length.tsv \
+    $ARGV[-2]/$ARGV[-1]_summary.tsv \
     $ARGV[-1].pdf"
 );
+
+system("mv $ARGV[-1].pdf $ARGV[-2]/$ARGV[-1].pdf");
 
 system("tar zcvf $ARGV[-1]_fastqc.tar.gz $ARGV[-1]_*.tsv");
 
