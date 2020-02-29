@@ -186,8 +186,22 @@ foreach ( sort { $a cmp $b } keys %length_distribution ) {
     print $length_dist ("$_\t$length_distribution{$_}\n");
 }
 
+close($body);
+close($head);
+close($tail);
+close($summary);
+close($length_dist);
+
 system(
-"Rscript $dirname/picture_draw.R $ARGV[-1]_body.tsv $ARGV[-1]_head.tsv $ARGV[-1]_tail.tsv $ARGV[-1]_length.tsv $ARGV[-1]_summary.tsv $ARGV[-1].pdf"
+    "Rscript $dirname/picture_draw.R \
+    $ARGV[-1]_body.tsv \
+    $ARGV[-1]_head.tsv \
+    $ARGV[-1]_tail.tsv \
+    $ARGV[-1]_length.tsv \
+    $ARGV[-1]_summary.tsv \
+    $ARGV[-1].pdf"
 );
+
+system("tar zcvf $ARGV[-1]_fastqc.tar.gz $ARGV[-1]_*.tsv");
 
 __END__

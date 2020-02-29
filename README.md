@@ -53,9 +53,9 @@ wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/arabidopsis_tha
 Create index by `bowtie2-build` for mapping.
 ```shell script
 # rRNA index
-cat ~/MgR_seq/data/ath_rrna/* >data/ath_rrna.fa
+cat ~/2OMG/data/ath_rrna/* >data/ath_rrna.fa
 pigz -dc data/ath_ncrna.fa.gz |
-  perl ~/MgR_seq/tool/fetch_fasta.pl \
+  perl ~/2OMG/tool/fetch_fasta.pl \
   --stdin -s "transcript_biotype:rRNA" \
   >>data/ath_rrna.fa
 bowtie2-build data/ath_rrna.fa index/ath_rrna
@@ -63,7 +63,7 @@ rm data/ath_rrna.fa
 
 # Protein coding mRNA index
 pigz -dc data/ath_transcript.fa.gz |
-  perl ~/MgR_seq/tool/fetch_fasta.pl \
+  perl ~/2OMG/tool/fetch_fasta.pl \
   --stdin -s "transcript_biotype:protein_coding" \
   >data/mmu_protein_coding.fa
 bowtie2-build data/mmu_protein_coding.fa index/mmu_protein_coding
@@ -85,7 +85,16 @@ ln -sf /home/wyf/MgR_data/${ID}/R2.fq.gz data/${PREFIX}/R2.fq.gz
 #### Quality Control
 Input a `FastQ` file or a `GZ` file of `FastQ` and then get some quality information.
 ```shell script
-perl 
+# For pair-end sequence data, we firstly turn them to single-end file.
+perl ~/2OMG/quality_control/pe_consistency.pl \
+  data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
+  temp/${PREFIX}.fq
+perl ~/2OMG/quality_control/fastq_qc.pl \
+  temp/Ath_stem_NC.fq \
+  temp/Ath_stem_1.fq \
+  temp/Ath_stem_2.fq \
+  temp/Ath_stem_3.fq \
+  data/Ath_stem
 ```
 
 ## 4. Alignment and Count

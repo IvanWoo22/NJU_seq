@@ -52,5 +52,6 @@ print "Total:\t$all\nConsistency:\t$proper\nProportion:\t$proportion";
 
 close($in_fh1);
 close($in_fh2);
+close($out_fh);
 
 __END__
