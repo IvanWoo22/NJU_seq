@@ -90,6 +90,8 @@ Input a `FastQ` file or a `GZ` file of `FastQ` and then get some quality informa
 perl ~/2OMG/quality_control/pe_consistency.pl \
   data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
   temp/${PREFIX}.fq.gz
+
+# PREFIX in Ath_stem_NC Ath_stem_1 Ath_stem_2 Ath_stem_3
 perl ~/2OMG/quality_control/fastq_qc.pl \
   temp/Ath_stem_NC.fq.gz \
   temp/Ath_stem_1.fq.gz \
