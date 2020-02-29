@@ -187,7 +187,7 @@ foreach ( sort { $a cmp $b } keys %length_distribution ) {
 }
 
 system(
-"Rscript $dirname/draw_picture.R $ARGV[-1]_body.tsv $ARGV[-1]_head.tsv $ARGV[-1]_tail.tsv $ARGV[-1]_length.tsv $ARGV[-1]_summary.tsv $ARGV[-1].pdf"
+"Rscript $dirname/picture_draw.R $ARGV[-1]_body.tsv $ARGV[-1]_head.tsv $ARGV[-1]_tail.tsv $ARGV[-1]_length.tsv $ARGV[-1]_summary.tsv $ARGV[-1].pdf"
 );
 
 system(
