@@ -90,8 +90,11 @@ Input a `FastQ` file or a `GZ` file of `FastQ` and then get some quality informa
 perl ~/2OMG/quality_control/pe_consistency.pl \
   data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
   temp/${PREFIX}.fq.gz
+#Total: 750000
+#Consistency: 729838
+#Proportion:  97.31%
 
-# PREFIX in Ath_stem_NC Ath_stem_1 Ath_stem_2 Ath_stem_3
+# PREFIX as Ath_stem_NC Ath_stem_1 Ath_stem_2 Ath_stem_3.
 perl ~/2OMG/quality_control/fastq_qc.pl \
   temp/Ath_stem_NC.fq.gz \
   temp/Ath_stem_1.fq.gz \
@@ -100,6 +103,7 @@ perl ~/2OMG/quality_control/fastq_qc.pl \
   output \
   Ath_stem
 ```
+The quality report created in `/output/Ath_stem.pdf`.
 
 ## 4. Alignment and Count
 Use `bowtie2` to align the data file.
@@ -113,26 +117,26 @@ time bowtie2 -p 8 -a -t \
   2>&1 |
   tee output/${PREFIX}/rrna.bowtie2.log
 
-time pigz -p 8 data/${PREFIX}/rrna.raw.sam
+time pigz -p 8 output/${PREFIX}/rrna.raw.sam
 ```
 Filter and count alignment result.
 ```shell script
-time gzip -dcf data/${PREFIX}/rrna.raw.sam.gz |
+time gzip -dcf output/${PREFIX}/rrna.raw.sam.gz |
   parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j 6 '
     perl -nla -F"\t" -e '\''
       $F[5] ne qq(*) or next;
       $F[6] eq qq(=) or next;
       print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
     '\'' |
-    perl rrna_analyse_scripts/rrna_judge.pl |
-    perl rrna_analyse_scripts/rrna_more_judge.pl
+    perl rrna_analysis/matchquality_judge.pl |
+    perl rrna_analysis/multimatch_judge.pl
   ' \
-  >data/${PREFIX}/rrna.out.sam
+  >temp/${PREFIX}/rrna.out.sam
 
 time parallel -j 3 \
-  perl rrna_analyse_scripts/rrna_count.pl \
-    data/ath_rrna/{}.fa data/${PREFIX}/rrna.out.sam {} \
-    >data/${PREFIX}/rrna_{}.tsv \
+  perl rrna_analysis/readend_count.pl \
+    ~/2OMG/data/ath_rrna/{}.fa temp/${PREFIX}/rrna.out.sam {} \
+    >output/${PREFIX}/rrna_{}.tsv \
   ::: 25s 18s 5-8s
 ```
 

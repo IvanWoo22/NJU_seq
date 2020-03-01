@@ -2,9 +2,9 @@ ID,sample name,origin and treatment,sequencing platform
 NJU1,HeLa-NC,HeLa rRNA without MgR,PE150
 NJU2,HeLa-tRNA,HeLa total RNA with MgR,PE150
 NJU3,HeLa-rRNA,HeLa rRNA with MgR,PE150
-NJU6,Hela-NC,HeLa total RNA without MgR,PE150
-NJU7,Hela-1,HeLa total RNA with MgR,PE150
-NJU8,Hela-2,HeLa total RNA with MgR,PE150
+NJU6,HeLa-NC,HeLa total RNA without MgR,PE150
+NJU7,HeLa-1,HeLa total RNA with MgR,PE150
+NJU8,HeLa-2,HeLa total RNA with MgR,PE150
 NJU9,293-NC,HEK293t total RNA without MgR,PE150
 NJU10,293-1,HEK293t total RNA with MgR,PE150
 NJU11,293-2,HEK293t total RNA with MgR,PE150
