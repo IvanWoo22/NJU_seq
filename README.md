@@ -77,6 +77,7 @@ Get the sequencing clean data from `MgR_data`.
 ID=NJU45
 PREFIX=Ath_stem_NC
 mkdir -p data/${PREFIX}
+mkdir -p temp/${PREFIX}
 mkdir -p output/${PREFIX}
 
 ln -sf /home/wyf/MgR_data/${ID}/R1.fq.gz data/${PREFIX}/R1.fq.gz
@@ -128,16 +129,25 @@ time gzip -dcf output/${PREFIX}/rrna.raw.sam.gz |
       $F[6] eq qq(=) or next;
       print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
     '\'' |
-    perl rrna_analysis/matchquality_judge.pl |
-    perl rrna_analysis/multimatch_judge.pl
+    perl ~/2OMG/rrna_analysis/matchquality_judge.pl |
+    perl ~/2OMG/rrna_analysis/multimatch_judge.pl
   ' \
-  >temp/${PREFIX}/rrna.out.sam
+  >temp/${PREFIX}/rrna.out.tmp
 
-time parallel -j 3 \
-  perl rrna_analysis/readend_count.pl \
-    ~/2OMG/data/ath_rrna/{}.fa temp/${PREFIX}/rrna.out.sam {} \
+time parallel -j 3 "
+  perl ~/2OMG/rrna_analysis/readend_count.pl \
+    ~/2OMG/data/ath_rrna/{}.fa temp/${PREFIX}/rrna.out.tmp {} \
     >output/${PREFIX}/rrna_{}.tsv \
-  ::: 25s 18s 5-8s
+  " ::: 25s 18s 5-8s
+
+time parallel -j 3 "
+  perl ~/2OMG/rrna_analysis/score.pl \
+    output/Ath_stem_NC/rrna_{}.tsv \
+    output/Ath_stem_1/rrna_{}.tsv \
+    output/Ath_stem_2/rrna_{}.tsv \
+    output/Ath_stem_3/rrna_{}.tsv \
+    >output/Ath_stem_rrna_{}.tsv \
+  " ::: 25s 18s 5-8s
 ```
 
 
