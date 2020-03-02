@@ -185,7 +185,7 @@ time gzip -dcf output/${PREFIX}/mrna.raw.sam.gz |
       $F[6] eq qq(=) or next;
       print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
     '\'' |
-    perl mrna_analysis/mutlimatch_judge.pl
+    perl ~/2OMG/mrna_analysis/multimatch_judge.pl
   ' \
   >temp/${PREFIX}/mrna.out.tmp
 
@@ -197,7 +197,7 @@ time gzip -dcf data/ath.gff3.gz |
       -i temp/${PREFIX}/mrna.out.tmp \
       -o temp/${PREFIX}/mrna.dedup.tmp
 
-bash ~/2OMG/mrna_analysis/almostunique.sh \
+time bash ~/2OMG/mrna_analysis/almostunique.sh \
   temp/${PREFIX}/mrna.dedup.tmp \
   data/${PREFIX}/R1.mrna.fq.gz \
   temp/${PREFIX} \
