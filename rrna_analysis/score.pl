@@ -97,6 +97,7 @@ while (<$IN_NC>) {
     push( @{ $start_count[0] }, $start_count );
     push( @{ $end_count[0] },   $end_count );
 }
+close($IN_NC);
 
 foreach my $sample ( 1 .. $#ARGV ) {
     open( my $IN_TR, "<", $ARGV[$sample] );
@@ -112,6 +113,7 @@ foreach my $sample ( 1 .. $#ARGV ) {
         \@{ $start_count[0] },
         \@{ $end_count[0] }
     );
+    close($IN_TR);
 }
 
 foreach my $site ( 0 .. $#site ) {

@@ -84,7 +84,7 @@ ln -sf /home/wyf/MgR_data/${ID}/R1.fq.gz data/${PREFIX}/R1.fq.gz
 ln -sf /home/wyf/MgR_data/${ID}/R2.fq.gz data/${PREFIX}/R2.fq.gz
 ```
 
-#### Quality Control
+#### Quality control for clean data.
 Input a `FastQ` file or a `GZ` file of `FastQ` and then get some quality information.
 ```shell script
 # For pair-end sequence data, we firstly turn them to single-end file.
@@ -106,7 +106,8 @@ perl ~/2OMG/quality_control/fastq_qc.pl \
 ```
 The quality report created in `/output/Ath_stem.pdf`.
 
-## 4. Alignment and Count
+## 4. Alignment, Count and Score
+#### rRNA workflow
 Use `bowtie2` to align the data file.
 ```shell script
 time bowtie2 -p 8 -a -t \
@@ -139,7 +140,9 @@ time parallel -j 3 "
     ~/2OMG/data/ath_rrna/{}.fa temp/${PREFIX}/rrna.out.tmp {} \
     >output/${PREFIX}/rrna_{}.tsv \
   " ::: 25s 18s 5-8s
-
+```
+Score all sites one by one.
+```shell script
 time parallel -j 3 "
   perl ~/2OMG/rrna_analysis/score.pl \
     output/Ath_stem_NC/rrna_{}.tsv \
@@ -150,6 +153,41 @@ time parallel -j 3 "
   " ::: 25s 18s 5-8s
 ```
 
+#### Prepare for mRNA.
+Extract reads can't mapped to rRNA.
+```shell script
+bash ~/2OMG/tool/extract_fastq.sh \
+  temp/${PREFIX}/rrna.out.sam \
+  data/${PREFIX}/R1.fq.gz data/${PREFIX}/R1.mrna.fq.gz \
+  data/${PREFIX}/R2.fq.gz data/${PREFIX}/R2.mrna.fq.gz
+```
 
+#### mRNA workflow
+Alignment with protein_coding transcript.
+```shell script
+time bowtie2 -p 8 -a -t \
+  --end-to-end -D 20 -R 3 \
+  -N 0 -L 10 --score-min C,0,0 \
+  --xeq -x index/ath_protein_coding \
+  -1 data/${PREFIX}/R1.mrna.fq.gz -2 data/${PREFIX}/R2.mrna.fq.gz \
+  -S output/${PREFIX}/mrna.raw.sam \
+  2>&1 |
+  tee output/${PREFIX}/mrna.bowtie2.log
+
+time pigz -p 8 output/${PREFIX}/mrna.raw.sam
+```
+Filter and count alignment result.
+```shell script
+time gzip -dcf output/${PREFIX}/mrna.raw.sam.gz |
+    parallel --pipe --block 10M -j 6 '
+        perl -nla -F"\t" -e '\''
+            $F[5] ne qq(*) or next;
+            $F[6] eq qq(=) or next;
+            print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
+        '\'' |
+        perl mrna_analysis/mutlimatch_judge.pl
+    ' \
+    > temp/${PREFIX}/mrna.out.sam
+```
 
 

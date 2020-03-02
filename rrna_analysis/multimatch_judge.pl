@@ -38,12 +38,12 @@ sub COUNT_CIGAR {
 }
 
 my @info;
-chomp( my $first_read = <STDIN> );
+chomp( my $first_read = <> );
 my ( $first_qname, $first_rname, $first_site, $first_cigar ) =
   split( /\t/, $first_read );
 $info[0] = $first_read;
 
-while (<STDIN>) {
+while (<>) {
     chomp( my $read = $_ );
     if ( $read =~ /^$first_qname\t/ ) {
         push( @info, $read );
