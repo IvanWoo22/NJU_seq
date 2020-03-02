@@ -135,22 +135,22 @@ time gzip -dcf output/${PREFIX}/rrna.raw.sam.gz |
   ' \
   >temp/${PREFIX}/rrna.out.tmp
 
-time parallel -j 3 "
+time parallel -j 3 '
   perl ~/2OMG/rrna_analysis/readend_count.pl \
     ~/2OMG/data/ath_rrna/{}.fa temp/${PREFIX}/rrna.out.tmp {} \
     >output/${PREFIX}/rrna_{}.tsv \
-  " ::: 25s 18s 5-8s
+  ' ::: 25s 18s 5-8s
 ```
 Score all sites one by one.
 ```shell script
-time parallel -j 3 "
+time parallel -j 3 '
   perl ~/2OMG/rrna_analysis/score.pl \
     output/Ath_stem_NC/rrna_{}.tsv \
     output/Ath_stem_1/rrna_{}.tsv \
     output/Ath_stem_2/rrna_{}.tsv \
     output/Ath_stem_3/rrna_{}.tsv \
     >output/Ath_stem_rrna_{}.tsv \
-  " ::: 25s 18s 5-8s
+  ' ::: 25s 18s 5-8s
 ```
 
 #### Prepare for mRNA.
@@ -176,18 +176,33 @@ time bowtie2 -p 8 -a -t \
 
 time pigz -p 8 output/${PREFIX}/mrna.raw.sam
 ```
-Filter and count alignment result.
+Filter，re-locate and count alignment result.
 ```shell script
 time gzip -dcf output/${PREFIX}/mrna.raw.sam.gz |
-    parallel --pipe --block 10M -j 6 '
-        perl -nla -F"\t" -e '\''
-            $F[5] ne qq(*) or next;
-            $F[6] eq qq(=) or next;
-            print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
-        '\'' |
-        perl mrna_analysis/mutlimatch_judge.pl
-    ' \
-    > temp/${PREFIX}/mrna.out.sam
+  parallel --pipe --block 10M -j 6 '
+    perl -nla -F"\t" -e '\''
+      $F[5] ne qq(*) or next;
+      $F[6] eq qq(=) or next;
+      print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
+    '\'' |
+    perl mrna_analysis/mutlimatch_judge.pl
+  ' \
+  >temp/${PREFIX}/mrna.out.tmp
+
+time gzip -dcf data/ath.gff3.gz |
+  awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
+    perl ~/2OMG/mrna_analysis/dedup.pl \
+      --refstr "Parent=transcript:" \
+      --geneid "AT" \
+      -i temp/${PREFIX}/mrna.out.tmp \
+      -o temp/${PREFIX}/mrna.dedup.tmp
+
+bash ~/2OMG/mrna_analysis/almostunique.sh \
+  temp/${PREFIX}/mrna.dedup.tmp \
+  data/${PREFIX}/R1.mrna.fq.gz \
+  temp/${PREFIX} \
+  temp/${PREFIX}/mrna.almostunique.tmp
 ```
+
 
 
