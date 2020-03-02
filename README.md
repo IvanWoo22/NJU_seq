@@ -202,6 +202,8 @@ time bash ~/2OMG/mrna_analysis/almostunique.sh \
   data/${PREFIX}/R1.mrna.fq.gz \
   temp/${PREFIX} \
   temp/${PREFIX}/mrna.almostunique.tmp
+
+
 ```
 
 

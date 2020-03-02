@@ -11,9 +11,9 @@ use AlignDB::IntSpan;
 #---------------#
 
 =head1 NAME
-dedup.pl -- Deduplication by finding out these two sites of transcripts located on the same position.
+merge.pl -- Merge the different transcript sites which on the same position of the genome.
 =head1 SYNOPSIS
-    perl dedup.pl --refstr "ID=exon:" --geneid "ENST" -i input.tmp -o output.tmp
+    perl merge.pl --refstr "ID=exon:" --geneid "ENST" -i input.tmp -o output.tmp
         Options:
             --help\-h  Brief help message
             --refstr  The sign before the gene ID in the reference
@@ -35,7 +35,7 @@ my %trans_chr;
 my %trans_dir;
 while (<>) {
     chomp;
-    my ( $chr, $start, $end, $dir, $info ) = split( /\t/, $_ );
+    my ( $chr, $start, $end, $dir, $info ) = split /\t/;
     $chr  =~ s/chr//;
     $info =~ /$refstr([A-Z,a-z,0-9]+\.[0-9]+)/;
     if ( exists( $trans_chr{$1} ) ) {
@@ -59,26 +59,46 @@ sub COORDINATE_POS {
     else {
         $ISLAND = $trans_range{$INDEX}->at( -$SITE );
     }
-    my $ABS_SITE = $trans_chr{$INDEX} . "\t" . $ISLAND;
+    my $ABS_SITE =
+      $trans_chr{$INDEX} . "\t" . $ISLAND . "\t" . $trans_dir{$INDEX};
     return ($ABS_SITE);
 }
 
-open( my $IN_FH,  "<", $in_fq );
-open( my $OUT_FH, ">", $out_fq );
-my %exist;
+open( my $IN_FH, "<", $in_fq );
+my ( %gene_id, %gene, %base, %t5, %t3 );
 while (<$IN_FH>) {
     chomp;
-    my ( $read_name, $trans_info, $site ) = split /\s+/ ;
-    $trans_info =~ /^($geneid[A-Z,a-z,0-9]+\.[0-9]+)/;
-    my $id            = $1;
-    my $abs_site      = COORDINATE_POS( $id, $site );
-    my $read_abs_site = $read_name . "\t" . $abs_site;
-    unless ( exists( $exist{$read_abs_site} ) ) {
-        $exist{$read_abs_site} = 1;
-        print $OUT_FH ("$_\n");
+    my ( $trans_id, $site, $base, $t5, $t3 ) = split /\t/;
+    $trans_id =~ /^($geneid[A-Z,a-z,0-9]+\.[0-9]+)/;
+    $trans_id = $1;
+    $trans_id =~ /^($geneid[A-Z,a-z,0-9]+)/;
+    my $gene_id = $1;
+    my $gene    = $gene_id;
+    my $asite   = COORDINATE_POS( $trans_id, $site );
+
+    if ( exists( $gene{$asite} ) ) {
+        unless ( $gene_id{$asite} =~ /$gene_id/ ) {
+            $gene_id{$asite} .= "/" . $gene_id;
+            $gene{$asite}    .= "/" . $gene;
+        }
+        $t5{$asite} += $t5;
+        $t3{$asite} += $t3;
+    }
+    else {
+        $gene_id{$asite} = $gene_id;
+        $gene{$asite}    = $gene;
+        $t5{$asite}      = $t5;
+        $t3{$asite}      = $t3;
+        $base{$asite}    = $base;
     }
 }
 close($IN_FH);
+
+open( my $OUT_FH, ">", $out_fq );
+foreach ( keys(%gene) ) {
+    print $OUT_FH (
+        "$_\t$base{$_}\t$gene_id{$_}\t$gene{$_}\t$t5{$_}\t$t3{$_}\n");
+}
 close($OUT_FH);
 
 __END__
