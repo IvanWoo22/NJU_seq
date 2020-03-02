@@ -203,6 +203,28 @@ time bash ~/2OMG/mrna_analysis/almostunique.sh \
   temp/${PREFIX} \
   temp/${PREFIX}/mrna.almostunique.tmp
 
+perl ~/2OMG/mrna_analysis/count.pl \
+  temp/${PREFIX}/mrna.almostunique.tmp \
+  >temp/${PREFIX}/mrna.count.tmp
+
+time gzip -dcf data/ath.gff3.gz |
+  awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
+  perl ~/2OMG/mrna_analysis/merge.pl \
+  --refstr "Parent=transcript:" \
+  --geneid "AT" \
+  -i temp/${PREFIX}/mrna.count.tmp \
+  -o temp/${PREFIX}/mrna.position.tmp
+
+for chr in {1..5} Mt Pt; do
+  awk -va=${chr} '$1==a&&$3=="+"' \
+    temp/${PREFIX}/mrna.position.tmp |
+      sort -t $'\t' -nk 2,2 \
+        >>output/${PREFIX}/mrna.tsv
+  awk -va=${chr} '$1==a&&$3=="-"' \
+    temp/${PREFIX}/mrna.position.tmp |
+      sort -t $'\t' -nrk 2,2 \
+        >>output/${PREFIX}/mrna.tsv
+done
 
 ```
 
