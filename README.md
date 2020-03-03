@@ -25,10 +25,10 @@ R packages needed:
 
 Make new folders for analysis.
 ```shell script
-mkdir data
-mkdir index
-mkdir temp
-mkdir output
+# 2OMG_analysis is the main directory of the following analysis. It can be renamed as you like.
+mkdir "2OMG_analysis"
+cd 2OMG_analysis
+mkdir "data" "index" "temp" "output"
 ```
 
 ## 2. Reference and Index
