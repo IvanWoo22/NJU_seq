@@ -48,7 +48,7 @@ while (<$in_fh1>) {
 }
 my $proportion = $proper / $all * 100;
 $proportion = sprintf( "%.2f", $proportion );
-print "Total:\t$all\nConsistency:\t$proper\nProportion:\t$proportion";
+print("Total:\t$all\nConsistency:\t$proper\nProportion:\t$proportion%\n");
 
 close($in_fh1);
 close($in_fh2);

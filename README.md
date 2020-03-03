@@ -90,32 +90,39 @@ ln -sf /home/wyf/MgR_data/${ID}/R2.fq.gz data/${PREFIX}/R2.fq.gz
 *Better to process the other samples in the same group according to the above code box. Here NJU45-48 are in one group.*
 
 #### Quality control for clean data.
-Input a `FastQ` file or a `GZ` file of `FastQ` and then get some quality information.
+Input a `FastQ` file or a `GZ` file of `FastQ`, and then get some quality information.
 ```shell script
+PREFIX=Ath_stem_NC
+
 # For pair-end sequence data, we firstly turn them to single-end file.
 perl ~/2OMG/quality_control/pe_consistency.pl \
   data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
   temp/${PREFIX}.fq.gz
-#Total: 750000
-#Consistency: 729838
-#Proportion:  97.31%
+# Total:  12627217
+# Consistency:  12450207
+# Proportion: 98.60%
 
 # PREFIX as Ath_stem_NC Ath_stem_1 Ath_stem_2 Ath_stem_3.
-perl ~/2OMG/quality_control/fastq_qc.pl \
+# $ARGV[-2] should be the directory of output files.
+# $ARGV[-1] should be the prefix of the output files.
+time perl ~/2OMG/quality_control/fastq_qc.pl \
   temp/Ath_stem_NC.fq.gz \
   temp/Ath_stem_1.fq.gz \
   temp/Ath_stem_2.fq.gz \
   temp/Ath_stem_3.fq.gz \
   output \
   Ath_stem
+# real    3m28.250s
+# user    3m26.499s
+# sys     0m0.495s
 ```
-The quality report created in `/output/Ath_stem.pdf`.
+*The quality report created in `/output/Ath_stem.pdf`.*
 
 ## 4. Alignment, Count and Score
 #### rRNA workflow
 Use `bowtie2` to align the data file.
 ```shell script
-time bowtie2 -p 8 -a -t \
+time bowtie2 -p ${THREAD} -a -t \
   --end-to-end -D 20 -R 3 \
   -N 0 -L 10 -i S,1,0.50 --np 0 \
   --xeq -x index/ath_rrna \
@@ -124,12 +131,12 @@ time bowtie2 -p 8 -a -t \
   2>&1 |
   tee output/${PREFIX}/rrna.bowtie2.log
 
-time pigz -p 8 output/${PREFIX}/rrna.raw.sam
+time pigz -p ${THREAD} output/${PREFIX}/rrna.raw.sam
 ```
 Filter and count alignment result.
 ```shell script
 time gzip -dcf output/${PREFIX}/rrna.raw.sam.gz |
-  parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j 6 '
+  parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j ${THREAD} '
     perl -nla -F"\t" -e '\''
       $F[5] ne qq(*) or next;
       $F[6] eq qq(=) or next;
