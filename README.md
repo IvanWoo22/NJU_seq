@@ -29,6 +29,7 @@ Make new folders for analysis.
 mkdir "2OMG_analysis"
 cd 2OMG_analysis
 mkdir "data" "index" "temp" "output"
+THREAD=16
 ```
 
 ## 2. Reference and Index
@@ -53,7 +54,9 @@ wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/arabidopsis_tha
 Create index by `bowtie2-build` for mapping.
 ```shell script
 # rRNA index
+# 5.8s,18s and 25s rRNA.
 cat ~/2OMG/data/ath_rrna/* >data/ath_rrna.fa
+# rRNA from the reference ncRNA.
 pigz -dc data/ath_ncrna.fa.gz |
   perl ~/2OMG/tool/fetch_fasta.pl \
   --stdin -s "transcript_biotype:rRNA" \
@@ -61,12 +64,15 @@ pigz -dc data/ath_ncrna.fa.gz |
 bowtie2-build data/ath_rrna.fa index/ath_rrna
 rm data/ath_rrna.fa
 
-# Protein coding mRNA index
+# mRNA index
+# Only protein_coding transcripts will be extract to build index.
 pigz -dc data/ath_transcript.fa.gz |
   perl ~/2OMG/tool/fetch_fasta.pl \
   --stdin -s "transcript_biotype:protein_coding" \
   >data/ath_protein_coding.fa
-bowtie2-build data/ath_protein_coding.fa index/ath_protein_coding
+bowtie2-build --threads ${THREAD} \
+  data/ath_protein_coding.fa index/ath_protein_coding
+rm data/ath_protein_coding.fa
 ```
 
 ## 3. Data Selection and quality overview
@@ -76,13 +82,12 @@ Get the sequencing clean data from `MgR_data`.
 ```shell script
 ID=NJU45
 PREFIX=Ath_stem_NC
-mkdir -p data/${PREFIX}
-mkdir -p temp/${PREFIX}
-mkdir -p output/${PREFIX}
 
+mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
 ln -sf /home/wyf/MgR_data/${ID}/R1.fq.gz data/${PREFIX}/R1.fq.gz
 ln -sf /home/wyf/MgR_data/${ID}/R2.fq.gz data/${PREFIX}/R2.fq.gz
 ```
+*Better to process the other samples in the same group according to the above code box. Here NJU45-48 are in one group.*
 
 #### Quality control for clean data.
 Input a `FastQ` file or a `GZ` file of `FastQ` and then get some quality information.
