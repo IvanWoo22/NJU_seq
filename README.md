@@ -175,21 +175,27 @@ time parallel -j 3 '
     output/Ath_stem_3/rrna_{}.tsv \
     >output/Ath_stem_rrna_{}.tsv \
   ' ::: 25s 18s 5-8s
+# real  0m0.459s
+# user  0m0.661s
+# sys   0m0.048s
 ```
 
 #### Prepare for mRNA.
 Extract reads can't mapped to rRNA.
 ```shell script
-bash ~/2OMG/tool/extract_fastq.sh \
-  temp/${PREFIX}/rrna.out.sam \
+time bash ~/2OMG/tool/extract_fastq.sh \
+  temp/${PREFIX}/rrna.out.tmp \
   data/${PREFIX}/R1.fq.gz data/${PREFIX}/R1.mrna.fq.gz \
   data/${PREFIX}/R2.fq.gz data/${PREFIX}/R2.mrna.fq.gz
+# real  1m10.382s
+# user  1m45.610s
+# sys   0m3.268s
 ```
 
 #### mRNA workflow
 Alignment with protein_coding transcript.
 ```shell script
-time bowtie2 -p 8 -a -t \
+time bowtie2 -p ${THREAD} -a -t \
   --end-to-end -D 20 -R 3 \
   -N 0 -L 10 --score-min C,0,0 \
   --xeq -x index/ath_protein_coding \
@@ -197,13 +203,19 @@ time bowtie2 -p 8 -a -t \
   -S output/${PREFIX}/mrna.raw.sam \
   2>&1 |
   tee output/${PREFIX}/mrna.bowtie2.log
+# real  6m43.243s
+# user  119m34.749s
+# sys   8m1.470s
 
-time pigz -p 8 output/${PREFIX}/mrna.raw.sam
+time pigz -p ${THREAD} output/${PREFIX}/mrna.raw.sam
+# real  0m22.663s
+# user  5m38.943s
+# sys   0m9.316s
 ```
 Filter，re-locate and count alignment result.
 ```shell script
 time gzip -dcf output/${PREFIX}/mrna.raw.sam.gz |
-  parallel --pipe --block 10M -j 6 '
+  parallel --pipe --block 10M -j ${THREAD} '
     perl -nla -F"\t" -e '\''
       $F[5] ne qq(*) or next;
       $F[6] eq qq(=) or next;
@@ -212,7 +224,9 @@ time gzip -dcf output/${PREFIX}/mrna.raw.sam.gz |
     perl ~/2OMG/mrna_analysis/multimatch_judge.pl
   ' \
   >temp/${PREFIX}/mrna.out.tmp
-
+# real  2m31.558s
+# user  18m38.617s
+# sys   2m8.716s
 time gzip -dcf data/ath.gff3.gz |
   awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
     perl ~/2OMG/mrna_analysis/dedup.pl \
