@@ -265,7 +265,8 @@ time gzip -dcf data/ath.gff3.gz |
 # real  0m6.802s
 # user  0m9.653s
 # sys   0m0.227s
-
+ 
+# The chromosome number changes according to the actual situation.
 for chr in {1..5} Mt Pt; do
   awk -va=${chr} '$1==a&&$3=="+"' \
     temp/${PREFIX}/mrna.position.tmp |
