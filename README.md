@@ -227,6 +227,7 @@ time gzip -dcf output/${PREFIX}/mrna.raw.sam.gz |
 # real  2m31.558s
 # user  18m38.617s
 # sys   2m8.716s
+
 time gzip -dcf data/ath.gff3.gz |
   awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
     perl ~/2OMG/mrna_analysis/dedup.pl \
@@ -234,16 +235,25 @@ time gzip -dcf data/ath.gff3.gz |
       --geneid "AT" \
       -i temp/${PREFIX}/mrna.out.tmp \
       -o temp/${PREFIX}/mrna.dedup.tmp
+# real  14m32.692s
+# user  14m22.635s
+# sys   0m10.268s
 
 time bash ~/2OMG/mrna_analysis/almostunique.sh \
   temp/${PREFIX}/mrna.dedup.tmp \
   data/${PREFIX}/R1.mrna.fq.gz \
   temp/${PREFIX} \
   temp/${PREFIX}/mrna.almostunique.tmp
+# real  2m52.775s
+# user  2m41.319s
+# sys   0m4.881s
 
-perl ~/2OMG/mrna_analysis/count.pl \
+time perl ~/2OMG/mrna_analysis/count.pl \
   temp/${PREFIX}/mrna.almostunique.tmp \
   >temp/${PREFIX}/mrna.count.tmp
+# real  0m3.072s
+# user  0m3.036s
+# sys   0m0.036s
 
 time gzip -dcf data/ath.gff3.gz |
   awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
@@ -252,6 +262,9 @@ time gzip -dcf data/ath.gff3.gz |
   --geneid "AT" \
   -i temp/${PREFIX}/mrna.count.tmp \
   -o temp/${PREFIX}/mrna.position.tmp
+# real  0m6.802s
+# user  0m9.653s
+# sys   0m0.227s
 
 for chr in {1..5} Mt Pt; do
   awk -va=${chr} '$1==a&&$3=="+"' \
@@ -263,7 +276,6 @@ for chr in {1..5} Mt Pt; do
       sort -t $'\t' -nrk 2,2 \
         >>output/${PREFIX}/mrna.tsv
 done
-
 ```
 
 
