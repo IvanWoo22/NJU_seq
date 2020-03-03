@@ -112,9 +112,9 @@ time perl ~/2OMG/quality_control/fastq_qc.pl \
   temp/Ath_stem_3.fq.gz \
   output \
   Ath_stem
-# real    3m28.250s
-# user    3m26.499s
-# sys     0m0.495s
+# real  3m28.250s
+# user  3m26.499s
+# sys   0m0.495s
 ```
 *The quality report created in `/output/Ath_stem.pdf`.*
 
@@ -130,12 +130,18 @@ time bowtie2 -p ${THREAD} -a -t \
   -S output/${PREFIX}/rrna.raw.sam \
   2>&1 |
   tee output/${PREFIX}/rrna.bowtie2.log
+# real  1m53.474s
+# user  25m41.846s
+# sys   4m15.462s
 
 time pigz -p ${THREAD} output/${PREFIX}/rrna.raw.sam
+# real  0m57.962s
+# user  3m54.868s
+# sys   0m7.795s
 ```
 Filter and count alignment result.
 ```shell script
-time gzip -dcf output/${PREFIX}/rrna.raw.sam.gz |
+time pigz -dcf output/${PREFIX}/rrna.raw.sam.gz |
   parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j ${THREAD} '
     perl -nla -F"\t" -e '\''
       $F[5] ne qq(*) or next;
@@ -146,12 +152,18 @@ time gzip -dcf output/${PREFIX}/rrna.raw.sam.gz |
     perl ~/2OMG/rrna_analysis/multimatch_judge.pl
   ' \
   >temp/${PREFIX}/rrna.out.tmp
+# real  1m59.185s
+# user  20m44.643s
+# sys   1m24.060s
 
-time parallel -j 3 '
+time parallel -j 3 "
   perl ~/2OMG/rrna_analysis/readend_count.pl \
     ~/2OMG/data/ath_rrna/{}.fa temp/${PREFIX}/rrna.out.tmp {} \
     >output/${PREFIX}/rrna_{}.tsv \
-  ' ::: 25s 18s 5-8s
+  " ::: 25s 18s 5-8s
+# real  0m27.994s
+# user  0m59.369s
+# sys   0m0.809s
 ```
 Score all sites one by one.
 ```shell script
