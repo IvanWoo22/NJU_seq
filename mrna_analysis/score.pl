@@ -43,7 +43,7 @@ foreach my $id ( keys(%TR_count) ) {
           $TR_count{$id} / $TR_count{ $chr . "\t" . $dir . "\t" . $formal_pos };
     }
     else {
-        $score = $TR_count{$id} * 2;
+        $score = $TR_count{$id};
     }
     if ( exists( $NC_count{$id} ) ) {
         if ( exists( $NC_count{ $chr . "\t" . $dir . "\t" . $formal_pos } ) ) {
@@ -51,10 +51,10 @@ foreach my $id ( keys(%TR_count) ) {
               $NC_count{ $chr . "\t" . $dir . "\t" . $formal_pos };
         }
         else {
-            $score = $score - $NC_count{$id} * 2;
+            $score = $score - $NC_count{$id};
         }
     }
-    if ( $score > 20 ) {
+    if ( $score > 19 ) {
         print("$TR_info{$id}\t$score\n");
     }
 }
