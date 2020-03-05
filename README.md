@@ -1,5 +1,5 @@
 # 2OMG
-A brand new version of MgR_seq.
+A brand new version of MgR_seq. From clean data to positions with 2-O-methylation.
 
 ## 1. Preparation
 #### Install packages and software.
@@ -278,6 +278,21 @@ for chr in {1..5} Mt Pt; do
         >>output/${PREFIX}/mrna.tsv
 done
 ```
-
-
-
+Score each covered site.
+```shell script
+perl ~/2OMG/mrna_analysis/score.pl \
+  output/Ath_stem_NC/mrna.tsv \
+  output/Ath_stem_1/mrna.tsv |
+    sort -t $'\t' -nrk 9,9 \
+      >output/Ath_stem_1_mrna_scored.tsv
+```
+## 5. Statistics and Presentation
+#### Calculate valid sequencing depth (average coverage).
+```shell script
+bash ~/2OMG/presentation/seq_depth.sh \
+  temp/${PREFIX}/mrna.almostunique.tmp \
+  output/${PREFIX}/mrna.tsv
+# All stop times: 19227
+# All positions:  5632
+# Coverage:       3.41
+```
