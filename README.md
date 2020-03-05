@@ -280,11 +280,19 @@ done
 ```
 Score each covered site.
 ```shell script
-perl ~/2OMG/mrna_analysis/score.pl \
-  output/Ath_stem_NC/mrna.tsv \
-  output/Ath_stem_1/mrna.tsv |
-    sort -t $'\t' -nrk 9,9 \
-      >output/Ath_stem_1_mrna_scored.tsv
+parallel -j 3 "
+  perl ~/2OMG/mrna_analysis/score.pl \
+    output/Ath_stem_NC/mrna.tsv \
+    output/{}/mrna.tsv |
+      sort -t $'\t' -nrk 9,9 \
+        >output/{}_mrna_scored.tsv
+  " ::: Ath_stem_1 Ath_stem_2 Ath_stem_3
+
+perl ~/2OMG/tool/common.pl \
+  output/Ath_stem_1_mrna_scored.tsv \
+  output/Ath_stem_2_mrna_scored.tsv \
+  output/Ath_stem_3_mrna_scored.tsv \
+  >output/Ath_stem_mrna.tsv
 ```
 ## 5. Statistics and Presentation
 #### Calculate valid sequencing depth (average coverage).
@@ -295,4 +303,7 @@ bash ~/2OMG/presentation/seq_depth.sh \
 # All stop times: 19227
 # All positions:  5632
 # Coverage:       3.41
+
+bash ~/2OMG/presentation/base_count.sh \
+  output/Ath_stem_mrna.tsv
 ```
