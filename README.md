@@ -173,7 +173,7 @@ time parallel -j 3 "
     output/Ath_stem_1/rrna_{}.tsv \\
     output/Ath_stem_2/rrna_{}.tsv \\
     output/Ath_stem_3/rrna_{}.tsv \\
-      >output/Ath_stem_rrna_{}.tsv
+      >output/Ath_stem_rrna_{}_scored.tsv
   " ::: 25s 18s 5-8s
 # real  0m0.459s
 # user  0m0.661s
@@ -292,7 +292,7 @@ perl ~/2OMG/tool/common.pl \
   output/Ath_stem_1_mrna_scored.tsv \
   output/Ath_stem_2_mrna_scored.tsv \
   output/Ath_stem_3_mrna_scored.tsv \
-  >output/Ath_stem_mrna.tsv
+  >output/Ath_stem_mrna_scored.tsv
 ```
 ## 5. Statistics and Presentation
 #### Calculate valid sequencing depth (average coverage).
@@ -305,5 +305,5 @@ bash ~/2OMG/presentation/seq_depth.sh \
 # Coverage:       3.41
 
 bash ~/2OMG/presentation/signature_count.sh \
-  output/Ath_stem_mrna.tsv
+  output/Ath_stem_mrna_scored.tsv
 ```

@@ -56,7 +56,9 @@ foreach my $id ( keys(%TR_count) ) {
             $score = $score - $NC_count{$id} * 2;
         }
     }
-    print("$TR_info{$id}\t$score\n");
+    if ( $score >= 10 ) {
+        print("$TR_info{$id}\t$score\n");
+    }
 }
 
 __END__
