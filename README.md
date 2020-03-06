@@ -59,7 +59,7 @@ cat ~/2OMG/data/ath_rrna/* >data/ath_rrna.fa
 # rRNA from the reference ncRNA.
 pigz -dc data/ath_ncrna.fa.gz |
   perl ~/2OMG/tool/fetch_fasta.pl \
-  --stdin -s "transcript_biotype:rRNA" \
+  --stdin -s 'transcript_biotype:rRNA' \
   >>data/ath_rrna.fa
 bowtie2-build data/ath_rrna.fa index/ath_rrna
 rm data/ath_rrna.fa
@@ -68,9 +68,9 @@ rm data/ath_rrna.fa
 # Only protein_coding transcripts will be extract to build index.
 pigz -dc data/ath_transcript.fa.gz |
   perl ~/2OMG/tool/fetch_fasta.pl \
-  --stdin -s "transcript_biotype:protein_coding" \
+  --stdin -s 'transcript_biotype:protein_coding' \
   >data/ath_protein_coding.fa
-bowtie2-build --threads ${THREAD} \
+bowtie2-build --threads "${THREAD}" \
   data/ath_protein_coding.fa index/ath_protein_coding
 rm data/ath_protein_coding.fa
 ```
@@ -80,29 +80,29 @@ rm data/ath_protein_coding.fa
 Get the sequencing clean data from `MgR_data`.  
 *The representation of `ID` can be found in [`sample_list.csv`](/sample_list.csv).*
 ```shell script
-ID=NJU45
-PREFIX=Ath_stem_NC
+ID='NJU45'
+PREFIX='Ath_stem_NC'
 
 mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
-ln -sf /home/wyf/MgR_data/${ID}/R1.fq.gz data/${PREFIX}/R1.fq.gz
-ln -sf /home/wyf/MgR_data/${ID}/R2.fq.gz data/${PREFIX}/R2.fq.gz
+ln -sf /home/wyf/MgR_data/"${ID}"/R1.fq.gz data/"${PREFIX}"/R1.fq.gz
+ln -sf /home/wyf/MgR_data/"${ID}"/R2.fq.gz data/"${PREFIX}"/R2.fq.gz
 ```
 *Better to process the other samples in the same group according to the above code box. Here NJU45-48 are in one group.*
 
 #### Quality control for clean data.
 Input a `FastQ` file or a `GZ` file of `FastQ`, and then get some quality information.
 ```shell script
-PREFIX=Ath_stem_NC
+PREFIX='Ath_stem_NC'
 
 # For pair-end sequence data, we firstly turn them to single-end file.
 perl ~/2OMG/quality_control/pe_consistency.pl \
-  data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
-  temp/${PREFIX}.fq.gz
+  data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R2.fq.gz \
+  temp/"${PREFIX}".fq.gz
 # Total:  12627217
 # Consistency:  12450207
 # Proportion: 98.60%
 
-# PREFIX as Ath_stem_NC Ath_stem_1 Ath_stem_2 Ath_stem_3.
+# PREFIX do as Ath_stem_NC Ath_stem_1 Ath_stem_2 Ath_stem_3.
 # $ARGV[-2] should be the directory of output files.
 # $ARGV[-1] should be the prefix of the output files.
 time perl ~/2OMG/quality_control/fastq_qc.pl \
@@ -122,27 +122,27 @@ time perl ~/2OMG/quality_control/fastq_qc.pl \
 #### rRNA workflow
 Use `bowtie2` to align the data file.
 ```shell script
-time bowtie2 -p ${THREAD} -a -t \
+time bowtie2 -p "${THREAD}" -a -t \
   --end-to-end -D 20 -R 3 \
   -N 0 -L 10 -i S,1,0.50 --np 0 \
   --xeq -x index/ath_rrna \
-  -1 data/${PREFIX}/R1.fq.gz -2 data/${PREFIX}/R2.fq.gz \
-  -S output/${PREFIX}/rrna.raw.sam \
+  -1 data/"${PREFIX}"/R1.fq.gz -2 data/"${PREFIX}"/R2.fq.gz \
+  -S output/"${PREFIX}"/rrna.raw.sam \
   2>&1 |
-  tee output/${PREFIX}/rrna.bowtie2.log
+  tee output/"${PREFIX}"/rrna.bowtie2.log
 # real  1m53.474s
 # user  25m41.846s
 # sys   4m15.462s
 
-time pigz -p ${THREAD} output/${PREFIX}/rrna.raw.sam
+time pigz -p "${THREAD}" output/"${PREFIX}"/rrna.raw.sam
 # real  0m57.962s
 # user  3m54.868s
 # sys   0m7.795s
 ```
 Filter and count alignment result.
 ```shell script
-time pigz -dcf output/${PREFIX}/rrna.raw.sam.gz |
-  parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j ${THREAD} '
+time pigz -dcf output/"${PREFIX}"/rrna.raw.sam.gz |
+  parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
     perl -nla -F"\t" -e '\''
       $F[5] ne qq(*) or next;
       $F[6] eq qq(=) or next;
@@ -151,15 +151,15 @@ time pigz -dcf output/${PREFIX}/rrna.raw.sam.gz |
     perl ~/2OMG/rrna_analysis/matchquality_judge.pl |
     perl ~/2OMG/rrna_analysis/multimatch_judge.pl
   ' \
-  >temp/${PREFIX}/rrna.out.tmp
+  >temp/"${PREFIX}"/rrna.out.tmp
 # real  1m59.185s
 # user  20m44.643s
 # sys   1m24.060s
 
 time parallel -j 3 "
-  perl ~/2OMG/rrna_analysis/readend_count.pl \
-    ~/2OMG/data/ath_rrna/{}.fa temp/${PREFIX}/rrna.out.tmp {} \
-    >output/${PREFIX}/rrna_{}.tsv \
+  perl ~/2OMG/rrna_analysis/readend_count.pl \\
+    ~/2OMG/data/ath_rrna/{}.fa temp/${PREFIX}/rrna.out.tmp {} \\
+    >output/${PREFIX}/rrna_{}.tsv
   " ::: 25s 18s 5-8s
 # real  0m27.994s
 # user  0m59.369s
@@ -167,14 +167,14 @@ time parallel -j 3 "
 ```
 Score all sites one by one.
 ```shell script
-time parallel -j 3 '
-  perl ~/2OMG/rrna_analysis/score.pl \
-    output/Ath_stem_NC/rrna_{}.tsv \
-    output/Ath_stem_1/rrna_{}.tsv \
-    output/Ath_stem_2/rrna_{}.tsv \
-    output/Ath_stem_3/rrna_{}.tsv \
-    >output/Ath_stem_rrna_{}.tsv \
-  ' ::: 25s 18s 5-8s
+time parallel -j 3 "
+  perl ~/2OMG/rrna_analysis/score.pl \\
+    output/Ath_stem_NC/rrna_{}.tsv \\
+    output/Ath_stem_1/rrna_{}.tsv \\
+    output/Ath_stem_2/rrna_{}.tsv \\
+    output/Ath_stem_3/rrna_{}.tsv \\
+      >output/Ath_stem_rrna_{}.tsv
+  " ::: 25s 18s 5-8s
 # real  0m0.459s
 # user  0m0.661s
 # sys   0m0.048s
@@ -184,9 +184,9 @@ time parallel -j 3 '
 Extract reads can't mapped to rRNA.
 ```shell script
 time bash ~/2OMG/tool/extract_fastq.sh \
-  temp/${PREFIX}/rrna.out.tmp \
-  data/${PREFIX}/R1.fq.gz data/${PREFIX}/R1.mrna.fq.gz \
-  data/${PREFIX}/R2.fq.gz data/${PREFIX}/R2.mrna.fq.gz
+  temp/"${PREFIX}"/rrna.out.tmp \
+  data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R1.mrna.fq.gz \
+  data/"${PREFIX}"/R2.fq.gz data/"${PREFIX}"/R2.mrna.fq.gz
 # real  1m10.382s
 # user  1m45.610s
 # sys   0m3.268s
@@ -195,27 +195,27 @@ time bash ~/2OMG/tool/extract_fastq.sh \
 #### mRNA workflow
 Alignment with protein_coding transcript.
 ```shell script
-time bowtie2 -p ${THREAD} -a -t \
+time bowtie2 -p "${THREAD}" -a -t \
   --end-to-end -D 20 -R 3 \
   -N 0 -L 10 --score-min C,0,0 \
   --xeq -x index/ath_protein_coding \
-  -1 data/${PREFIX}/R1.mrna.fq.gz -2 data/${PREFIX}/R2.mrna.fq.gz \
-  -S output/${PREFIX}/mrna.raw.sam \
+  -1 data/"${PREFIX}"/R1.mrna.fq.gz -2 data/"${PREFIX}"/R2.mrna.fq.gz \
+  -S output/"${PREFIX}"/mrna.raw.sam \
   2>&1 |
-  tee output/${PREFIX}/mrna.bowtie2.log
+  tee output/"${PREFIX}"/mrna.bowtie2.log
 # real  6m43.243s
 # user  119m34.749s
 # sys   8m1.470s
 
-time pigz -p ${THREAD} output/${PREFIX}/mrna.raw.sam
+time pigz -p "${THREAD}" output/"${PREFIX}"/mrna.raw.sam
 # real  0m22.663s
 # user  5m38.943s
 # sys   0m9.316s
 ```
 Filter，re-locate and count alignment result.
 ```shell script
-time gzip -dcf output/${PREFIX}/mrna.raw.sam.gz |
-  parallel --pipe --block 10M -j ${THREAD} '
+time gzip -dcf output/"${PREFIX}"/mrna.raw.sam.gz |
+  parallel --pipe --block 10M -j "${THREAD}" '
     perl -nla -F"\t" -e '\''
       $F[5] ne qq(*) or next;
       $F[6] eq qq(=) or next;
@@ -223,7 +223,7 @@ time gzip -dcf output/${PREFIX}/mrna.raw.sam.gz |
     '\'' |
     perl ~/2OMG/mrna_analysis/multimatch_judge.pl
   ' \
-  >temp/${PREFIX}/mrna.out.tmp
+  >temp/"${PREFIX}"/mrna.out.tmp
 # real  2m31.558s
 # user  18m38.617s
 # sys   2m8.716s
@@ -233,24 +233,24 @@ time gzip -dcf data/ath.gff3.gz |
     perl ~/2OMG/mrna_analysis/dedup.pl \
       --refstr "Parent=transcript:" \
       --geneid "AT" \
-      -i temp/${PREFIX}/mrna.out.tmp \
-      -o temp/${PREFIX}/mrna.dedup.tmp
+      -i temp/"${PREFIX}"/mrna.out.tmp \
+      -o temp/"${PREFIX}"/mrna.dedup.tmp
 # real  14m32.692s
 # user  14m22.635s
 # sys   0m10.268s
 
 time bash ~/2OMG/mrna_analysis/almostunique.sh \
-  temp/${PREFIX}/mrna.dedup.tmp \
-  data/${PREFIX}/R1.mrna.fq.gz \
-  temp/${PREFIX} \
-  temp/${PREFIX}/mrna.almostunique.tmp
+  temp/"${PREFIX}"/mrna.dedup.tmp \
+  data/"${PREFIX}"/R1.mrna.fq.gz \
+  temp/"${PREFIX}" \
+  temp/"${PREFIX}"/mrna.almostunique.tmp
 # real  2m52.775s
 # user  2m41.319s
 # sys   0m4.881s
 
 time perl ~/2OMG/mrna_analysis/count.pl \
-  temp/${PREFIX}/mrna.almostunique.tmp \
-  >temp/${PREFIX}/mrna.count.tmp
+  temp/"${PREFIX}"/mrna.almostunique.tmp \
+  >temp/"${PREFIX}"/mrna.count.tmp
 # real  0m3.072s
 # user  0m3.036s
 # sys   0m0.036s
@@ -281,10 +281,10 @@ done
 Score each covered site.
 ```shell script
 parallel -j 3 "
-  perl ~/2OMG/mrna_analysis/score.pl \
-    output/Ath_stem_NC/mrna.tsv \
+  perl ~/2OMG/mrna_analysis/score.pl \\
+    output/Ath_stem_NC/mrna.tsv \\
     output/{}/mrna.tsv |
-      sort -t $'\t' -nrk 11,11 \
+      sort -t $'\t' -nrk 11,11 \\
         >output/{}_mrna_scored.tsv
   " ::: Ath_stem_1 Ath_stem_2 Ath_stem_3
 
