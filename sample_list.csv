@@ -27,5 +27,11 @@ NJU47,Ath_stem_2,Arabidopsis thaliana stem total RNA with MgR,PE150
 NJU48,Ath_stem_3,Arabidopsis thaliana stem total RNA with MgR,PE150
 NJU61,Mmu_kidney_NC,Mus musculus kidney total RNA without MgR,SE75
 NJU62,Mmu_kidney_1,Mus musculus kidney total RNA with MgR,SE75
-NJU69,Ath_flower_NC,Arabidopsis thaliana flower total RNA without MgR,SE75
-NJU70,Ath_flower_1,Arabidopsis thaliana flower total RNA with MgR,SE75
+NJU69,Ath_flower_NC,Arabidopsis thaliana flower total RNA without MgR,PE150
+NJU70,Ath_flower_1,Arabidopsis thaliana flower total RNA with MgR,PE150
+NJU71,Ath_flower_2,Arabidopsis thaliana flower total RNA with MgR,PE150
+NJU72,Ath_flower_3,Arabidopsis thaliana flower total RNA with MgR,PE150
+NJU77,Ath_root_NC,Arabidopsis thaliana root total RNA without MgR,PE150
+NJU78,Ath_root_1,Arabidopsis thaliana root total RNA with MgR,PE150
+NJU79,Ath_root_2,Arabidopsis thaliana root total RNA with MgR,PE150
+NJU80,Ath_root_3,Arabidopsis thaliana root total RNA with MgR,PE150
