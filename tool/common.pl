@@ -11,38 +11,38 @@ my %count;
 my %info;
 while (<$in1>) {
     chomp;
-    my ( $chr, $pos, $dir, $base, $gene ) = split /\t/;
+    my ( $chr, $pos, $dir, undef, $base2, undef, $gene ) = split /\t/;
     if ( exists( $count{ $chr . "\t" . $dir . "\t" . $pos } ) ) {
         $count{ $chr . "\t" . $dir . "\t" . $pos }++;
     }
     else {
         $count{ $chr . "\t" . $dir . "\t" . $pos } = 1;
         $info{ $chr . "\t" . $dir . "\t" . $pos } =
-          $chr . "\t" . $dir . "\t" . $pos . "\t" . $base . "\t" . $gene;
+          $chr . "\t" . $dir . "\t" . $pos . "\t" . $base2 . "\t" . $gene;
     }
 }
 while (<$in2>) {
     chomp;
-    my ( $chr, $pos, $dir, $base, $gene ) = split /\t/;
+    my ( $chr, $pos, $dir, undef, $base2, undef, $gene ) = split /\t/;
     if ( exists( $count{ $chr . "\t" . $dir . "\t" . $pos } ) ) {
         $count{ $chr . "\t" . $dir . "\t" . $pos }++;
     }
     else {
         $count{ $chr . "\t" . $dir . "\t" . $pos } = 1;
         $info{ $chr . "\t" . $dir . "\t" . $pos } =
-          $chr . "\t" . $dir . "\t" . $pos . "\t" . $base . "\t" . $gene;
+          $chr . "\t" . $dir . "\t" . $pos . "\t" . $base2 . "\t" . $gene;
     }
 }
 while (<$in3>) {
     chomp;
-    my ( $chr, $pos, $dir, $base, $gene ) = split /\t/;
+    my ( $chr, $pos, $dir, undef, $base2, undef, $gene ) = split /\t/;
     if ( exists( $count{ $chr . "\t" . $dir . "\t" . $pos } ) ) {
         $count{ $chr . "\t" . $dir . "\t" . $pos }++;
     }
     else {
         $count{ $chr . "\t" . $dir . "\t" . $pos } = 1;
         $info{ $chr . "\t" . $dir . "\t" . $pos } =
-          $chr . "\t" . $dir . "\t" . $pos . "\t" . $base . "\t" . $gene;
+          $chr . "\t" . $dir . "\t" . $pos . "\t" . $base2 . "\t" . $gene;
     }
 }
 

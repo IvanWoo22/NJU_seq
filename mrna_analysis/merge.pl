@@ -68,7 +68,7 @@ open( my $IN_FH, "<", $in_fq );
 my ( %gene_id, %gene, %base, %t5, %t3 );
 while (<$IN_FH>) {
     chomp;
-    my ( $trans_id, $site, $base, $t5, $t3 ) = split /\t/;
+    my ( $trans_id, $site, $base1, $base2, $base3, $t5, $t3 ) = split /\t/;
     $trans_id =~ /^($geneid[A-Z,a-z,0-9]+\.[0-9]+)/;
     $trans_id = $1;
     $trans_id =~ /^($geneid[A-Z,a-z,0-9]+)/;
@@ -89,7 +89,7 @@ while (<$IN_FH>) {
         $gene{$asite}    = $gene;
         $t5{$asite}      = $t5;
         $t3{$asite}      = $t3;
-        $base{$asite}    = $base;
+        $base{$asite}    = $base1 . "\t" . $base2 . "\t" . $base3;
     }
 }
 close($IN_FH);

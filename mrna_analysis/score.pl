@@ -8,7 +8,8 @@ my %NC_info;
 open( my $IN_NC, "<", $ARGV[0] );
 while (<$IN_NC>) {
     chomp;
-    my ( $chr, $pos, $dir, undef, undef, undef, undef, $end_count ) =
+    my ( $chr, $pos, $dir, undef, undef, undef, undef, undef, undef,
+        $end_count ) =
       split /\t/;
     my $id = $chr . "\t" . $dir . "\t" . $pos;
     $NC_info{$id}  = $_;
@@ -21,7 +22,8 @@ my %TR_info;
 open( my $IN_TR, "<", $ARGV[1] );
 while (<$IN_TR>) {
     chomp;
-    my ( $chr, $pos, $dir, undef, undef, undef, undef, $end_count ) =
+    my ( $chr, $pos, $dir, undef, undef, undef, undef, undef, undef,
+        $end_count ) =
       split /\t/;
     my $id = $chr . "\t" . $dir . "\t" . $pos;
     $TR_info{$id}  = $_;
@@ -54,9 +56,7 @@ foreach my $id ( keys(%TR_count) ) {
             $score = $score - $NC_count{$id} * 2;
         }
     }
-    if ( $score > 19 ) {
-        print("$TR_info{$id}\t$score\n");
-    }
+    print("$TR_info{$id}\t$score\n");
 }
 
 __END__

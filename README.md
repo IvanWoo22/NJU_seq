@@ -258,10 +258,10 @@ time perl ~/2OMG/mrna_analysis/count.pl \
 time gzip -dcf data/ath.gff3.gz |
   awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
   perl ~/2OMG/mrna_analysis/merge.pl \
-  --refstr "Parent=transcript:" \
-  --geneid "AT" \
-  -i temp/${PREFIX}/mrna.count.tmp \
-  -o temp/${PREFIX}/mrna.position.tmp
+    --refstr "Parent=transcript:" \
+    --geneid "AT" \
+    -i temp/"${PREFIX}"/mrna.count.tmp \
+    -o temp/"${PREFIX}"/mrna.position.tmp
 # real  0m6.802s
 # user  0m9.653s
 # sys   0m0.227s
@@ -269,13 +269,13 @@ time gzip -dcf data/ath.gff3.gz |
 # The chromosome number changes according to the actual situation.
 for chr in {1..5} Mt Pt; do
   awk -va=${chr} '$1==a&&$3=="+"' \
-    temp/${PREFIX}/mrna.position.tmp |
-      sort -t $'\t' -nk 2,2 \
-        >>output/${PREFIX}/mrna.tsv
+  temp/"${PREFIX}"/mrna.position.tmp |
+    sort -t $'\t' -nk 2,2 \
+  >>output/"${PREFIX}"/mrna.tsv
   awk -va=${chr} '$1==a&&$3=="-"' \
-    temp/${PREFIX}/mrna.position.tmp |
-      sort -t $'\t' -nrk 2,2 \
-        >>output/${PREFIX}/mrna.tsv
+  temp/"${PREFIX}"/mrna.position.tmp |
+    sort -t $'\t' -nrk 2,2 \
+  >>output/"${PREFIX}"/mrna.tsv
 done
 ```
 Score each covered site.
@@ -284,7 +284,7 @@ parallel -j 3 "
   perl ~/2OMG/mrna_analysis/score.pl \
     output/Ath_stem_NC/mrna.tsv \
     output/{}/mrna.tsv |
-      sort -t $'\t' -nrk 9,9 \
+      sort -t $'\t' -nrk 11,11 \
         >output/{}_mrna_scored.tsv
   " ::: Ath_stem_1 Ath_stem_2 Ath_stem_3
 
@@ -298,12 +298,12 @@ perl ~/2OMG/tool/common.pl \
 #### Calculate valid sequencing depth (average coverage).
 ```shell script
 bash ~/2OMG/presentation/seq_depth.sh \
-  temp/${PREFIX}/mrna.almostunique.tmp \
-  output/${PREFIX}/mrna.tsv
+  temp/"${PREFIX}"/mrna.almostunique.tmp \
+  output/"${PREFIX}"/mrna.tsv
 # All stop times: 19227
 # All positions:  5632
 # Coverage:       3.41
 
-bash ~/2OMG/presentation/base_count.sh \
+bash ~/2OMG/presentation/signature_count.sh \
   output/Ath_stem_mrna.tsv
 ```
