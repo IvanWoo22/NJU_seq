@@ -11,38 +11,56 @@ my %count;
 my %info;
 while (<$in1>) {
     chomp;
-    my ( $chr, $pos, $dir, undef, $base2, undef, $gene ) = split /\t/;
+    my ( $chr, $pos, $dir, $base1, $base2, $base3, $gene ) = split /\t/;
     if ( exists( $count{ $chr . "\t" . $dir . "\t" . $pos } ) ) {
         $count{ $chr . "\t" . $dir . "\t" . $pos }++;
     }
     else {
         $count{ $chr . "\t" . $dir . "\t" . $pos } = 1;
         $info{ $chr . "\t" . $dir . "\t" . $pos } =
-          $chr . "\t" . $dir . "\t" . $pos . "\t" . $base2 . "\t" . $gene;
+            $chr . "\t"
+          . $dir . "\t"
+          . $pos . "\t"
+          . $base1 . "\t"
+          . $base2 . "\t"
+          . $base3 . "\t"
+          . $gene;
     }
 }
 while (<$in2>) {
     chomp;
-    my ( $chr, $pos, $dir, undef, $base2, undef, $gene ) = split /\t/;
+    my ( $chr, $pos, $dir, $base1, $base2, $base3, $gene ) = split /\t/;
     if ( exists( $count{ $chr . "\t" . $dir . "\t" . $pos } ) ) {
         $count{ $chr . "\t" . $dir . "\t" . $pos }++;
     }
     else {
         $count{ $chr . "\t" . $dir . "\t" . $pos } = 1;
         $info{ $chr . "\t" . $dir . "\t" . $pos } =
-          $chr . "\t" . $dir . "\t" . $pos . "\t" . $base2 . "\t" . $gene;
+            $chr . "\t"
+                . $dir . "\t"
+                . $pos . "\t"
+                . $base1 . "\t"
+                . $base2 . "\t"
+                . $base3 . "\t"
+                . $gene;
     }
 }
 while (<$in3>) {
     chomp;
-    my ( $chr, $pos, $dir, undef, $base2, undef, $gene ) = split /\t/;
+    my ( $chr, $pos, $dir, $base1, $base2, $base3, $gene ) = split /\t/;
     if ( exists( $count{ $chr . "\t" . $dir . "\t" . $pos } ) ) {
         $count{ $chr . "\t" . $dir . "\t" . $pos }++;
     }
     else {
         $count{ $chr . "\t" . $dir . "\t" . $pos } = 1;
         $info{ $chr . "\t" . $dir . "\t" . $pos } =
-          $chr . "\t" . $dir . "\t" . $pos . "\t" . $base2 . "\t" . $gene;
+            $chr . "\t"
+                . $dir . "\t"
+                . $pos . "\t"
+                . $base1 . "\t"
+                . $base2 . "\t"
+                . $base3 . "\t"
+                . $gene;
     }
 }
 
