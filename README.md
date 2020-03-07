@@ -307,5 +307,42 @@ bash ~/2OMG/presentation/seq_depth.sh \
 bash ~/2OMG/presentation/signature_count.sh \
   output/Ath_stem_mrna_scored.tsv
 
+pigz -dcf data/ath.gff3.gz |
+  awk '(($3=="gene")&&($9~/biotype=protein_coding/)) \
+    || (($3=="mRNA")&&($9~/biotype=protein_coding/)) \
+    || ($3=="exon")' |
+  perl ~/2OMG/mrna_analysis/filter_nonsenseexon.pl |
+  perl ~/2OMG/mrna_analysis/filter_nonsensegene.pl |
+  perl ~/2OMG/mrna_analysis/filter_overlapgene.pl |
+  perl ~/2OMG/mrna_analysis/judge_altersplice.pl \
+    data/ath_alter_gene.yml \
+    data/ath_unique_gene.yml
+
+perl ~/2OMG/mrna_analysis/stat_altersplice_1.pl \
+  data/ath_alter_gene.yml \
+  <output/Ath_stem_mrna_scored.tsv \
+  >temp/Ath_stem_altergene.tsv
+
+perl ~/2OMG/mrna_analysis/stat_altersplice_2.pl \
+  <temp/Ath_stem_altergene.tsv \
+  >output/Ath_stem_altergene_cov.tsv
+# Output file is the final result.
+
+pigz -dcf data/ath.gff3.gz |
+  awk '($3=="gene") || ($3=="mRNA") || ($3=="CDS") \
+    || ($3=="five_prime_UTR") || ($3=="three_prime_UTR")' |
+  perl ~/2OMG/mrna_analysis/judge_differentregion.pl \
+    data/ath_unique_gene.yml \
+    >temp/ath_uniquegene_differentregion.yml
+
+perl ~/2OMG/mrna_analysis/stat_differentregion_1.pl \
+  temp/ath_uniquegene_differentregion.yml \
+  <output/Ath_stem_mrna_scored.tsv \
+  >temp/Ath_stem_uniquegen.tsv
+
+perl  ~/2OMG/mrna_analysis/stat_differentregion_2.pl \
+<temp/Ath_stem_uniquegen.tsv \
+>output/Ath_stem_uniquegene_cov.tsv
+
 
 ```
