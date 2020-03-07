@@ -70,7 +70,6 @@ while (<$GENE>) {
     my $gene_id = GET_INFO($info);
 
 # Gene_ID Chromosome Direction Exon_Range Exon_Length Exon_Point Intron_Range Intron_Length Intron_Point Variant_Range Variant_Length Variant_Point Stat_Value
-
     print(
 "$gene_id\t$chr_dir\t$constant_exon\t$exon_length\t$exon_number\t$constant_intron\t$intron_length\t$intron_number\t$variable_area\t$variant_length\t$variant_number\t$stat_val\n"
     );
