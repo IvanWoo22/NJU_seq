@@ -335,17 +335,22 @@ pigz -dcf data/ath.gff3.gz |
     data/ath_unique_gene.yml \
     >temp/ath_uniquegene_differentregion.yml
 
+perl ~/2OMG/mrna_analysis/judge_region.pl \
+  data/ath_alter_gene.yml temp/ath_uniquegene_differentregion.yml \
+  <output/Ath_stem_mrna_scored.tsv \
+  >output/Ath_stem_mrna_scored_region.tsv
+
 perl ~/2OMG/mrna_analysis/stat_differentregion_1.pl \
   temp/ath_uniquegene_differentregion.yml \
   <output/Ath_stem_mrna_scored.tsv \
-  >temp/Ath_stem_uniquegen.tsv
+  >temp/Ath_stem_uniquegene.tsv
 
 perl  ~/2OMG/mrna_analysis/stat_differentregion_2.pl \
-  <temp/Ath_stem_uniquegen.tsv \
+  <temp/Ath_stem_uniquegene.tsv \
   >output/Ath_stem_uniquegene_cov.tsv
 
 perl ~/2OMG/mrna_analysis/stat_differentregion_3.pl \
   temp/ath_uniquegene_differentregion.yml \
   <output/Ath_stem_mrna_scored.tsv \
-  >output/Ath_stem_uniquegen_distribution.tsv
+  >output/Ath_stem_uniquegene_distribution.tsv
 ```
