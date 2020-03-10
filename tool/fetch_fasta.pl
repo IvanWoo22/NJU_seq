@@ -27,7 +27,7 @@ Getopt::Long::GetOptions(
 
 my @info;
 if ( defined($in_fa) ) {
-    open FA, "<", $in_fa or die("$in_fa: $!");
+    open FA, "<", $in_fa;
     @info = <FA>;
     close FA;
 }

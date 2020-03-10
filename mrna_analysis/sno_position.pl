@@ -57,7 +57,7 @@ while (<$SEG>) {
         print("$info\t$seq\n");
     }
     else {
-        print("Sorry, there is no such a segment: $_\n");
+        warn("Sorry, there is no such a segment: $_\n");
     }
 }
 close($SEG);
