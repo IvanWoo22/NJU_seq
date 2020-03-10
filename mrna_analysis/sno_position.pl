@@ -2,8 +2,7 @@
 use strict;
 use warnings;
 use autodie;
-
-use PerlIO::gzip;
+use IO::Zlib;
 
 sub SEQ_REV_COMP {
     my $SEQ = reverse shift;
@@ -16,13 +15,13 @@ sub SEQ_TR_TU {
     return ( $SEQ =~ tr/Uu/Tt/r );
 }
 
-open( my $FASTA, "<:gzip", $ARGV[0] );
-open( my $SEG,   "<",      $ARGV[1] );
+my $FASTA = IO::Zlib->new( $ARGV[0], "rb" );
+open( my $SEG, "<", $ARGV[1] );
 
 my %fasta;
 my $title_name;
 while (<$FASTA>) {
-    if (/^>(\S+)/) {
+    if (m/^>(\S+)/) {
         $title_name = $1;
     }
     else {
@@ -34,7 +33,7 @@ close($FASTA);
 
 while (<$SEG>) {
     s/\r?\n//;
-    my ( $chr, $dir, $position, undef, $base, undef ) = split /\s+/;
+    my ( $chr, $dir, $position ) = split( /\t/, $_ );
     my $info = $_;
     my ( $start, $end );
     if ( $dir eq "+" ) {
@@ -58,7 +57,7 @@ while (<$SEG>) {
         print("$info\t$seq\n");
     }
     else {
-        warn("Sorry, there is no such a segment: $_\n");
+        print("Sorry, there is no such a segment: $_\n");
     }
 }
 close($SEG);
