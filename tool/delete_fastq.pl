@@ -36,7 +36,7 @@ while (<$name>) {
 
 my $in_fh;
 if ( $in_fq =~ /.gz$/ ) {
-    open $in_fh, "<:gzip", $in_fq or die $!;
+    open $in_fh, "<:gzip", $in_fq;
 }
 else {
     open( $in_fh, "<", $in_fq );
@@ -44,7 +44,7 @@ else {
 
 my $out_fh;
 if ( $out_fq =~ /.gz$/ ) {
-    open $out_fh, ">:gzip", $out_fq or die $!;
+    open $out_fh, ">:gzip", $out_fq;
 }
 else {
     open( $out_fh, ">", $out_fq );

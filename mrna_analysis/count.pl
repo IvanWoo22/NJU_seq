@@ -30,7 +30,7 @@ while (<$IN_SAM>) {
     chomp;
     my ( undef, $rname, $site, $cigar, $seq ) = split /\t/;
     my $length  = COUNT_ALIGNMENT_LENGTH($cigar);
-    my $end_pos = $site + $length - 1;
+    my $end_pos = $site + $length - 2;
     my $end     = $rname . "\t" . $end_pos;
     my @string  = split( //, $seq );
 
