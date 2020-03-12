@@ -37,12 +37,12 @@ while (<$SEG>) {
     my $info = $_;
     my ( $start, $end );
     if ( $dir eq "+" ) {
-        $start = $position - 7;
+        $start = $position - 19;
         $end   = $position;
     }
     else {
         $start = $position;
-        $end   = $position + 7;
+        $end   = $position + 19;
     }
     if ( exists( $fasta{$chr} ) ) {
         my $length = abs( $end - $start ) + 1;

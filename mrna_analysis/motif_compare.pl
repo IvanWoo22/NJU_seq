@@ -16,7 +16,7 @@ while(<$MIRNA_FH>){
         $mirna_motif{$motif} = $name;
     }
 }
-close(<$MIRNA_FH>);
+close($MIRNA_FH);
 while(<$NM_FH>){
     chomp;
     my (undef,undef,undef,undef,undef,undef,undef,undef,$motif) = split/\t/;
@@ -24,7 +24,8 @@ while(<$NM_FH>){
         my $mirna_num = split(/,/,$mirna_motif{$motif});
         print("$_\t$mirna_num\t$mirna_motif{$motif}\n");
     }else{
-        pint("$_\t0\tNULL\n");
+        print("$_\t0\tNULL\n");
     }
 }
+close($NM_FH);
 __END__
