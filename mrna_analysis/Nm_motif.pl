@@ -6,13 +6,13 @@ use IO::Zlib;
 
 sub SEQ_REV_COMP {
     my $SEQ = reverse shift;
-    $SEQ =~ tr/Uu/Tt/;
-    return ( $SEQ =~ tr/AGCTagct/TCGAtcga/r );
+    $SEQ =~ tr/Tt/Uu/;
+    return ( $SEQ =~ tr/AGCUagcu/UCGAucga/r );
 }
 
 sub SEQ_TR_TU {
     my $SEQ = shift;
-    return ( $SEQ =~ tr/Uu/Tt/r );
+    return ( $SEQ =~ tr/Tt/Uu/r );
 }
 
 my $FASTA = IO::Zlib->new( $ARGV[0], "rb" );
@@ -33,16 +33,16 @@ close($FASTA);
 
 while (<$SEG>) {
     s/\r?\n//;
-    my ( $chr, $dir, $position ) = split( /\t/, $_ );
+    my ( $chr, $dir, $position ) = split /\t/;
     my $info = $_;
     my ( $start, $end );
     if ( $dir eq "+" ) {
-        $start = $position - 2;
-        $end   = $position + 5;
+        $start = $position - 7;
+        $end   = $position;
     }
     else {
-        $start = $position - 5;
-        $end   = $position + 2;
+        $start = $position;
+        $end   = $position + 7;
     }
     if ( exists( $fasta{$chr} ) ) {
         my $length = abs( $end - $start ) + 1;
@@ -53,7 +53,6 @@ while (<$SEG>) {
         else {
             $seq = SEQ_TR_TU($seq);
         }
-        $seq = SEQ_REV_COMP($seq);
         print("$info\t$seq\n");
     }
     else {

@@ -49,6 +49,9 @@ wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/arabidopsis_tha
 wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/gff3/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gff3.gz -O data/ath.gff3.gz
 wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz -O data/ath_transcript.fa.gz
 wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/arabidopsis_thaliana/ncrna/Arabidopsis_thaliana.TAIR10.ncrna.fa.gz -O data/ath_ncrna.fa.gz
+
+# miRBase latest release for miRNA
+wget -N ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz -O data/mirna.fa.gz
 ```
 
 #### Build index
@@ -296,7 +299,7 @@ perl ~/2OMG/tool/common.pl \
   >output/Ath_stem_mrna_scored.tsv
 ```
 ## 5. Statistics and Presentation
-#### Calculate valid sequencing depth (average coverage).
+Calculate valid sequencing depth (average coverage).
 ```shell script
 bash ~/2OMG/presentation/seq_depth.sh \
   temp/"${PREFIX}"/mrna.almostunique.tmp \
@@ -304,10 +307,14 @@ bash ~/2OMG/presentation/seq_depth.sh \
 # All stop times: 19227
 # All positions:  5632
 # Coverage:       3.41
-
+```
+See the signature of Nm site.
+```shell script
 bash ~/2OMG/presentation/signature_count.sh \
   output/Ath_stem_mrna_scored.tsv
-
+```
+Divide annotations into two categories.
+```shell script
 pigz -dcf data/ath.gff3.gz |
   awk '(($3=="gene")&&($9~/biotype=protein_coding/)) \
     || (($3=="mRNA")&&($9~/biotype=protein_coding/)) \
@@ -354,4 +361,14 @@ perl ~/2OMG/mrna_analysis/stat_differentregion_3.pl \
   temp/ath_uniquegene_differentregion.yml \
   <output/Ath_stem_mrna_scored.tsv \
   >output/Ath_stem_uniquegene_distribution.tsv
+```
+
+## 6. Motif Found in miRNA
+Get miRNA sequence information from ncRNA reference.
+```shell script
+pigz -dc data/mirna.fa.gz |
+  perl ~/2OMG/tool/fetch_fasta.pl \
+  --stdin -s 'thaliana' \
+  >data/ath_mirna.fa
+
 ```
