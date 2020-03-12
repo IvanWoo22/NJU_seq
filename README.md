@@ -368,7 +368,10 @@ Get miRNA sequence information from ncRNA reference.
 ```shell script
 pigz -dc data/mirna.fa.gz |
   perl ~/2OMG/tool/fetch_fasta.pl \
-  --stdin -s 'thaliana' \
-  >data/ath_mirna.fa
+    --stdin -s 'thaliana' |
+  perl ~/2OMG/mrna_analysis/motif_mirna.pl \
+    >data/ath_mirna_motif.tsv
+
+
 
 ```
