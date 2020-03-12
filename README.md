@@ -372,6 +372,12 @@ pigz -dc data/mirna.fa.gz |
   perl ~/2OMG/mrna_analysis/motif_mirna.pl \
     >data/ath_mirna_motif.tsv
 
+perl ~/2OMG/mrna_analysis/motif_nm.pl \
+  data/ath_dna.fa.gz \
+  output/Ath_stem_mrna_scored_sorted.tsv \
+  >output/Ath_stem_mrna_motif.tsv
 
-
+perl ~/2OMG/mrna_analysis/motif_compare.pl \
+  data/ath_mirna_motif.tsv \
+  output/Ath_stem_mrna_motif.tsv
 ```
