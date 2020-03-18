@@ -36,7 +36,7 @@ mydata4<-read.table(args[4],header = F)
 
 p4<-ggplot(mydata4,aes(mydata4$V2,mydata4$V3,group = mydata4$V1,color = mydata4$V1)) +
     theme_bw() +
-    theme(legend.position=c(0.9,1),legend.justification=c(0,1),legend.key.size=unit(0,'mm'),legend.key.width=unit(2,'mm')) +
+    theme(legend.position=c(0.8,1),legend.justification=c(0,1),legend.key.size=unit(0,'mm'),legend.key.width=unit(2,'mm')) +
     theme(legend.background = element_rect(fill = NULL, color = "black",size = 0.1)) +
     geom_line(size = 0.5)+scale_colour_hue("Sample") +
     labs( x='', y='') +
