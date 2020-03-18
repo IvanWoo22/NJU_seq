@@ -26,9 +26,9 @@ df_plot %>%
   scale_fill_manual(values = color_scale) +
   expand_limits(y = 0) +
   scale_y_continuous(expand = c(0, 0)) +
-  geom_point(aes(x = name, y = log_num1), shape = 16, color = "#64a5cf", alpha = .9, size = 1.2) +
-  geom_point(aes(x = name, y = log_num2), shape = 16, color = "#f8a6fa", alpha = .9, size = 1.2) +
-  geom_point(aes(x = name, y = log_num3), shape = 16, color = "#ef8a64", alpha = .9, size = 1.2) +
+  geom_point(aes(x = name, y = log_num1), shape = 16, color = "#489dcc", alpha = .9, size = 1.2) +
+  geom_point(aes(x = name, y = log_num2), shape = 16, color = "#f292f7", alpha = .9, size = 1.2) +
+  geom_point(aes(x = name, y = log_num3), shape = 16, color = "#ef7e5b", alpha = .9, size = 1.2) +
   coord_flip(ylim = c(0, 11.8)) +
   xlab("") +
   ylab("Score") +
