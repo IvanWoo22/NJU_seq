@@ -61,6 +61,7 @@ sub COORDINATE_POS {
 
 open( my $IN_FH,  "<", $in_fq );
 open( my $OUT_FH, ">", $out_fq );
+my %exist;
 while (<$IN_FH>) {
     chomp;
     my ( $read_name, $trans_info, $site, undef, $seq ) = split /\s+/;
@@ -68,7 +69,12 @@ while (<$IN_FH>) {
     my $id            = $1;
     my $abs_site      = COORDINATE_POS( $id, $site );
     my $read_abs_site = $read_name . "\t" . $abs_site;
-    print $OUT_FH ("$read_abs_site\t$seq\n");
+    unless ( exists( $exist{$read_abs_site} ) ) {
+        $exist{$read_abs_site} = 1;
+        print $OUT_FH ("$read_abs_site\t$seq\n");
+    }
 }
 close($IN_FH);
 close($OUT_FH);
+
+__END__
