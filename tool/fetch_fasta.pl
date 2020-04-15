@@ -47,7 +47,7 @@ while ( $i <= $#info ) {
         print( $info[$i] );
         my $j = 1;
         until ( ( $i + $j > $#info ) or ( $info[ $i + $j ] =~ /^>/ ) ) {
-            if ( $rna2dna eq "T" ) {
+            if ( defined($rna2dna) ) {
                 $info[ $i + $j ] = SEQ_TR_TU( $info[ $i + $j ] );
             }
             print( $info[ $i + $j ] );
