@@ -25,7 +25,7 @@ Getopt::Long::GetOptions(
 
 sub SEQ_TR_TU {
     my $SEQ = shift;
-    return ( $SEQ =~ tr/Uu/Tt/r );
+    return ( $SEQ =~ tr/Tt/Uu/r );
 }
 
 my @info;
