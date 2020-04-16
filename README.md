@@ -1,5 +1,5 @@
 # 2OMG
-A brand new version of MgR_seq. From clean data to positions with 2-O-methylation.
+A brand-new version of MgR_seq. From clean data to positions with 2-O-methylation.
 
 ## 1. Preparation
 #### Install packages and software.
