@@ -32,7 +32,7 @@ mkdir "data" "index" "temp" "output"
 THREAD=16
 ```
 
-## 2. Reference and Index
+## 2. Reference and index
 #### Download reference.
 Get reference sequence of species from [GENCODE](https://www.gencodegenes.org/) and [Ensembl](http://plants.ensembl.org/Arabidopsis_thaliana/Info/Index?db=core).
 ```shell script
