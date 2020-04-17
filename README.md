@@ -33,7 +33,7 @@ cd NJU_seq_analysis
 mkdir "data" "index" "temp" "output"
 ```
 
-## 2. Reference and index
+## 2. Reference and index.
 #### Download reference.
 Get reference sequence of species from [GENCODE](https://www.gencodegenes.org/) and [Ensembl](http://plants.ensembl.org/Arabidopsis_thaliana/Info/Index?db=core).
 ```bash
@@ -83,7 +83,7 @@ bowtie2-build --threads "${THREAD}" \
 rm data/ath_protein_coding.fa
 ```
 
-## 3. Data Selection and quality overview
+## 3. Data Selection and quality overview.
 #### Select data for analysing.
 Get the sequencing clean data from `MgR_data`.  
 *The representation of `ID` can be found in [`sample_list.csv`](/sample_list.csv).*
@@ -316,7 +316,7 @@ perl ~/NJU_seq/tool/common.pl \
   output/Ath_stem_3_mrna_scored.tsv \
   >output/Ath_stem_mrna_scored.tsv
 ```
-## 5. Statistics and Presentation
+## 5. Statistics and Presentation.
 Calculate valid sequencing depth (average coverage).
 ```bash
 PREFIX='Ath_stem_NC'
@@ -383,7 +383,7 @@ perl ~/NJU_seq/mrna_analysis/stat_differentregion_3.pl \
   >output/Ath_stem_uniquegene_distribution.tsv
 ```
 
-## 6. Motif Found in miRNA
+## 6. Motif Found in miRNA.
 Get miRNA sequence information from ncRNA reference.
 ```bash
 pigz -dc data/mirna.fa.gz |

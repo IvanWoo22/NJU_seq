@@ -14,19 +14,19 @@ while (<$ALTERSPLICEGENE>) {
     $chr =~ s/chr//;
     my $chr_dir = $chr . "\t" . $dir;
     if ( exists( $cer{$chr_dir} ) ) {
-        $cer{$chr_dir}->add_runlist($constant_exon);
+        $cer{$chr_dir}->AlignDB::IntSpan::add_runlist($constant_exon);
     }
     else {
         $cer{$chr_dir} = AlignDB::IntSpan->new($constant_exon);
     }
     if ( exists( $cir{$chr_dir} ) ) {
-        $cir{$chr_dir}->add_runlist($constant_intron);
+        $cir{$chr_dir}->AlignDB::IntSpan::add_runlist($constant_intron);
     }
     else {
         $cir{$chr_dir} = AlignDB::IntSpan->new($constant_intron);
     }
     if ( exists( $vr{$chr_dir} ) ) {
-        $vr{$chr_dir}->add_runlist($variable_area);
+        $vr{$chr_dir}->AlignDB::IntSpan::add_runlist($variable_area);
     }
     else {
         $vr{$chr_dir} = AlignDB::IntSpan->new($variable_area);
@@ -42,19 +42,19 @@ while (<$UNIQUEGENE>) {
     $chr =~ s/chr//;
     my $chr_dir = $chr . "\t" . $dir;
     if ( exists( $fu{$chr_dir} ) ) {
-        $fu{$chr_dir}->add_runlist($five_utr);
+        $fu{$chr_dir}->AlignDB::IntSpan::add_runlist($five_utr);
     }
     else {
         $fu{$chr_dir} = AlignDB::IntSpan->new($five_utr);
     }
     if ( exists( $cds{$chr_dir} ) ) {
-        $cds{$chr_dir}->add_runlist($cds);
+        $cds{$chr_dir}->AlignDB::IntSpan::add_runlist($cds);
     }
     else {
         $cds{$chr_dir} = AlignDB::IntSpan->new($cds);
     }
     if ( exists( $tu{$chr_dir} ) ) {
-        $tu{$chr_dir}->add_runlist($three_utr);
+        $tu{$chr_dir}->AlignDB::IntSpan::add_runlist($three_utr);
     }
     else {
         $tu{$chr_dir} = AlignDB::IntSpan->new($three_utr);

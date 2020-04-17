@@ -39,13 +39,13 @@ while (<>) {
     $chr  =~ s/chr//;
     $info =~ /$refstr([A-Z,a-z,0-9]+\.[0-9]+)/;
     if ( exists( $trans_chr{$1} ) ) {
-        $trans_range{$1}->add_range( $start, $end );
+        $trans_range{$1}->AlignDB::IntSpan::add_range( $start, $end );
     }
     else {
         $trans_chr{$1}   = $chr;
         $trans_dir{$1}   = $dir;
         $trans_range{$1} = AlignDB::IntSpan->new();
-        $trans_range{$1}->add_range( $start, $end );
+        $trans_range{$1}->AlignDB::IntSpan::add_range( $start, $end );
     }
 }
 
@@ -54,10 +54,10 @@ sub COORDINATE_POS {
     my $SITE  = $_[1];
     my $ISLAND;
     if ( $trans_dir{$INDEX} eq "+" ) {
-        $ISLAND = $trans_range{$INDEX}->at($SITE);
+        $ISLAND = $trans_range{$INDEX}->AlignDB::IntSpan::at($SITE);
     }
     else {
-        $ISLAND = $trans_range{$INDEX}->at( -$SITE );
+        $ISLAND = $trans_range{$INDEX}->AlignDB::IntSpan::at( -$SITE );
     }
     my $ABS_SITE =
       $trans_chr{$INDEX} . "\t" . $ISLAND . "\t" . $trans_dir{$INDEX};
