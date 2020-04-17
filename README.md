@@ -25,9 +25,9 @@ R packages needed:
 
 Make new folders for analysis.
 ```shell script
-# 2OMG_analysis is the main directory of the following analysis. It can be renamed as you like.
-mkdir "2OMG_analysis"
-cd 2OMG_analysis
+# NJU_seq_analysis is the main directory of the following analysis. It can be renamed as you like.
+mkdir "NJU_seq_analysis"
+cd NJU_seq_analysis
 mkdir "data" "index" "temp" "output"
 THREAD=16
 ```
@@ -59,10 +59,10 @@ Create index by `bowtie2-build` for mapping.
 ```shell script
 # rRNA index
 # 5.8s,18s and 25s rRNA.
-cat ~/2OMG/data/ath_rrna/* >data/ath_rrna.fa
+cat ~/NJU_seq/data/ath_rrna/* >data/ath_rrna.fa
 # rRNA from the reference ncRNA.
 pigz -dc data/ath_ncrna.fa.gz |
-  perl ~/2OMG/tool/fetch_fasta.pl \
+  perl ~/NJU_seq/tool/fetch_fasta.pl \
   --stdin -s 'transcript_biotype:rRNA' \
   >>data/ath_rrna.fa
 bowtie2-build data/ath_rrna.fa index/ath_rrna
@@ -71,7 +71,7 @@ rm data/ath_rrna.fa
 # mRNA index
 # Only protein_coding transcripts will be extract to build index.
 pigz -dc data/ath_transcript.fa.gz |
-  perl ~/2OMG/tool/fetch_fasta.pl \
+  perl ~/NJU_seq/tool/fetch_fasta.pl \
   --stdin -s 'transcript_biotype:protein_coding' \
   >data/ath_protein_coding.fa
 bowtie2-build --threads "${THREAD}" \
@@ -99,7 +99,7 @@ Input a `FastQ` file or a `GZ` file of `FastQ`, and then get some quality inform
 PREFIX='Ath_stem_NC'
 
 # For pair-end sequence data, we firstly turn them to single-end file.
-perl ~/2OMG/quality_control/pe_consistency.pl \
+perl ~/NJU_seq/quality_control/pe_consistency.pl \
   data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R2.fq.gz \
   temp/"${PREFIX}".fq.gz
 # Total:  12627217
@@ -109,7 +109,7 @@ perl ~/2OMG/quality_control/pe_consistency.pl \
 # PREFIX do as Ath_stem_NC Ath_stem_1 Ath_stem_2 Ath_stem_3.
 # $ARGV[-2] should be the directory of output files.
 # $ARGV[-1] should be the prefix of the output files.
-time perl ~/2OMG/quality_control/fastq_qc.pl \
+time perl ~/NJU_seq/quality_control/fastq_qc.pl \
   temp/Ath_stem_NC.fq.gz \
   temp/Ath_stem_1.fq.gz \
   temp/Ath_stem_2.fq.gz \
@@ -152,8 +152,8 @@ time pigz -dcf output/"${PREFIX}"/rrna.raw.sam.gz |
       $F[6] eq qq(=) or next;
       print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
     '\'' |
-    perl ~/2OMG/rrna_analysis/matchquality_judge.pl |
-    perl ~/2OMG/rrna_analysis/multimatch_judge.pl
+    perl ~/NJU_seq/rrna_analysis/matchquality_judge.pl |
+    perl ~/NJU_seq/rrna_analysis/multimatch_judge.pl
   ' \
   >temp/"${PREFIX}"/rrna.out.tmp
 # real  1m59.185s
@@ -161,8 +161,8 @@ time pigz -dcf output/"${PREFIX}"/rrna.raw.sam.gz |
 # sys   1m24.060s
 
 time parallel -j 3 "
-  perl ~/2OMG/rrna_analysis/readend_count.pl \\
-    ~/2OMG/data/ath_rrna/{}.fa temp/${PREFIX}/rrna.out.tmp {} \\
+  perl ~/NJU_seq/rrna_analysis/readend_count.pl \\
+    ~/NJU_seq/data/ath_rrna/{}.fa temp/${PREFIX}/rrna.out.tmp {} \\
     >output/${PREFIX}/rrna_{}.tsv
   " ::: 25s 18s 5-8s
 # real  0m27.994s
@@ -172,7 +172,7 @@ time parallel -j 3 "
 Score all sites one by one.
 ```shell script
 time parallel -j 3 "
-  perl ~/2OMG/rrna_analysis/score.pl \\
+  perl ~/NJU_seq/rrna_analysis/score.pl \\
     output/Ath_stem_NC/rrna_{}.tsv \\
     output/Ath_stem_1/rrna_{}.tsv \\
     output/Ath_stem_2/rrna_{}.tsv \\
@@ -187,7 +187,7 @@ time parallel -j 3 "
 #### Prepare for mRNA.
 Extract reads can't mapped to rRNA.
 ```shell script
-time bash ~/2OMG/tool/extract_fastq.sh \
+time bash ~/NJU_seq/tool/extract_fastq.sh \
   temp/"${PREFIX}"/rrna.out.tmp \
   data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R1.mrna.fq.gz \
   data/"${PREFIX}"/R2.fq.gz data/"${PREFIX}"/R2.mrna.fq.gz
@@ -225,7 +225,7 @@ time gzip -dcf output/"${PREFIX}"/mrna.raw.sam.gz |
       $F[6] eq qq(=) or next;
       print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
     '\'' |
-    perl ~/2OMG/mrna_analysis/multimatch_judge.pl
+    perl ~/NJU_seq/mrna_analysis/multimatch_judge.pl
   ' \
   >temp/"${PREFIX}"/mrna.out.tmp
 # real  2m31.558s
@@ -234,7 +234,7 @@ time gzip -dcf output/"${PREFIX}"/mrna.raw.sam.gz |
 
 time gzip -dcf data/ath.gff3.gz |
   awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
-    perl ~/2OMG/mrna_analysis/dedup.pl \
+    perl ~/NJU_seq/mrna_analysis/dedup.pl \
       --refstr "Parent=transcript:" \
       --geneid "AT" \
       -i temp/"${PREFIX}"/mrna.out.tmp \
@@ -243,7 +243,7 @@ time gzip -dcf data/ath.gff3.gz |
 # user  14m22.635s
 # sys   0m10.268s
 
-time bash ~/2OMG/mrna_analysis/almostunique.sh \
+time bash ~/NJU_seq/mrna_analysis/almostunique.sh \
   temp/"${PREFIX}"/mrna.dedup.tmp \
   data/"${PREFIX}"/R1.mrna.fq.gz \
   temp/"${PREFIX}" \
@@ -252,7 +252,7 @@ time bash ~/2OMG/mrna_analysis/almostunique.sh \
 # user  2m41.319s
 # sys   0m4.881s
 
-time perl ~/2OMG/mrna_analysis/count.pl \
+time perl ~/NJU_seq/mrna_analysis/count.pl \
   temp/"${PREFIX}"/mrna.almostunique.tmp \
   >temp/"${PREFIX}"/mrna.count.tmp
 # real  0m3.072s
@@ -261,7 +261,7 @@ time perl ~/2OMG/mrna_analysis/count.pl \
 
 time gzip -dcf data/ath.gff3.gz |
   awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
-  perl ~/2OMG/mrna_analysis/merge.pl \
+  perl ~/NJU_seq/mrna_analysis/merge.pl \
     --refstr "Parent=transcript:" \
     --geneid "AT" \
     -i temp/"${PREFIX}"/mrna.count.tmp \
@@ -285,14 +285,14 @@ done
 Score each covered site.
 ```shell script
 parallel -j 3 "
-  perl ~/2OMG/mrna_analysis/score.pl \\
+  perl ~/NJU_seq/mrna_analysis/score.pl \\
     output/Ath_stem_NC/mrna.tsv \\
     output/{}/mrna.tsv |
       sort -t $'\t' -nrk 11,11 \\
         >output/{}_mrna_scored.tsv
   " ::: Ath_stem_1 Ath_stem_2 Ath_stem_3
 
-perl ~/2OMG/tool/common.pl \
+perl ~/NJU_seq/tool/common.pl \
   output/Ath_stem_1_mrna_scored.tsv \
   output/Ath_stem_2_mrna_scored.tsv \
   output/Ath_stem_3_mrna_scored.tsv \
@@ -301,7 +301,7 @@ perl ~/2OMG/tool/common.pl \
 ## 5. Statistics and Presentation
 Calculate valid sequencing depth (average coverage).
 ```shell script
-bash ~/2OMG/presentation/seq_depth.sh \
+bash ~/NJU_seq/presentation/seq_depth.sh \
   temp/"${PREFIX}"/mrna.almostunique.tmp \
   output/"${PREFIX}"/mrna.tsv
 # All stop times: 19227
@@ -310,7 +310,7 @@ bash ~/2OMG/presentation/seq_depth.sh \
 ```
 See the signature of Nm site.
 ```shell script
-bash ~/2OMG/presentation/signature_count.sh \
+bash ~/NJU_seq/presentation/signature_count.sh \
   output/Ath_stem_mrna_scored.tsv
 ```
 Divide annotations into two categories.
@@ -319,19 +319,19 @@ pigz -dcf data/ath.gff3.gz |
   awk '(($3=="gene")&&($9~/biotype=protein_coding/)) \
     || (($3=="mRNA")&&($9~/biotype=protein_coding/)) \
     || ($3=="exon")' |
-  perl ~/2OMG/mrna_analysis/filter_nonsenseexon.pl |
-  perl ~/2OMG/mrna_analysis/filter_nonsensegene.pl |
-  perl ~/2OMG/mrna_analysis/filter_overlapgene.pl |
-  perl ~/2OMG/mrna_analysis/judge_altersplice.pl \
+  perl ~/NJU_seq/mrna_analysis/filter_nonsenseexon.pl |
+  perl ~/NJU_seq/mrna_analysis/filter_nonsensegene.pl |
+  perl ~/NJU_seq/mrna_analysis/filter_overlapgene.pl |
+  perl ~/NJU_seq/mrna_analysis/judge_altersplice.pl \
     data/ath_alter_gene.yml \
     data/ath_unique_gene.yml
 
-perl ~/2OMG/mrna_analysis/stat_altersplice_1.pl \
+perl ~/NJU_seq/mrna_analysis/stat_altersplice_1.pl \
   data/ath_alter_gene.yml \
   <output/Ath_stem_mrna_scored.tsv \
   >temp/Ath_stem_altergene.tsv
 
-perl ~/2OMG/mrna_analysis/stat_altersplice_2.pl \
+perl ~/NJU_seq/mrna_analysis/stat_altersplice_2.pl \
   <temp/Ath_stem_altergene.tsv \
   >output/Ath_stem_altergene_cov.tsv
 # Output file is the final result.
@@ -339,25 +339,25 @@ perl ~/2OMG/mrna_analysis/stat_altersplice_2.pl \
 pigz -dcf data/ath.gff3.gz |
   awk '($3=="gene") || ($3=="mRNA") || ($3=="CDS") \
     || ($3=="five_prime_UTR") || ($3=="three_prime_UTR")' |
-  perl ~/2OMG/mrna_analysis/judge_differentregion.pl \
+  perl ~/NJU_seq/mrna_analysis/judge_differentregion.pl \
     data/ath_unique_gene.yml \
     >temp/ath_uniquegene_differentregion.yml
 
-perl ~/2OMG/mrna_analysis/judge_region.pl \
+perl ~/NJU_seq/mrna_analysis/judge_region.pl \
   data/ath_alter_gene.yml temp/ath_uniquegene_differentregion.yml \
   <output/Ath_stem_mrna_scored.tsv \
   >output/Ath_stem_mrna_scored_region.tsv
 
-perl ~/2OMG/mrna_analysis/stat_differentregion_1.pl \
+perl ~/NJU_seq/mrna_analysis/stat_differentregion_1.pl \
   temp/ath_uniquegene_differentregion.yml \
   <output/Ath_stem_mrna_scored.tsv \
   >temp/Ath_stem_uniquegene.tsv
 
-perl  ~/2OMG/mrna_analysis/stat_differentregion_2.pl \
+perl  ~/NJU_seq/mrna_analysis/stat_differentregion_2.pl \
   <temp/Ath_stem_uniquegene.tsv \
   >output/Ath_stem_uniquegene_cov.tsv
 
-perl ~/2OMG/mrna_analysis/stat_differentregion_3.pl \
+perl ~/NJU_seq/mrna_analysis/stat_differentregion_3.pl \
   temp/ath_uniquegene_differentregion.yml \
   <output/Ath_stem_mrna_scored.tsv \
   >output/Ath_stem_uniquegene_distribution.tsv
@@ -367,17 +367,17 @@ perl ~/2OMG/mrna_analysis/stat_differentregion_3.pl \
 Get miRNA sequence information from ncRNA reference.
 ```shell script
 pigz -dc data/mirna.fa.gz |
-  perl ~/2OMG/tool/fetch_fasta.pl \
+  perl ~/NJU_seq/tool/fetch_fasta.pl \
     --stdin -s 'thaliana' |
-  perl ~/2OMG/mrna_analysis/motif_mirna.pl \
+  perl ~/NJU_seq/mrna_analysis/motif_mirna.pl \
     >data/ath_mirna_motif.tsv
 
-perl ~/2OMG/mrna_analysis/motif_nm.pl \
+perl ~/NJU_seq/mrna_analysis/motif_nm.pl \
   data/ath_dna.fa.gz \
   output/Ath_stem_mrna_scored_sorted.tsv \
   >output/Ath_stem_mrna_motif.tsv
 
-perl ~/2OMG/mrna_analysis/motif_compare.pl \
+perl ~/NJU_seq/mrna_analysis/motif_compare.pl \
   data/ath_mirna_motif.tsv \
   output/Ath_stem_mrna_motif.tsv
 ```
