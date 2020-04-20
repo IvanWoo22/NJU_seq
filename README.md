@@ -29,7 +29,7 @@ Make new folders for analysis.
 ```bash
 # NJU_seq_analysis is the main directory of the following analysis. It can be renamed as you like.
 mkdir "NJU_seq_analysis"
-cd NJU_seq_analysis
+cd "NJU_seq_analysis" || exit
 mkdir "data" "index" "temp" "output"
 ```
 
