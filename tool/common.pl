@@ -11,8 +11,8 @@ my ( %count, %info, %score );
 while (<$in1>) {
     chomp;
     my (
-        $chr,  $pos,  $dir,  $base1, $base2, $base3,
-        $gene, undef, undef, undef,  $score
+        $chr,   $pos,     $dir,  $base1, $base2,
+        $base3, $gene_id, undef, undef,  $score
     ) = split /\t/;
     if ( exists( $count{ $chr . "\t" . $dir . "\t" . $pos } ) ) {
         $count{ $chr . "\t" . $dir . "\t" . $pos }++;
@@ -27,15 +27,15 @@ while (<$in1>) {
           . $base1 . "\t"
           . $base2 . "\t"
           . $base3 . "\t"
-          . $gene;
+          . $gene_id;
         $score{ $chr . "\t" . $dir . "\t" . $pos } = $score;
     }
 }
 while (<$in2>) {
     chomp;
     my (
-        $chr,  $pos,  $dir,  $base1, $base2, $base3,
-        $gene, undef, undef, undef,  $score
+        $chr,   $pos,     $dir,  $base1, $base2,
+        $base3, $gene_id, undef, undef,  $score
     ) = split /\t/;
     if ( exists( $count{ $chr . "\t" . $dir . "\t" . $pos } ) ) {
         $count{ $chr . "\t" . $dir . "\t" . $pos }++;
@@ -50,15 +50,15 @@ while (<$in2>) {
           . $base1 . "\t"
           . $base2 . "\t"
           . $base3 . "\t"
-          . $gene;
+          . $gene_id;
         $score{ $chr . "\t" . $dir . "\t" . $pos } = $score;
     }
 }
 while (<$in3>) {
     chomp;
     my (
-        $chr,  $pos,  $dir,  $base1, $base2, $base3,
-        $gene, undef, undef, undef,  $score
+        $chr,   $pos,     $dir,  $base1, $base2,
+        $base3, $gene_id, undef, undef,  $score
     ) = split /\t/;
     if ( exists( $count{ $chr . "\t" . $dir . "\t" . $pos } ) ) {
         $count{ $chr . "\t" . $dir . "\t" . $pos }++;
@@ -73,7 +73,7 @@ while (<$in3>) {
           . $base1 . "\t"
           . $base2 . "\t"
           . $base3 . "\t"
-          . $gene;
+          . $gene_id;
         $score{ $chr . "\t" . $dir . "\t" . $pos } = $score;
     }
 }

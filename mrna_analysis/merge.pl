@@ -18,16 +18,18 @@ merge.pl -- Merge the different transcript sites which on the same position of t
             --help\-h  Brief help message
             --refstr  The sign before the gene ID in the reference
             --geneid  Characteristics shared by genes
+            --transid Characteristics shared by transcripts
             --in\-i  Input file with path
             --out\-o  Output file with path
 =cut
 
 Getopt::Long::GetOptions(
-    'help|h'   => sub { Getopt::Long::HelpMessage(0) },
-    'refstr=s' => \my $refstr,
-    'geneid=s' => \my $geneid,
-    'in|i=s'   => \my $in_fq,
-    'out|o=s'  => \my $out_fq,
+    'help|h'    => sub { Getopt::Long::HelpMessage(0) },
+    'refstr=s'  => \my $refstr,
+    'geneid=s'  => \my $geneid,
+    'transid=s' => \my $transid,
+    'in|i=s'    => \my $in_fq,
+    'out|o=s'   => \my $out_fq,
 ) or Getopt::Long::HelpMessage(1);
 
 my %trans_range;
@@ -65,39 +67,35 @@ sub COORDINATE_POS {
 }
 
 open( my $IN_FH, "<", $in_fq );
-my ( %gene_id, %gene, %base, %t5, %t3 );
+my ( %gene_id, %base, %t5, %t3 );
 while (<$IN_FH>) {
     chomp;
-    my ( $trans_id, $site, $base1, $base2, $base3, $t5, $t3 ) = split /\t/;
-    $trans_id =~ /^($geneid[A-Z,a-z,0-9]+\.[0-9]+)/;
-    $trans_id = $1;
-    $trans_id =~ /^($geneid[A-Z,a-z,0-9]+)/;
-    my $gene_id = $1;
-    my $gene    = $gene_id;
-    my $asite   = COORDINATE_POS( $trans_id, $site );
+    my ( $info, $site, $base1, $base2, $base3, $t5, $t3 ) = split /\t/;
+    $info =~ /^($transid[A-Z,a-z,0-9]+\.[0-9]+)/;
+    my $trans_id = $1;
+    $info =~ /^($geneid[A-Z,a-z,0-9]+)/;
+    my $gene_id  = $1;
+    my $abs_site = COORDINATE_POS( $trans_id, $site );
 
-    if ( exists( $gene{$asite} ) ) {
-        unless ( $gene_id{$asite} =~ /$gene_id/ ) {
-            $gene_id{$asite} .= "/" . $gene_id;
-            $gene{$asite}    .= "/" . $gene;
+    if ( exists( $gene_id{$abs_site} ) ) {
+        unless ( $gene_id{$abs_site} =~ /$gene_id/ ) {
+            $gene_id{$abs_site} .= "/" . $gene_id;
         }
-        $t5{$asite} += $t5;
-        $t3{$asite} += $t3;
+        $t5{$abs_site} += $t5;
+        $t3{$abs_site} += $t3;
     }
     else {
-        $gene_id{$asite} = $gene_id;
-        $gene{$asite}    = $gene;
-        $t5{$asite}      = $t5;
-        $t3{$asite}      = $t3;
-        $base{$asite}    = $base1 . "\t" . $base2 . "\t" . $base3;
+        $gene_id{$abs_site} = $gene_id;
+        $t5{$abs_site}      = $t5;
+        $t3{$abs_site}      = $t3;
+        $base{$abs_site}    = $base1 . "\t" . $base2 . "\t" . $base3;
     }
 }
 close($IN_FH);
 
 open( my $OUT_FH, ">", $out_fq );
-foreach ( keys(%gene) ) {
-    print $OUT_FH (
-        "$_\t$base{$_}\t$gene_id{$_}\t$gene{$_}\t$t5{$_}\t$t3{$_}\n");
+foreach ( keys(%gene_id) ) {
+    print $OUT_FH ("$_\t$base{$_}\t$gene_id{$_}\t$t5{$_}\t$t3{$_}\n");
 }
 close($OUT_FH);
 

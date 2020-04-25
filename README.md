@@ -231,6 +231,7 @@ time pigz -p "${THREAD}" output/"${PREFIX}"/mrna.raw.sam
 # user  5m38.943s
 # sys   0m9.316s
 ```
+
 Filter，re-locate and count alignment result.
 ```bash
 THREAD=16
@@ -282,6 +283,7 @@ time gzip -dcf data/ath.gff3.gz |
   perl ~/NJU_seq/mrna_analysis/merge.pl \
     --refstr "Parent=transcript:" \
     --geneid "AT" \
+    --transid "AT" \
     -i temp/"${PREFIX}"/mrna.count.tmp \
     -o temp/"${PREFIX}"/mrna.position.tmp
 # real  0m6.802s
@@ -300,13 +302,38 @@ for chr in 1 2 3 4 5 Mt Pt; do
   >>output/"${PREFIX}"/mrna.tsv
 done
 ```
+
+Calculate valid sequencing depth (average coverage).
+```bash
+parallel -j 3 "
+  bash ~/NJU_seq/presentation/seq_depth.sh \\
+    temp/{}/mrna.almostunique.tmp \\
+    output/{}/mrna.tsv
+  " ::: Ath_stem_NC Ath_stem_1 Ath_stem_2 Ath_stem_3
+# All stop times: 319414
+# All positions:  18550
+# Coverage:       17.21
+
+# All stop times: 338093
+# All positions:  20686
+# Coverage:       16.34
+
+# All stop times: 319682
+# All positions:  37777
+# Coverage:       8.46
+
+# All stop times: 356951
+# All positions:  19098
+# Coverage:       18.69
+```
+
 Score each covered site.
 ```bash
 parallel -j 3 "
-  perl ~/NJU_seq/mrna_analysis/score.pl \\
+  perl ~/NJU_seq/mrna_analysis/score.pl 15 \\
     output/Ath_stem_NC/mrna.tsv \\
     output/{}/mrna.tsv |
-      sort -t $'\t' -nrk 11,11 \\
+      sort -t $'\t' -nrk 10,10 \\
         >output/{}_mrna_scored.tsv
   " ::: Ath_stem_1 Ath_stem_2 Ath_stem_3
 
@@ -316,23 +343,14 @@ perl ~/NJU_seq/tool/common.pl \
   output/Ath_stem_3_mrna_scored.tsv \
   >output/Ath_stem_mrna_scored.tsv
 ```
-## 5. Statistics and Presentation.
-Calculate valid sequencing depth (average coverage).
-```bash
-PREFIX='Ath_stem_NC'
 
-bash ~/NJU_seq/presentation/seq_depth.sh \
-  temp/"${PREFIX}"/mrna.almostunique.tmp \
-  output/"${PREFIX}"/mrna.tsv
-# All stop times: 19227
-# All positions:  5632
-# Coverage:       3.41shell script
-```
+## 5. Statistics and Presentation.
 See the signature of Nm site.
 ```bash
 bash ~/NJU_seq/presentation/signature_count.sh \
   output/Ath_stem_mrna_scored.tsv
 ```
+
 Divide annotations into two categories.
 ```bash
 pigz -dcf data/ath.gff3.gz |
