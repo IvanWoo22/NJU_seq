@@ -3,8 +3,15 @@ use strict;
 use warnings;
 use autodie;
 
+Getopt::Long::GetOptions(
+    'help|h'          => sub { Getopt::Long::HelpMessage(0) },
+    'trans_wording=s' => \my $mRNA,
+    'trans_id=s'      => \my $trans_id,
+    'exon_id=s'       => \my $exon_id,
+) or Getopt::Long::HelpMessage(1);
+
 my $trans;
-while (<>) {
+while (<STDIN>) {
     chomp;
     my $line = $_;
     my ( undef, undef, $type, undef, undef, undef, undef, undef, $info ) =
@@ -12,13 +19,13 @@ while (<>) {
     if ( $type eq "gene" ) {
         print "$line\n";
     }
-    elsif ( $type eq "mRNA" ) {
+    elsif ( $type eq $mRNA ) {
         print "$line\n";
-        $info =~ /ID=transcript:([A-Z,0-9,a-z]+\.*[0-9]+);/;
+        $info =~ /$trans_id([A-Z,0-9,a-z]+\.*[0-9]+);/;
         $trans = $1;
     }
     elsif ( $type eq "exon" ) {
-        $info =~ /Parent=transcript:([A-Z,0-9,a-z]+\.*[0-9]+);/;
+        $info =~ /$exon_id([A-Z,0-9,a-z]+\.*[0-9]+);/;
         if ( $trans eq $1 ) {
             print "$line\n";
         }

@@ -3,6 +3,13 @@ use strict;
 use warnings;
 use autodie;
 
+Getopt::Long::GetOptions(
+    'help|h'          => sub { Getopt::Long::HelpMessage(0) },
+    'trans_wording=s' => \my $mRNA,
+    'alter=s'         => \my $ALTER_FH,
+    'unique=s'        => \my $UNIQUE_FH,
+) or Getopt::Long::HelpMessage(1);
+
 use AlignDB::IntSpan;
 
 sub ALTER_SPLICE {
@@ -19,8 +26,8 @@ sub ALTER_SPLICE {
     return ( $ALL_EXON->as_string, $ALL_INTRON->as_string, $ALTER->as_string );
 }
 
-open( my $ALTER,  ">", $ARGV[0] );
-open( my $UNIQUE, ">", $ARGV[1] );
+open( my $ALTER,  ">", $ALTER_FH );
+open( my $UNIQUE, ">", $UNIQUE_FH );
 
 my ( @temp_exon, @temp_transcript, $temp_gene, $temp_gene_info );
 while (<STDIN>) {
@@ -44,7 +51,7 @@ while (<STDIN>) {
         $temp_gene->add_range( $start, $end );
         $temp_gene_info = "$chr\t$info\t$dir";
     }
-    elsif ( $type eq "mRNA" ) {
+    elsif ( $type eq $mRNA ) {
         my $set1 = AlignDB::IntSpan->new;
         $set1->add_range( $start, $end );
         push( @temp_transcript, $set1 );

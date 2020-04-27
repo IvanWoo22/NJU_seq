@@ -357,12 +357,16 @@ pigz -dcf data/ath.gff3.gz |
   awk '(($3=="gene")&&($9~/biotype=protein_coding/)) \
     || (($3=="mRNA")&&($9~/biotype=protein_coding/)) \
     || ($3=="exon")' |
-  perl ~/NJU_seq/mrna_analysis/filter_nonsenseexon.pl |
+  perl ~/NJU_seq/mrna_analysis/filter_nonsenseexon.pl \
+    --trans_wording "mRNA" \
+    --trans_id "ID=transcript:" \
+    --exon_id "Parent=transcript:" |
   perl ~/NJU_seq/mrna_analysis/filter_nonsensegene.pl |
   perl ~/NJU_seq/mrna_analysis/filter_overlapgene.pl |
   perl ~/NJU_seq/mrna_analysis/judge_altersplice.pl \
-    data/ath_alter_gene.yml \
-    data/ath_unique_gene.yml
+    --trans_wording "mRNA" \
+    --alter "data/ath_alter_gene.yml" \
+    --unique "data/ath_unique_gene.yml"
 
 perl ~/NJU_seq/mrna_analysis/stat_altersplice_1.pl \
   data/ath_alter_gene.yml \
