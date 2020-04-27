@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use autodie;
 
+use Getopt::Long;
+
 Getopt::Long::GetOptions(
     'help|h'          => sub { Getopt::Long::HelpMessage(0) },
     'trans_wording=s' => \my $mRNA,
