@@ -71,9 +71,9 @@ my ( %gene_id, %base, %t5, %t3 );
 while (<$IN_FH>) {
     chomp;
     my ( $info, $site, $base1, $base2, $base3, $t5, $t3 ) = split /\t/;
-    $info =~ /^($transid[A-Z,a-z,0-9]+\.[0-9]+)/;
+    $info =~ /($transid[A-Z,a-z,0-9]+\.[0-9]+)/;
     my $trans_id = $1;
-    $info =~ /^($geneid[A-Z,a-z,0-9]+)/;
+    $info =~ /($geneid[A-Z,a-z,0-9]+)/;
     my $gene_id  = $1;
     my $abs_site = COORDINATE_POS( $trans_id, $site );
 
