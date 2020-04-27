@@ -5,18 +5,6 @@ use autodie;
 
 use AlignDB::IntSpan;
 
-sub GET_INFO {
-    my $INFO = shift;
-    my $GENE_ID;
-    if ( $INFO =~ m/ID=gene:([A-Z,a-z,0-9]+);/ ) {
-        $GENE_ID = $1;
-    }
-    else {
-        warn("There is a problem in $INFO;\n");
-    }
-    return $GENE_ID;
-}
-
 my %point_set;
 while (<STDIN>) {
     chomp;
@@ -67,7 +55,7 @@ while (<$GENE>) {
     else {
         $stat_val = "F";
     }
-    my $gene_id = GET_INFO($info);
+    my $gene_id = $info;
 
 # Gene_ID Chromosome Direction Exon_Range Exon_Length Exon_Point Intron_Range Intron_Length Intron_Point Variant_Range Variant_Length Variant_Point Stat_Value
     print(

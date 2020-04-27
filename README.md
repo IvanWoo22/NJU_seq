@@ -365,6 +365,7 @@ pigz -dcf data/ath.gff3.gz |
   perl ~/NJU_seq/mrna_analysis/filter_overlapgene.pl |
   perl ~/NJU_seq/mrna_analysis/judge_altersplice.pl \
     --trans_wording "mRNA" \
+    --gene_id "ID=gene:" \
     --alter "data/ath_alter_gene.yml" \
     --unique "data/ath_unique_gene.yml"
 

@@ -4,15 +4,27 @@ use warnings;
 use autodie;
 
 use Getopt::Long;
+use AlignDB::IntSpan;
 
 Getopt::Long::GetOptions(
     'help|h'          => sub { Getopt::Long::HelpMessage(0) },
     'trans_wording=s' => \my $mRNA,
+    'gene_id=s'       => \my $gene_id,
     'alter=s'         => \my $ALTER_FH,
     'unique=s'        => \my $UNIQUE_FH,
 ) or Getopt::Long::HelpMessage(1);
 
-use AlignDB::IntSpan;
+sub GET_INFO {
+    my $INFO = shift;
+    my $GENE_ID;
+    if ( $INFO =~ m/$gene_id([A-Z,a-z,0-9]+);/ ) {
+        $GENE_ID = $1;
+    }
+    else {
+        warn("There is a problem in $INFO;\n");
+    }
+    return $GENE_ID;
+}
 
 sub ALTER_SPLICE {
     my ( $GENE, $TRANSCRIPT, $EXON ) = @_;
@@ -51,7 +63,8 @@ while (<STDIN>) {
         splice( @temp_exon,       0 );
         $temp_gene = AlignDB::IntSpan->new;
         $temp_gene->add_range( $start, $end );
-        $temp_gene_info = "$chr\t$info\t$dir";
+        my $gene_info = GET_INFO($info);
+        $temp_gene_info = "$chr\t$gene_info\t$dir";
     }
     elsif ( $type eq $mRNA ) {
         my $set1 = AlignDB::IntSpan->new;

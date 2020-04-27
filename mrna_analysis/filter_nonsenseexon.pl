@@ -28,7 +28,7 @@ while (<STDIN>) {
     }
     elsif ( $type eq "exon" ) {
         $info =~ /$exon_id([A-Z,0-9,a-z]+\.*[0-9]+);/;
-        if ( $trans eq $1 ) {
+        if ( ( defined($trans) ) and ( $trans eq $1 ) ) {
             print "$line\n";
         }
     }
