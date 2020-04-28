@@ -17,7 +17,7 @@ Getopt::Long::GetOptions(
 sub GET_INFO {
     my $INFO = shift;
     my $GENE_ID;
-    if ( $INFO =~ m/$gene_id([A-Z,a-z,0-9]+);/ ) {
+    if ( $INFO =~ m/$gene_id([A-Z,a-z,0-9]+)\.?[0-9]*;/ ) {
         $GENE_ID = $1;
     }
     else {
