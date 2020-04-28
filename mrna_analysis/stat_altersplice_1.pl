@@ -28,8 +28,8 @@ while (<STDIN>) {
 open( my $GENE, "<", $ARGV[0] );
 while (<$GENE>) {
     chomp;
-    my ( $chr, $info, $dir, $constant_exon, $constant_intron, $variable_area )
-      = split /\t/;
+    my ( $chr, $gene_id, $dir, $constant_exon, $constant_intron,
+        $variable_area ) = split /\t/;
     $chr =~ s/chr//;
     my $exon_set       = AlignDB::IntSpan->new($constant_exon);
     my $intron_set     = AlignDB::IntSpan->new($constant_intron);
@@ -55,7 +55,6 @@ while (<$GENE>) {
     else {
         $stat_val = "F";
     }
-    my $gene_id = $info;
 
 # Gene_ID Chromosome Direction Exon_Range Exon_Length Exon_Point Intron_Range Intron_Length Intron_Point Variant_Range Variant_Length Variant_Point Stat_Value
     print(

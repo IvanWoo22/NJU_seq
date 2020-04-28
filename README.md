@@ -358,17 +358,20 @@ pigz -dcf data/ath.gff3.gz |
     || (($3=="mRNA")&&($9~/biotype=protein_coding/)) \
     || ($3=="exon")' |
   perl ~/NJU_seq/mrna_analysis/filter_nonsenseexon.pl \
-    --trans_wording "mRNA" \
-    --trans_id "ID=transcript:" \
-    --exon_id "Parent=transcript:" |
+    --transwording "mRNA" \
+    --transid "ID=transcript:" \
+    --exonid "Parent=transcript:" |
   perl ~/NJU_seq/mrna_analysis/filter_nonsensegene.pl |
   perl ~/NJU_seq/mrna_analysis/filter_overlapgene.pl |
   perl ~/NJU_seq/mrna_analysis/judge_altersplice.pl \
-    --trans_wording "mRNA" \
-    --gene_id "ID=gene:" \
+    --transwording "mRNA" \
+    --geneid "ID=gene:" \
     --alter "data/ath_alter_gene.yml" \
     --unique "data/ath_unique_gene.yml"
+```
 
+Analyse the Nm points.
+```bash
 perl ~/NJU_seq/mrna_analysis/stat_altersplice_1.pl \
   data/ath_alter_gene.yml \
   <output/Ath_stem_mrna_scored.tsv \
@@ -383,6 +386,8 @@ pigz -dcf data/ath.gff3.gz |
   awk '($3=="gene") || ($3=="mRNA") || ($3=="CDS") \
     || ($3=="five_prime_UTR") || ($3=="three_prime_UTR")' |
   perl ~/NJU_seq/mrna_analysis/judge_differentregion.pl \
+    --transwording "mRNA" \
+    --geneid "ID=gene:"
     data/ath_unique_gene.yml \
     >temp/ath_uniquegene_differentregion.yml
 

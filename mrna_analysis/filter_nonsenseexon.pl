@@ -6,10 +6,10 @@ use autodie;
 use Getopt::Long;
 
 Getopt::Long::GetOptions(
-    'help|h'          => sub { Getopt::Long::HelpMessage(0) },
-    'trans_wording=s' => \my $mRNA,
-    'trans_id=s'      => \my $trans_id,
-    'exon_id=s'       => \my $exon_id,
+    'help|h'         => sub { Getopt::Long::HelpMessage(0) },
+    'transwording=s' => \my $mRNA,
+    'transid=s'      => \my $trans_id,
+    'exonid=s'       => \my $exon_id,
 ) or Getopt::Long::HelpMessage(1);
 
 my $trans;

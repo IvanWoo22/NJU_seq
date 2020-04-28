@@ -3,12 +3,20 @@ use strict;
 use warnings;
 use autodie;
 
+use Getopt::Long;
 use AlignDB::IntSpan;
+
+Getopt::Long::GetOptions(
+    'help|h'         => sub { Getopt::Long::HelpMessage(0) },
+    'transwording=s' => \my $mRNA,
+    'geneid=s'       => \my $geneid,
+    'ymlinput=s'     => \my $IN_FH,
+) or Getopt::Long::HelpMessage(1);
 
 sub GET_INFO {
     my $INFO = shift;
     my $GENE_ID;
-    if ( $INFO =~ m/ID=gene:([A-Z,a-z,0-9]+);/ ) {
+    if ( $INFO =~ m/$geneid([A-Z,a-z,0-9]+)\.?[0-9]*;/ ) {
         $GENE_ID = $1;
     }
     else {
@@ -25,27 +33,28 @@ while (<STDIN>) {
     my ( undef, undef, $type, undef, undef, undef, undef, undef, $info ) =
       split /\t/;
     if ( $type eq "gene" ) {
+        my $name = GET_INFO($info);
         push( @gene, $i );
-        $gene_info{$info} = $#gene;
+        $gene_info{$name} = $#gene;
     }
     $i++;
 }
 
-open( my $GENE, "<", $ARGV[0] );
+open( my $GENE, "<", $IN_FH );
 while (<$GENE>) {
     chomp;
-    my ( $chr, $info, $dir, $exon, $intron, undef ) =
+    my ( $chr, $name, $dir, $exon, $intron, undef ) =
       split /\t/;
     my $transcript;
     my $trans_cds       = AlignDB::IntSpan->new;
     my $trans_five_utr  = AlignDB::IntSpan->new;
     my $trans_three_utr = AlignDB::IntSpan->new;
     foreach
-      my $t ( $gene[ $gene_info{$info} ] .. $gene[ $gene_info{$info} + 1 ] - 1 )
+      my $t ( $gene[ $gene_info{$name} ] .. $gene[ $gene_info{$name} + 1 ] - 1 )
     {
         my ( undef, undef, $type, $start, $end, undef, undef, undef,
             $line_info ) = split( /\t/, $line[$t] );
-        if ( $type eq "mRNA" ) {
+        if ( $type eq $mRNA ) {
             if ( $line_info =~ /^ID=transcript:([0-9,a-z,A-Z,\.,\_]+);/ ) {
                 $transcript = $1;
             }
@@ -63,7 +72,6 @@ while (<$GENE>) {
     my $trans_five_utr_string  = $trans_five_utr->as_string;
     my $trans_cds_string       = $trans_cds->as_string;
     my $trans_three_utr_string = $trans_three_utr->as_string;
-    my $name = GET_INFO($info);
     print(
 "$chr\t$name\t$dir\t$exon\t$intron\t$transcript\t$trans_five_utr_string\t$trans_cds_string\t$trans_three_utr_string\n"
     );

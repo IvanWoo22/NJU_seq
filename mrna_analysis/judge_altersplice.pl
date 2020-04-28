@@ -7,11 +7,11 @@ use Getopt::Long;
 use AlignDB::IntSpan;
 
 Getopt::Long::GetOptions(
-    'help|h'          => sub { Getopt::Long::HelpMessage(0) },
-    'trans_wording=s' => \my $mRNA,
-    'gene_id=s'       => \my $gene_id,
-    'alter=s'         => \my $ALTER_FH,
-    'unique=s'        => \my $UNIQUE_FH,
+    'help|h'         => sub { Getopt::Long::HelpMessage(0) },
+    'transwording=s' => \my $mRNA,
+    'geneid=s'       => \my $gene_id,
+    'alter=s'        => \my $ALTER_FH,
+    'unique=s'       => \my $UNIQUE_FH,
 ) or Getopt::Long::HelpMessage(1);
 
 sub GET_INFO {
