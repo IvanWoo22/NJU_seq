@@ -157,10 +157,7 @@ PREFIX='Ath_stem_NC'
 
 time pigz -dcf output/"${PREFIX}"/rrna.raw.sam.gz |
   parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
-    perl -nla -F"\t" -e '\''
-      $F[5] ne qq(*) or next;
-      $F[6] eq qq(=) or next;
-      print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
+    awk '\''$6!="*"&&$7=="="{print $1 "\t" $3 "\t" $4 "\t" $6 "\t" $10}
     '\'' |
     perl ~/NJU_seq/rrna_analysis/matchquality_judge.pl |
     perl ~/NJU_seq/rrna_analysis/multimatch_judge.pl
@@ -238,14 +235,11 @@ THREAD=16
 PREFIX='Ath_stem_NC'
 
 time gzip -dcf output/"${PREFIX}"/mrna.raw.sam.gz |
-  parallel --pipe --block 10M -j "${THREAD}" '
-    perl -nla -F"\t" -e '\''
-      $F[5] ne qq(*) or next;
-      $F[6] eq qq(=) or next;
-      print join qq(\t), $F[0], $F[2], $F[3], $F[5], $F[9];
+  parallel --pipe --block 100M -j "${THREAD}" '
+    awk '\''$6!="*"&&$7=="="{print $1 "\t" $3 "\t" $4 "\t" $6 "\t" $10}
     '\'' |
     perl ~/NJU_seq/mrna_analysis/multimatch_judge.pl
-  ' \
+  ' | perl ~/NJU_seq/mrna_analysis/multimatch_judge.pl \
   >temp/"${PREFIX}"/mrna.out.tmp
 # real  2m31.558s
 # user  18m38.617s
@@ -387,8 +381,8 @@ pigz -dcf data/ath.gff3.gz |
     || ($3=="five_prime_UTR") || ($3=="three_prime_UTR")' |
   perl ~/NJU_seq/mrna_analysis/judge_differentregion.pl \
     --transwording "mRNA" \
-    --geneid "ID=gene:"
-    data/ath_unique_gene.yml \
+    --geneid "ID=gene:" \
+    --ymlinput "data/ath_unique_gene.yml" \
     >temp/ath_uniquegene_differentregion.yml
 
 perl ~/NJU_seq/mrna_analysis/judge_region.pl \
