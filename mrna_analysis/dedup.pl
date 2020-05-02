@@ -26,14 +26,14 @@ Getopt::Long::GetOptions(
     'help|h'    => sub { Getopt::Long::HelpMessage(0) },
     'refstr=s'  => \my $refstr,
     'transid=s' => \my $transid,
-    'in|i=s'    => \my $in_fq,
-    'out|o=s'   => \my $out_fq,
+    'info=s'    => \my $info_fh,
 ) or Getopt::Long::HelpMessage(1);
 
+open( my $IN_FH, "<", $info_fh );
 my %trans_range;
 my %trans_chr;
 my %trans_dir;
-while (<>) {
+while (<$IN_FH>) {
     chomp;
     my ( $chr, $start, $end, $dir, $info ) = split( /\t/, $_ );
     $chr  =~ s/chr//;
@@ -48,6 +48,7 @@ while (<>) {
         $trans_range{$1}->AlignDB::IntSpan::add_range( $start, $end );
     }
 }
+close($IN_FH);
 
 sub COORDINATE_POS {
     my $INDEX = $_[0];
@@ -63,10 +64,8 @@ sub COORDINATE_POS {
     return ($ABS_SITE);
 }
 
-open( my $IN_FH,  "<", $in_fq );
-open( my $OUT_FH, ">", $out_fq );
 my %exist;
-while (<$IN_FH>) {
+while (<>) {
     chomp;
     my ( $read_name, $trans_info, $site ) = split /\s+/;
     $trans_info =~ /^($transid\w+\.[0-9]+)/;
@@ -75,10 +74,8 @@ while (<$IN_FH>) {
     my $read_abs_site = $read_name . "\t" . $abs_site;
     unless ( exists( $exist{$read_abs_site} ) ) {
         $exist{$read_abs_site} = 1;
-        print $OUT_FH ("$_\n");
+        print("$_\n");
     }
 }
-close($IN_FH);
-close($OUT_FH);
 
 __END__

@@ -245,13 +245,22 @@ time gzip -dcf output/"${PREFIX}"/mrna.raw.sam.gz |
 # user  18m38.617s
 # sys   2m8.716s
 
-time gzip -dcf data/ath.gff3.gz |
-  awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
+gzip -dcf data/ath.gff3.gz |
+  awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' \
+  >data/ath_exon.info
+
+cat temp/"${PREFIX}"/mrna.out.tmp |
+  parallel --pipe --block 100M -j "${THREAD}" '
     perl ~/NJU_seq/mrna_analysis/dedup.pl \
       --refstr "Parent=transcript:" \
       --transid "AT" \
-      -i temp/"${PREFIX}"/mrna.out.tmp \
-      -o temp/"${PREFIX}"/mrna.dedup.tmp
+      --info data/ath_exon.info
+  ' |
+  perl ~/NJU_seq/mrna_analysis/dedup.pl \
+    --refstr "Parent=transcript:" \
+    --transid "AT" \
+    --info data/ath_exon.info \
+    >temp/"${PREFIX}"/mrna.dedup.tmp
 # real  14m32.692s
 # user  14m22.635s
 # sys   0m10.268s
