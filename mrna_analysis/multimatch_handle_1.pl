@@ -33,7 +33,7 @@ while (<>) {
     chomp;
     my ( $chr, $start, $end, $dir, $info ) = split( /\t/, $_ );
     $chr  =~ s/chr//;
-    $info =~ /$refstr([A-Z,a-z,0-9]+\.[0-9]+)/;
+    $info =~ /$refstr(\w+\.[0-9]+)/;
     if ( exists( $trans_chr{$1} ) ) {
         $trans_range{$1}->AlignDB::IntSpan::add_range( $start, $end );
     }
@@ -65,7 +65,7 @@ my %exist;
 while (<$IN_FH>) {
     chomp;
     my ( $read_name, $trans_info, $site, undef, $seq ) = split /\s+/;
-    $trans_info =~ /^($geneid[A-Z,a-z,0-9]+\.[0-9]+)/;
+    $trans_info =~ /^($geneid\w+\.[0-9]+)/;
     my $id            = $1;
     my $abs_site      = COORDINATE_POS( $id, $site );
     my $read_abs_site = $read_name . "\t" . $abs_site;

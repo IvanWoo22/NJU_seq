@@ -249,7 +249,7 @@ time gzip -dcf data/ath.gff3.gz |
   awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
     perl ~/NJU_seq/mrna_analysis/dedup.pl \
       --refstr "Parent=transcript:" \
-      --geneid "AT" \
+      --transid "AT" \
       -i temp/"${PREFIX}"/mrna.out.tmp \
       -o temp/"${PREFIX}"/mrna.dedup.tmp
 # real  14m32.692s

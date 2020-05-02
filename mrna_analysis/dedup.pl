@@ -17,17 +17,17 @@ dedup.pl -- Deduplication by finding out these two sites of transcripts located 
         Options:
             --help\-h  Brief help message
             --refstr  The sign before the gene ID in the reference
-            --geneid  Characteristics shared by genes
+            --transid  Characteristics shared by genes
             --in\-i  Input file with path
             --out\-o  Output file with path
 =cut
 
 Getopt::Long::GetOptions(
-    'help|h'   => sub { Getopt::Long::HelpMessage(0) },
-    'refstr=s' => \my $refstr,
-    'geneid=s' => \my $geneid,
-    'in|i=s'   => \my $in_fq,
-    'out|o=s'  => \my $out_fq,
+    'help|h'    => sub { Getopt::Long::HelpMessage(0) },
+    'refstr=s'  => \my $refstr,
+    'transid=s' => \my $transid,
+    'in|i=s'    => \my $in_fq,
+    'out|o=s'   => \my $out_fq,
 ) or Getopt::Long::HelpMessage(1);
 
 my %trans_range;
@@ -37,7 +37,7 @@ while (<>) {
     chomp;
     my ( $chr, $start, $end, $dir, $info ) = split( /\t/, $_ );
     $chr  =~ s/chr//;
-    $info =~ /$refstr([A-Z,a-z,0-9]+\.[0-9]+)/;
+    $info =~ /$refstr(\w+\.[0-9]+)/;
     if ( exists( $trans_chr{$1} ) ) {
         $trans_range{$1}->AlignDB::IntSpan::add_range( $start, $end );
     }
@@ -68,8 +68,8 @@ open( my $OUT_FH, ">", $out_fq );
 my %exist;
 while (<$IN_FH>) {
     chomp;
-    my ( $read_name, $trans_info, $site ) = split /\s+/ ;
-    $trans_info =~ /^($geneid[A-Z,a-z,0-9]+\.[0-9]+)/;
+    my ( $read_name, $trans_info, $site ) = split /\s+/;
+    $trans_info =~ /^($transid\w+\.[0-9]+)/;
     my $id            = $1;
     my $abs_site      = COORDINATE_POS( $id, $site );
     my $read_abs_site = $read_name . "\t" . $abs_site;

@@ -23,11 +23,11 @@ while (<STDIN>) {
     }
     elsif ( $type eq $mRNA ) {
         print "$line\n";
-        $info =~ /$trans_id([A-Z,0-9,a-z]+\.*[0-9]+);/;
+        $info =~ /$trans_id(\w+\.*[0-9]+);/;
         $trans = $1;
     }
     elsif ( $type eq "exon" ) {
-        $info =~ /$exon_id([A-Z,0-9,a-z]+\.*[0-9]+);/;
+        $info =~ /$exon_id(\w+\.*[0-9]+);/;
         if ( ( defined($trans) ) and ( $trans eq $1 ) ) {
             print "$line\n";
         }

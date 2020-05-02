@@ -36,5 +36,5 @@ df_plot %>%
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 nrow <- nrow(df_plot)
-height = 0.525 + nrow*0.169
+height <- 0.525 + nrow * 0.169
 ggsave(paste0(result_save_path, ".pdf"), device = NULL, width = 6, height = height, dpi = "retina")
