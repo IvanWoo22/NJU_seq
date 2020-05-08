@@ -235,7 +235,7 @@ THREAD=16
 PREFIX='Ath_stem_NC'
 
 time gzip -dcf output/"${PREFIX}"/mrna.raw.sam.gz |
-  parallel --pipe --block 100M -j "${THREAD}" '
+  parallel --pipe --block 100M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
     awk '\''$6!="*"&&$7=="="{print $1 "\t" $3 "\t" $4 "\t" $6 "\t" $10}
     '\'' |
     perl ~/NJU_seq/mrna_analysis/multimatch_judge.pl
@@ -250,7 +250,7 @@ gzip -dcf data/ath.gff3.gz |
   >data/ath_exon.info
 
 cat temp/"${PREFIX}"/mrna.out.tmp |
-  parallel --pipe --block 100M -j "${THREAD}" '
+  parallel --pipe --block 100M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
     perl ~/NJU_seq/mrna_analysis/dedup.pl \
       --refstr "Parent=transcript:" \
       --transid "AT" \
@@ -308,7 +308,7 @@ done
 
 Calculate valid sequencing depth (average coverage).
 ```bash
-parallel -j 3 "
+parallel -j 4 "
   bash ~/NJU_seq/presentation/seq_depth.sh \\
     temp/{}/mrna.almostunique.tmp \\
     output/{}/mrna.tsv
