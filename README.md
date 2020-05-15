@@ -85,15 +85,15 @@ rm data/ath_protein_coding.fa
 
 ## 3. Data Selection and quality overview.
 #### Select data for analysing.
-Get the sequencing clean data from `MgR_data`.  
+Get the sequencing clean data from `NJU_data`.  
 *The representation of `ID` can be found in [`sample_list.csv`](/sample_list.csv).*
 ```bash
 ID='NJU45'
 PREFIX='Ath_stem_NC'
 
 mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
-ln -sf /home/wyf/MgR_data/"${ID}"/R1.fq.gz data/"${PREFIX}"/R1.fq.gz
-ln -sf /home/wyf/MgR_data/"${ID}"/R2.fq.gz data/"${PREFIX}"/R2.fq.gz
+ln -sf /home/wyf/NJU_data/"${ID}"/R1.fq.gz data/"${PREFIX}"/R1.fq.gz
+ln -sf /home/wyf/NJU_data/"${ID}"/R2.fq.gz data/"${PREFIX}"/R2.fq.gz
 ```
 *Better to process the other samples in the same group according to the above code box. Here NJU45-48 are in one group.*
 

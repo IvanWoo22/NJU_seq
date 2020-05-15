@@ -3,7 +3,8 @@ filepath=$(
   cd "$(dirname "${0}")" || exit
   pwd -P
 )
-if [ $# == 5 ]; then
+
+if [[ $# == 5 ]]; then
   awk '{print $1}' "$1" \
   >name.txt
   perl "${filepath}"/delete_fastq.pl \
@@ -16,7 +17,7 @@ if [ $# == 5 ]; then
   -o "$5" &
   wait
   rm name.txt
-elif [ $# == 3 ]; then
+elif [[ $# == 3 ]]; then
   awk '{print $1}' "$1" \
   >name.txt
   perl "${filepath}"/delete_fastq.pl \

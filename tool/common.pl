@@ -3,12 +3,12 @@ use strict;
 use warnings;
 use autodie;
 
-open( my $in1, "<", $ARGV[0] );
-open( my $in2, "<", $ARGV[1] );
-open( my $in3, "<", $ARGV[2] );
+open( my $IN1, "<", $ARGV[0] );
+open( my $IN2, "<", $ARGV[1] );
+open( my $IN3, "<", $ARGV[2] );
 
 my ( %count, %info, %score );
-while (<$in1>) {
+while (<$IN1>) {
     chomp;
     my (
         $chr,   $pos,     $dir,  $base1, $base2,
@@ -31,7 +31,7 @@ while (<$in1>) {
         $score{ $chr . "\t" . $dir . "\t" . $pos } = $score;
     }
 }
-while (<$in2>) {
+while (<$IN2>) {
     chomp;
     my (
         $chr,   $pos,     $dir,  $base1, $base2,
@@ -54,7 +54,7 @@ while (<$in2>) {
         $score{ $chr . "\t" . $dir . "\t" . $pos } = $score;
     }
 }
-while (<$in3>) {
+while (<$IN3>) {
     chomp;
     my (
         $chr,   $pos,     $dir,  $base1, $base2,
