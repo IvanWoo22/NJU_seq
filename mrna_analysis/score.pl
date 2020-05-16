@@ -1,45 +1,38 @@
+
 #!/usr/bin/env perl
 use strict;
 use warnings;
 use autodie;
 
-my $norm = $ARGV[0];
-
-my %NC_end_count;
+my %NC_count;
 my %NC_info;
-my $NC_sum   = 0;
-my $NC_count = 0;
-open( my $IN_NC, "<", $ARGV[1] );
+open( my $IN_NC, "<", $ARGV[0] );
 while (<$IN_NC>) {
-    $NC_count++;
     chomp;
-    my ( $chr, $pos, $dir, undef, undef, undef, undef, undef, $end_count ) =
-      split /\t/;
+    my ( $chr, $pos, $dir, undef, undef, undef, undef, undef,
+        $end_count ) =
+        split /\t/;
     my $id = $chr . "\t" . $dir . "\t" . $pos;
-    $NC_info{$id}      = $_;
-    $NC_end_count{$id} = $end_count;
-    $NC_sum += $end_count;
+    $NC_info{$id}  = $_;
+    $NC_count{$id} = $end_count;
 }
 close($IN_NC);
 
-my %TR_end_count;
+my %TR_count;
 my %TR_info;
-my $TR_sum   = 0;
-my $TR_count = 0;
-open( my $IN_TR, "<", $ARGV[2] );
+open( my $IN_TR, "<", $ARGV[1] );
 while (<$IN_TR>) {
-    $TR_count++;
     chomp;
-    my ( $chr, $pos, $dir, undef, undef, undef, undef, undef, $end_count ) =
-      split /\t/;
+    my ( $chr, $pos, $dir, undef, undef, undef, undef, undef,
+        $end_count ) =
+        split /\t/;
     my $id = $chr . "\t" . $dir . "\t" . $pos;
-    $TR_info{$id}      = $_;
-    $TR_end_count{$id} = $end_count;
-    $TR_sum += $end_count;
+    $TR_info{$id}  = $_;
+    $TR_count{$id} = $end_count;
 }
 close($IN_TR);
 
-foreach my $id ( keys(%TR_end_count) ) {
+foreach my $id ( keys(%TR_count) ) {
     my ( $chr, $dir, $pos ) = split( /\t/, $id );
     my ( $formal_pos, $score );
     if ( $dir eq "+" ) {
@@ -48,24 +41,20 @@ foreach my $id ( keys(%TR_end_count) ) {
     else {
         $formal_pos = $pos + 1;
     }
-    if ( exists( $TR_end_count{ $chr . "\t" . $dir . "\t" . $formal_pos } ) ) {
+    if ( exists( $TR_count{ $chr . "\t" . $dir . "\t" . $formal_pos } ) ) {
         $score =
-          $TR_end_count{$id} /
-          $TR_end_count{ $chr . "\t" . $dir . "\t" . $formal_pos };
+            $TR_count{$id} / $TR_count{ $chr . "\t" . $dir . "\t" . $formal_pos };
     }
     else {
-        $score = $TR_end_count{$id} * 2 * $norm * $TR_count / $TR_sum;
+        $score = $TR_count{$id} * 2;
     }
-    if ( exists( $NC_end_count{$id} ) ) {
-        if (
-            exists( $NC_end_count{ $chr . "\t" . $dir . "\t" . $formal_pos } ) )
-        {
-            $score = $score - $NC_end_count{$id} /
-              $NC_end_count{ $chr . "\t" . $dir . "\t" . $formal_pos };
+    if ( exists( $NC_count{$id} ) ) {
+        if ( exists( $NC_count{ $chr . "\t" . $dir . "\t" . $formal_pos } ) ) {
+            $score = $score - $NC_count{$id} /
+                $NC_count{ $chr . "\t" . $dir . "\t" . $formal_pos };
         }
         else {
-            $score =
-              $score - $NC_end_count{$id} * 2 * $norm * $NC_count / $NC_sum;
+            $score = $score - $NC_count{$id} * 2;
         }
     }
     if ( $score >= 10 ) {
