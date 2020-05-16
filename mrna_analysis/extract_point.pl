@@ -39,8 +39,8 @@ my ( @a_only, @b_only, @c_only, @a_b_common, @a_c_common, @b_c_common,
 my $extract = $ARGV[3];
 my $step    = $ARGV[4];
 while (( $#common >= $#a_only )
-    && ( $#common >= $#b_only )
-    && ( $#common >= $#b_only ) )
+    || ( $#common >= $#b_only )
+    || ( $#common >= $#b_only ) )
 {
     my @a_extract =
       grep( { $a_score->{$_} >= $a_score->{ $a_array->[ $extract - 1 ] } }
@@ -57,16 +57,35 @@ while (( $#common >= $#a_only )
     @a_only = grep ( { !$b_list{$_} && !$c_list{$_} } @a_extract );
     @b_only = grep ( { !$a_list{$_} && !$c_list{$_} } @b_extract );
     @c_only = grep ( { !$a_list{$_} && !$b_list{$_} } @c_extract );
-    @a_b_common =
-      grep ( { $b_list{$_} && !$c_list{$_} } @a_extract );
-    @a_c_common =
-      grep ( { $a_list{$_} && !$b_list{$_} } @c_extract );
-    @b_c_common =
-      grep ( { !$a_list{$_} && $c_list{$_} } @b_extract );
     @common =
       grep ( { $a_list{$_} && $b_list{$_} } @c_extract );
     $extract += $step;
 }
+
+$extract -= 2 * $step;
+
+my @a_extract =
+  grep( { $a_score->{$_} >= $a_score->{ $a_array->[ $extract - 1 ] } }
+    @{$a_array} );
+my @b_extract =
+  grep( { $b_score->{$_} >= $b_score->{ $b_array->[ $extract - 1 ] } }
+    @{$b_array} );
+my @c_extract =
+  grep( { $c_score->{$_} >= $c_score->{ $c_array->[ $extract - 1 ] } }
+    @{$c_array} );
+my %a_list = map( { $_ => 1 } @a_extract );
+my %b_list = map( { $_ => 1 } @b_extract );
+my %c_list = map( { $_ => 1 } @c_extract );
+
+@a_b_common =
+  grep ( { $b_list{$_} && !$c_list{$_} } @a_extract );
+@a_c_common =
+  grep ( { $a_list{$_} && !$b_list{$_} } @c_extract );
+@b_c_common =
+  grep ( { !$a_list{$_} && $c_list{$_} } @b_extract );
+@common =
+  grep ( { $a_list{$_} && $b_list{$_} } @c_extract );
+
 foreach (@common) {
     my $score = $a_score->{$_} + $b_score->{$_} + $c_score->{$_};
     print( $a_info->{$_} . "\t" . $score . "\n" );
