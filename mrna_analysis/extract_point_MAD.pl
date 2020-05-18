@@ -31,9 +31,9 @@ sub LIST_INPUT {
         $SCORE{ $CHR . "\t" . $POS . "\t" . $DIR } = $SCORE;
     }
     my $MEDIAN             = median(@ARRAY_SCORE);
-    my @ARRAY_SCORE_MEDIAN = map( { abs($_ - $MEDIAN) } @ARRAY_SCORE );
+    my @ARRAY_SCORE_MEDIAN = map( { abs( $_ - $MEDIAN ) } @ARRAY_SCORE );
     my $MAD                = median(@ARRAY_SCORE_MEDIAN);
-    return ( $MAD );
+    return ($MAD);
 }
 
 my ($a_mad) = LIST_INPUT($IN1);

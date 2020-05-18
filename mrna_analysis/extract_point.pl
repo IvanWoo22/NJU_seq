@@ -36,12 +36,15 @@ my ( $c_array, $c_info, $c_score ) = LIST_INPUT($IN3);
 
 my ( @a_only, @b_only, @c_only, @a_b_common, @a_c_common, @b_c_common,
     @common );
+
 my $extract = $ARGV[3];
 my $step    = $ARGV[4];
+
 while (( $#common >= $#a_only )
     || ( $#common >= $#b_only )
     || ( $#common >= $#b_only ) )
 {
+    $extract += $step;
     my @a_extract =
       grep( { $a_score->{$_} >= $a_score->{ $a_array->[ $extract - 1 ] } }
         @{$a_array} );
@@ -59,10 +62,9 @@ while (( $#common >= $#a_only )
     @c_only = grep ( { !$a_list{$_} && !$b_list{$_} } @c_extract );
     @common =
       grep ( { $a_list{$_} && $b_list{$_} } @c_extract );
-    $extract += $step;
 }
 
-$extract -= 2 * $step;
+$extract -= $step;
 
 my @a_extract =
   grep( { $a_score->{$_} >= $a_score->{ $a_array->[ $extract - 1 ] } }
