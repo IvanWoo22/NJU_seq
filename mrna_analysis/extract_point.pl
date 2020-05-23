@@ -34,11 +34,7 @@ my ( $a_array, $a_info, $a_score ) = LIST_INPUT($IN1);
 my ( $b_array, undef,   $b_score ) = LIST_INPUT($IN2);
 my ( $c_array, undef,   $c_score ) = LIST_INPUT($IN3);
 
-my (
-    @a_only,     @b_only, @c_only,    @a_b_common, @a_c_common,
-    @b_c_common, @common, @a_extract, @b_extract,  @c_extract,
-    %a_list,     %b_list, %c_list
-);
+my ( @common, @a_extract, @b_extract, @c_extract, %a_list, %b_list, %c_list );
 
 my $extract = $ARGV[3];
 my $step    = $ARGV[4];
