@@ -12,3 +12,6 @@ perl "${filepath}"/almostuniquematch.pl "$2" \
 cat "$3"/mrna.almost.tmp \
   "$3"/mrna.unique.tmp \
   >"$4"
+rm "$3"/mrna.multi.tmp
+rm "$3"/mrna.almost.tmp
+rm "$3"/mrna.unique.tmp
