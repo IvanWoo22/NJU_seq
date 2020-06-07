@@ -118,15 +118,18 @@ foreach my $sample ( 1 .. $#ARGV ) {
 
 foreach my $site ( 0 .. $#site ) {
     print(
-"$site[$site]\t$base[$site]\t$start_count[0][$site]\t$end_count[0][$site]\t\t"
+"$site[$site]\t$base[$site]\t\t$start_count[0][$site]\t$end_count[0][$site]\t\t"
     );
     foreach my $sample ( 1 .. $#ARGV ) {
         print("$start_count[$sample][$site]\t$end_count[$sample][$site]\t");
     }
     print("\t");
+    my $score_sum = 0;
     foreach my $sample ( 1 .. $#ARGV ) {
         print("$score[$sample][$site]\t");
+        $score_sum += $score[$sample][$site];
     }
+    print("\t$score_sum\t");
     print("\n");
 }
 

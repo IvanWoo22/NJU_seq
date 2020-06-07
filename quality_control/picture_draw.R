@@ -34,7 +34,7 @@ p3 <- annotate_figure(p3, fig.lab = "  3' Base Contain", fig.lab.face = "bold")
 
 mydata4 <- read.table(args[4], header = F)
 
-p4 <- ggplot(mydata4, aes(mydata4$V2, mydata4$V3, group = mydata4$V1, color = mydata4$V1)) +
+p4 <- ggplot(mydata4, aes($V2, $V3, group = $V1, color = $V1)) +
   theme_bw() +
   theme(legend.position = c(0.8, 1), legend.justification = c(0, 1), legend.key.size = unit(0, 'mm'), legend.key.width = unit(2, 'mm')) +
   theme(legend.background = element_rect(fill = NULL, color = "black", size = 0.1)) +

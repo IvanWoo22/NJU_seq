@@ -23,7 +23,7 @@ cpanm YAML::Syck AlignDB::IntSpan PerlIO::gzip
 *To install PerlIO::gzip on [WSL2](https://devblogs.microsoft.com/commandline/announcing-wsl-2/), you might need to install [`zlib.h`](http://www.zlib.net/) manually.*
 
 R packages needed:
-`ggplot2` `ggpubr` `gridExtra` `forcats` `dplyr`
+`ggplot2` `ggpubr` `gridExtra` `forcats` `dplyr` `VennDiagram`
 
 Make new folders for analysis.
 ```bash
@@ -189,6 +189,12 @@ time parallel -j 3 "
 # real  0m0.459s
 # user  0m0.661s
 # sys   0m0.048s
+
+bash ~/NJU_seq/presentation/point_venn.sh \
+  Sample1 output/Ath_stem_rrna_18s_scored.tsv 14\
+  Sample2 output/Ath_stem_rrna_18s_scored.tsv 15\
+  Sample3 output/Ath_stem_rrna_18s_scored.tsv 16\
+  output/rrna_venn.png 40
 ```
 
 #### Prepare for mRNA.
