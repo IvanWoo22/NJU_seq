@@ -1,5 +1,6 @@
 #!/usr/bin/env Rscript
 library("VennDiagram")
+library("extrafont")
 
 args<-commandArgs(T)
 
@@ -19,12 +20,10 @@ venn.plot <- venn.diagram(
   alpha = 0.6,
   label.col = "#000000",
   cex = 3,
-  fontfamily = "sans",
-  fontface = "bold",
+  fontfamily = "Arial",
   cat.col = c("#489DCC", "#C6175A", "#EF7E5B"),
   cat.cex = 2,
-  cat.fontfamily = "sans",
-  cat.fontface = "bold",
+  cat.fontfamily = "Arial",
   margin = 0.05,
   cat.dist = c(0.06, 0.06, 0.06),
   cat.pos = c(-20, 20, 180)
