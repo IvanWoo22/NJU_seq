@@ -194,7 +194,7 @@ bash ~/NJU_seq/presentation/point_venn.sh \
   Sample1 output/Ath_stem_rrna_18s_scored.tsv 14\
   Sample2 output/Ath_stem_rrna_18s_scored.tsv 15\
   Sample3 output/Ath_stem_rrna_18s_scored.tsv 16\
-  output/rrna_venn.png 40
+  output/Ath_stem_rrna_venn.png 40
 ```
 
 #### Prepare for mRNA.
