@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 args <- commandArgs(T)
 file_path <- args[1]
 result_save_path <- args[2]
@@ -31,7 +32,7 @@ df_plot %>%
   geom_point(aes(x = name, y = log_num3), shape = 16, color = "#EF7E5B", alpha = .9, size = 1.2) +
   coord_flip(ylim = c(0, 11.8)) +
   xlab("") +
-  ylab("Score") +
+  ylab("") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
