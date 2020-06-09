@@ -34,7 +34,10 @@ my ( $a_array, $a_info, $a_score ) = LIST_INPUT($IN1);
 my ( $b_array, undef,   $b_score ) = LIST_INPUT($IN2);
 my ( $c_array, undef,   $c_score ) = LIST_INPUT($IN3);
 
-my ( @common, @a_extract, @b_extract, @c_extract, %a_list, %b_list, %c_list );
+my (
+    @common,    @a_only,    @b_only, @c_only, @a_extract,
+    @b_extract, @c_extract, %a_list, %b_list, %c_list
+);
 
 my $extract = $ARGV[3];
 my $step    = $ARGV[4];
@@ -54,8 +57,14 @@ my $step    = $ARGV[4];
 
 @common =
   grep ( { $a_list{$_} && $b_list{$_} } @c_extract );
+@a_only = grep( { !$b_list{$_} and !$c_list{$_} } @a_extract );
+@b_only = grep( { !$a_list{$_} and !$c_list{$_} } @b_extract );
+@c_only = grep( { !$a_list{$_} and !$b_list{$_} } @c_extract );
 
-while ( $#common + 1 >= 0.5 * $extract ) {
+while ( ( $#common >= $#a_only )
+    and ( $#common >= $#b_only )
+    and ( $#common >= $#c_only ) )
+{
     $extract += $step;
     @a_extract =
       grep( { $a_score->{$_} >= $a_score->{ $a_array->[ $extract - 1 ] } }
@@ -71,6 +80,9 @@ while ( $#common + 1 >= 0.5 * $extract ) {
     %c_list = map( { $_ => 1 } @c_extract );
     @common =
       grep ( { $a_list{$_} && $b_list{$_} } @c_extract );
+    @a_only = grep( { !$b_list{$_} and !$c_list{$_} } @a_extract );
+    @b_only = grep( { !$a_list{$_} and !$c_list{$_} } @b_extract );
+    @c_only = grep( { !$a_list{$_} and !$b_list{$_} } @c_extract );
 }
 
 $extract -= $step;
@@ -96,3 +108,4 @@ foreach (@common) {
     print( $a_info->{$_} . "\t" . $score . "\n" );
 }
 
+__END__

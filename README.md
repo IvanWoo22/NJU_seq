@@ -314,7 +314,7 @@ done
 
 Calculate valid sequencing depth (average coverage).
 ```bash
-parallel -j 4 "
+parallel --keep-order -j 4 "
   bash ~/NJU_seq/presentation/seq_depth.sh \\
     temp/{}/mrna.almostunique.tmp \\
     output/{}/mrna.tsv
@@ -339,7 +339,7 @@ parallel -j 4 "
 Score each covered site.
 ```bash
 parallel -j 3 "
-  perl ~/NJU_seq/mrna_analysis/score.pl 15 \\
+  perl ~/NJU_seq/mrna_analysis/score.pl \\
     output/Ath_stem_NC/mrna.tsv \\
     output/{}/mrna.tsv |
       sort -t $'\t' -nrk 10,10 \\
