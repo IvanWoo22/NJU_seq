@@ -353,10 +353,10 @@ parallel -j 3 "
 #  >output/Ath_stem_mrna_scored.tsv
 
 perl ~/NJU_seq/mrna_analysis/extract_point.pl \
-  Hsa_293_1_mrna_scored.tsv \
-  Hsa_293_2_mrna_scored.tsv \
-  Hsa_293_3_mrna_scored.tsv \
-  7000 1
+  output/Ath_stem_1_mrna_scored.tsv \
+  output/Ath_stem_2_mrna_scored.tsv \
+  output/Ath_stem_3_mrna_scored.tsv \
+  1000 1
 ```
 
 ## 5. Statistics and Presentation.

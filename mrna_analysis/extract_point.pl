@@ -108,4 +108,6 @@ foreach (@common) {
     print( $a_info->{$_} . "\t" . $score . "\n" );
 }
 
+warn("$extract\n");
+
 __END__
