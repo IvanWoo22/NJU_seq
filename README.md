@@ -356,7 +356,7 @@ perl ~/NJU_seq/mrna_analysis/extract_point.pl \
   output/Ath_stem_1_mrna_scored.tsv \
   output/Ath_stem_2_mrna_scored.tsv \
   output/Ath_stem_3_mrna_scored.tsv \
-  1000 1
+  1000 1 >output/Ath_stem_mrna_scored.tsv
 ```
 
 ## 5. Statistics and Presentation.
