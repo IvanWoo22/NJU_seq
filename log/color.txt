@@ -1,0 +1,35 @@
+# Background
+Shadow F4F4F4
+
+# rRNA Score
+True A7D1B8
+Very likely FFF173
+Likely  CCCCCC
+
+# Sample
+Sample1 489DCC
+Sample2 C6175A
+Sample3 EF7E5B
+
+# Signature Base
+A   E8845D
+G   6ABACC
+C   D1B84E
+U   91CE6A
+
+# Distribution of Region
+5'UTR line  8F5CAA
+5'UTR base  4F0D6D
+CDS line    56CCB6
+CDS base    087F68
+3'UTR line  CCCC7D
+3'UTR base  666B09
+
+# GO Analysis
+Biological Process  46BC91
+Cellular Component  EF9C62
+Molecular Function  7FAFEA
+
+# Intensity
+CSE 9A6CB7
+ASE 8CA8AF

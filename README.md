@@ -314,11 +314,13 @@ done
 
 Calculate valid sequencing depth (average coverage).
 ```bash
-parallel --keep-order -j 4 "
-  bash ~/NJU_seq/presentation/seq_depth.sh \\
-    temp/{}/mrna.almostunique.tmp \\
-    output/{}/mrna.tsv
-  " ::: Ath_stem_NC Ath_stem_1 Ath_stem_2 Ath_stem_3
+parallel --keep-order -j 4 '
+  echo {} >>output/{}/mrna.cov
+  bash ~/NJU_seq/presentation/seq_depth.sh \
+    temp/{}/mrna.almostunique.tmp \
+    output/{}/mrna.tsv \
+    >>output/{}/mrna.cov
+  ' ::: Ath_stem_NC Ath_stem_1 Ath_stem_2 Ath_stem_3
 # All stop times: 319414
 # All positions:  18550
 # Coverage:       17.21
