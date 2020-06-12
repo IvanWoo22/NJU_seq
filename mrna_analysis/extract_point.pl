@@ -61,8 +61,7 @@ my $step    = $ARGV[4];
 @b_only = grep( { !$a_list{$_} and !$c_list{$_} } @b_extract );
 @c_only = grep( { !$a_list{$_} and !$b_list{$_} } @c_extract );
 
-while ( $#common <= $ARGV[3] )
-{
+while ( $#common <= $ARGV[3] ) {
     $extract += $step;
     @a_extract =
       grep( { $a_score->{$_} >= $a_score->{ $a_array->[ $extract - 1 ] } }
