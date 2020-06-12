@@ -7,7 +7,7 @@ From clean data to positions with 2-*O*-methylation.
 #### Install packages and software.
 
 Software managed by [brew](https://brew.sh/).
-```bash
+```shell script
 # generic tools
 brew install parallel pigz
 
@@ -17,7 +17,7 @@ brew install picard-tools samtools
 ```
 
 Perl packages:
-```bash
+```shell script
 cpanm YAML::Syck AlignDB::IntSpan PerlIO::gzip
 ``` 
 *To install PerlIO::gzip on [WSL2](https://devblogs.microsoft.com/commandline/announcing-wsl-2/), you might need to install [`zlib.h`](http://www.zlib.net/) manually.*
@@ -26,7 +26,7 @@ R packages needed:
 `ggplot2` `ggpubr` `gridExtra` `forcats` `dplyr` `VennDiagram`
 
 Make new folders for analysis.
-```bash
+```shell script
 # NJU_seq_analysis is the main directory of the following analysis. It can be renamed as you like.
 mkdir "NJU_seq_analysis"
 cd "NJU_seq_analysis" || exit
@@ -36,7 +36,7 @@ mkdir "data" "index" "temp" "output"
 ## 2. Reference and index.
 #### Download reference.
 Get reference sequence of species from [GENCODE](https://www.gencodegenes.org/) and [Ensembl](http://plants.ensembl.org/Arabidopsis_thaliana/Info/Index?db=core).
-```bash
+```shell script
 # GENCODE release 34 for human
 wget -N ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.annotation.gff3.gz -O data/hsa.gff3.gz
 wget -N ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.transcripts.fa.gz -O data/hsa_transcript.fa.gz
@@ -57,7 +57,7 @@ wget -N ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz -O data/mirna.fa.gz
 
 #### Build index
 Create index by `bowtie2-build` for mapping.
-```bash
+```shell script
 THREAD=16
 
 # rRNA index
@@ -87,7 +87,7 @@ rm data/ath_protein_coding.fa
 #### Select data for analysing.
 Get the sequencing clean data from `NJU_data`.  
 *The representation of `ID` can be found in [`sample_list.csv`](/sample_list.csv).*
-```bash
+```shell script
 ID='NJU6042'
 PREFIX='Ath_stem_NC'
 
@@ -99,7 +99,7 @@ ln -sf /home/wyf/NJU_data/"${ID}"/R2.fq.gz data/"${PREFIX}"/R2.fq.gz
 
 #### Quality control for clean data.
 Input a `FastQ` file or a `GZ` file of `FastQ`, and then get some quality information.
-```bash
+```shell script
 PREFIX='Ath_stem_NC'
 
 # For pair-end sequence data, we firstly turn them to single-end file.
@@ -129,7 +129,7 @@ time perl ~/NJU_seq/quality_control/fastq_qc.pl \
 ## 4. Alignment, Count and Score
 #### rRNA workflow
 Use `bowtie2` to align the data file.
-```bash
+```shell script
 THREAD=16
 PREFIX='Ath_stem_NC'
 
@@ -151,7 +151,7 @@ time pigz -p "${THREAD}" output/"${PREFIX}"/rrna.raw.sam
 # sys   0m7.795s
 ```
 Filter and count alignment result.
-```bash
+```shell script
 THREAD=16
 PREFIX='Ath_stem_NC'
 
@@ -177,7 +177,7 @@ time parallel -j 3 "
 # sys   0m0.809s
 ```
 Score all sites one by one.
-```bash
+```shell script
 time parallel -j 3 "
   perl ~/NJU_seq/rrna_analysis/score.pl \\
     output/Ath_stem_NC/rrna_{}.tsv \\
@@ -199,7 +199,7 @@ bash ~/NJU_seq/presentation/point_venn.sh \
 
 #### Prepare for mRNA.
 Extract reads can't be mapped to rRNA.
-```bash
+```shell script
 PREFIX='Ath_stem_NC'
 
 time bash ~/NJU_seq/tool/extract_fastq.sh \
@@ -213,7 +213,7 @@ time bash ~/NJU_seq/tool/extract_fastq.sh \
 
 #### mRNA workflow
 Alignment with protein_coding transcript.
-```bash
+```shell script
 THREAD=16
 PREFIX='Ath_stem_NC'
 
@@ -236,7 +236,7 @@ time pigz -p "${THREAD}" output/"${PREFIX}"/mrna.raw.sam
 ```
 
 Filter，re-locate and count alignment result.
-```bash
+```shell script
 THREAD=16
 PREFIX='Ath_stem_NC'
 
@@ -313,7 +313,7 @@ done
 ```
 
 Calculate valid sequencing depth (average coverage).
-```bash
+```shell script
 parallel --keep-order -j 4 '
   echo {} >>output/{}/mrna.cov
   bash ~/NJU_seq/presentation/seq_depth.sh \
@@ -339,7 +339,7 @@ parallel --keep-order -j 4 '
 ```
 
 Score each covered site.
-```bash
+```shell script
 parallel -j 3 "
   perl ~/NJU_seq/mrna_analysis/score.pl \\
     output/Ath_stem_NC/mrna.tsv \\
@@ -359,17 +359,32 @@ perl ~/NJU_seq/mrna_analysis/extract_point.pl \
   output/Ath_stem_2_mrna_scored.tsv \
   output/Ath_stem_3_mrna_scored.tsv \
   1000 1 >output/Ath_stem_mrna_scored.tsv
+    
+for TOP in 50 100 1000 3000 5000; do
+  awk -v a=`head -${TOP} output/Ath_stem_1_mrna_scored.tsv | tail -1 | awk '{print $10}'`
+    '$10>=a {print $1 $3 $2}' output/Ath_stem_1_mrna_scored.tsv
+    >sample1.txt
+  awk -v a=`head -${TOP} output/Ath_stem_2_mrna_scored.tsv | tail -1 | awk '{print $10}'`
+    '$10>=a {print $1 $3 $2}' output/Ath_stem_2_mrna_scored.tsv
+    >sample2.txt
+  awk -v a=`head -${TOP} output/Ath_stem_3_mrna_scored.tsv | tail -1 | awk '{print $10}'`
+    '$10>=a {print $1 $3 $2}' output/Ath_stem_3_mrna_scored.tsv
+    >sample3.txt
+  Rscript ~/NJU_seq/presentation/point_venn.R Sample1 sample1.txt Sample2 sample2.txt Sample3 sample3.txt Hsa_${i}_mrna_top${j}_venn.png
+  rm 
+done
+
 ```
 
 ## 5. Statistics and Presentation.
 See the signature of Nm site.
-```bash
+```shell script
 bash ~/NJU_seq/presentation/signature_count.sh \
   output/Ath_stem_mrna_scored.tsv
 ```
 
 Divide annotations into two categories.
-```bash
+```shell script
 pigz -dcf data/ath.gff3.gz |
   awk '(($3=="gene")&&($9~/biotype=protein_coding/)) \
     || (($3=="mRNA")&&($9~/biotype=protein_coding/)) \
@@ -388,7 +403,7 @@ pigz -dcf data/ath.gff3.gz |
 ```
 
 Analyse the Nm points.
-```bash
+```shell script
 perl ~/NJU_seq/mrna_analysis/stat_altersplice_1.pl \
   data/ath_alter_gene.yml \
   <output/Ath_stem_mrna_scored.tsv \
@@ -430,7 +445,7 @@ perl ~/NJU_seq/mrna_analysis/stat_differentregion_3.pl \
 
 ## 6. Motif Found in miRNA.
 Get miRNA sequence information from ncRNA reference.
-```bash
+```shell script
 pigz -dc data/mirna.fa.gz |
   perl ~/NJU_seq/tool/fetch_fasta.pl \
     --stdin -s 'thaliana' |

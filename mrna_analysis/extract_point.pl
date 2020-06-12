@@ -61,9 +61,7 @@ my $step    = $ARGV[4];
 @b_only = grep( { !$a_list{$_} and !$c_list{$_} } @b_extract );
 @c_only = grep( { !$a_list{$_} and !$b_list{$_} } @c_extract );
 
-while ( ( $#common >= $#a_only )
-    and ( $#common >= $#b_only )
-    and ( $#common >= $#c_only ) )
+while ( $#common <= $ARGV[3] )
 {
     $extract += $step;
     @a_extract =

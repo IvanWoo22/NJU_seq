@@ -27,7 +27,7 @@ line_to_plot3=data.frame(x=c(32.8,48.2),y=c(max(data$V2)+11,max(data$V2)+11))
 line_to_plot4=data.frame(x=c(48.8,64.2),y=c(max(data$V2)+11,max(data$V2)+11))
 p <- ggplot(data, aes(x=V4, y=V2))
 p + geom_bar(stat="identity", position="dodge", aes(fill=V3), width = .5, show.legend = F) +
-  xlim(data$V1) +
+  ggplot2:::limits(data$V1, "x") +
   scale_y_continuous(expand = c(0, 1)) +
   scale_fill_manual(values = color_scale) +
   theme_bw() +

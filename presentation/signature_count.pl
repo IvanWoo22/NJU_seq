@@ -2,12 +2,13 @@
 use strict;
 use warnings;
 use autodie;
+use File::Basename;
 
 my $filedir = dirname(__FILE__);
-my $envdir = $ENV{'PWD'};
+my $envdir  = $ENV{'PWD'};
 
-open( my $IN, "<", $ARGV[0] );
-open(my $OUT, ">", $envdir."/".$ARGV[0].".tmp");
+open( my $IN,  "<", $ARGV[0] );
+open( my $OUT, ">", $envdir . "/" . $ARGV[0] . ".tmp" );
 
 my %sig;
 while (<$IN>) {
@@ -33,5 +34,8 @@ foreach my $nm (qw(A G C T)) {
 print $OUT ("$data_table");
 
 system(
-    "Rscript $filedir/picture_draw.R $envdir/$ARGV[0].tmp $envdir/$ARGV[1]"
-);
+    "Rscript $filedir/signature_count.R $envdir/$ARGV[0].tmp $envdir/$ARGV[1]");
+
+system("rm $envdir/$ARGV[0].tmp");
+
+__END__
