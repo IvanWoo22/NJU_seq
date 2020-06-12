@@ -35,7 +35,7 @@ my ( $b_array, undef,   $b_score ) = LIST_INPUT($IN2);
 my ( $c_array, undef,   $c_score ) = LIST_INPUT($IN3);
 
 my (
-    @common,    @a_only,    @b_only, @c_only, @a_extract,
+    @common,     @a_extract,
     @b_extract, @c_extract, %a_list, %b_list, %c_list
 );
 
@@ -57,9 +57,6 @@ my $step    = $ARGV[4];
 
 @common =
   grep ( { $a_list{$_} && $b_list{$_} } @c_extract );
-@a_only = grep( { !$b_list{$_} and !$c_list{$_} } @a_extract );
-@b_only = grep( { !$a_list{$_} and !$c_list{$_} } @b_extract );
-@c_only = grep( { !$a_list{$_} and !$b_list{$_} } @c_extract );
 
 while ( $#common <= $ARGV[3] ) {
     $extract += $step;
@@ -77,12 +74,7 @@ while ( $#common <= $ARGV[3] ) {
     %c_list = map( { $_ => 1 } @c_extract );
     @common =
       grep ( { $a_list{$_} && $b_list{$_} } @c_extract );
-    @a_only = grep( { !$b_list{$_} and !$c_list{$_} } @a_extract );
-    @b_only = grep( { !$a_list{$_} and !$c_list{$_} } @b_extract );
-    @c_only = grep( { !$a_list{$_} and !$b_list{$_} } @c_extract );
 }
-
-$extract -= $step;
 
 @a_extract =
   grep( { $a_score->{$_} >= $a_score->{ $a_array->[ $extract - 1 ] } }
