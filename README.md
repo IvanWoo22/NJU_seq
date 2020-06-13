@@ -348,6 +348,24 @@ parallel -j 3 "
         >output/{}_mrna_scored.tsv
   " ::: Ath_stem_1 Ath_stem_2 Ath_stem_3
 
+for TOP in 50 100 1000 3000 5000; do
+  awk -v a=`head -${TOP} output/Ath_stem_1_mrna_scored.tsv | tail -1 | awk '{print $10}'` \
+    '$10>=a {print $1 $3 $2}' output/Ath_stem_1_mrna_scored.tsv \
+    >temp/sample1.txt
+  awk -v a=`head -${TOP} output/Ath_stem_2_mrna_scored.tsv | tail -1 | awk '{print $10}'` \
+    '$10>=a {print $1 $3 $2}' output/Ath_stem_2_mrna_scored.tsv \
+    >temp/sample2.txt
+  awk -v a=`head -${TOP} output/Ath_stem_3_mrna_scored.tsv | tail -1 | awk '{print $10}'` \
+    '$10>=a {print $1 $3 $2}' output/Ath_stem_3_mrna_scored.tsv \
+    >temp/sample3.txt
+  Rscript ~/NJU_seq/presentation/point_venn.R \
+    Sample1 temp/sample1.txt \
+    Sample2 temp/sample2.txt \
+    Sample3 temp/sample3.txt \
+    output/Hsa_${i}_mrna_top${j}_venn.png
+  rm temp/sample1.txt temp/sample2.txt temp/sample3.txt output/Ath_stem_mrna_top${j}_venn.png
+done
+
 # perl ~/NJU_seq/tool/common.pl \
 #  output/Ath_stem_1_mrna_scored.tsv \
 #  output/Ath_stem_2_mrna_scored.tsv \
@@ -358,22 +376,13 @@ perl ~/NJU_seq/mrna_analysis/extract_point.pl \
   output/Ath_stem_1_mrna_scored.tsv \
   output/Ath_stem_2_mrna_scored.tsv \
   output/Ath_stem_3_mrna_scored.tsv \
-  1000 1 >output/Ath_stem_mrna_scored.tsv
-    
-for TOP in 50 100 1000 3000 5000; do
-  awk -v a=`head -${TOP} output/Ath_stem_1_mrna_scored.tsv | tail -1 | awk '{print $10}'`
-    '$10>=a {print $1 $3 $2}' output/Ath_stem_1_mrna_scored.tsv
-    >sample1.txt
-  awk -v a=`head -${TOP} output/Ath_stem_2_mrna_scored.tsv | tail -1 | awk '{print $10}'`
-    '$10>=a {print $1 $3 $2}' output/Ath_stem_2_mrna_scored.tsv
-    >sample2.txt
-  awk -v a=`head -${TOP} output/Ath_stem_3_mrna_scored.tsv | tail -1 | awk '{print $10}'`
-    '$10>=a {print $1 $3 $2}' output/Ath_stem_3_mrna_scored.tsv
-    >sample3.txt
-  Rscript ~/NJU_seq/presentation/point_venn.R Sample1 sample1.txt Sample2 sample2.txt Sample3 sample3.txt Hsa_${i}_mrna_top${j}_venn.png
-  rm 
-done
-
+  1000 1 >output/Ath_stem_mrna_scored_1000p.tsv
+  
+perl ~/NJU_seq/mrna_analysis/extract_point.pl \
+  output/Ath_stem_1_mrna_scored.tsv \
+  output/Ath_stem_2_mrna_scored.tsv \
+  output/Ath_stem_3_mrna_scored.tsv \
+  500 1 >output/Ath_stem_mrna_scored_500p.tsv
 ```
 
 ## 5. Statistics and Presentation.
@@ -381,6 +390,10 @@ See the signature of Nm site.
 ```shell script
 bash ~/NJU_seq/presentation/signature_count.sh \
   output/Ath_stem_mrna_scored.tsv
+  
+perl ~/NJU_seq/presentation/signature_count.pl \
+  output/Ath_stem_mrna_scored_1000p.tsv \
+  output/Ath_stem_mrna_signature.pdf
 ```
 
 Divide annotations into two categories.

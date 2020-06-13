@@ -26,7 +26,12 @@ my $data_table;
 foreach my $nm (qw(A G C T)) {
     foreach my $lef (qw(A G C T)) {
         foreach my $rgt (qw(A G C T)) {
-            $data_table .= "$lef$nm$rgt\t$sig{$lef.$nm.$rgt}\n";
+            if ( exists( $sig{ $lef . $nm . $rgt } ) ) {
+                $data_table .= "$lef$nm$rgt\t$sig{$lef . $nm . $rgt}\n";
+            }
+            else {
+                $data_table .= "$lef$nm$rgt\t0\n";
+            }
         }
     }
 }
