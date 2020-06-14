@@ -388,9 +388,6 @@ perl ~/NJU_seq/mrna_analysis/extract_point.pl \
 ## 5. Statistics and Presentation.
 See the signature of Nm site.
 ```shell script
-bash ~/NJU_seq/presentation/signature_count.sh \
-  output/Ath_stem_mrna_scored.tsv
-  
 perl ~/NJU_seq/presentation/signature_count.pl \
   output/Ath_stem_mrna_scored_1000p.tsv \
   output/Ath_stem_mrna_signature.pdf
