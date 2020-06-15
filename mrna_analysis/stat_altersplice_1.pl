@@ -38,15 +38,19 @@ while (<$GENE>) {
     my $exon_length    = $exon_set->cardinality;
     my $intron_length  = $intron_set->cardinality;
     my $variant_length = $variant_set->cardinality;
-    my $exon_number =
-      AlignDB::IntSpan::intersect( $point_set{$chr_dir}, $exon_set )
-      ->cardinality;
-    my $intron_number =
-      AlignDB::IntSpan::intersect( $point_set{$chr_dir}, $intron_set )
-      ->cardinality;
-    my $variant_number =
-      AlignDB::IntSpan::intersect( $point_set{$chr_dir}, $variant_set )
-      ->cardinality;
+    my ( $exon_number, $intron_number, $variant_number ) = ( 0, 0, 0 );
+
+    if ( exists( $point_set{$chr_dir} ) ) {
+        $exon_number =
+          AlignDB::IntSpan::intersect( $point_set{$chr_dir}, $exon_set )
+          ->cardinality;
+        $intron_number =
+          AlignDB::IntSpan::intersect( $point_set{$chr_dir}, $intron_set )
+          ->cardinality;
+        $variant_number =
+          AlignDB::IntSpan::intersect( $point_set{$chr_dir}, $variant_set )
+          ->cardinality;
+    }
     my $stat_val;
 
     if ( $exon_number + $intron_number + $variant_number >= 5 ) {
