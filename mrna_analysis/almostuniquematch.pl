@@ -32,13 +32,10 @@ while (<$in_sam1>) {
 }
 close($in_sam1);
 
-my ( %uniq_id, %multi_id );
+my %uniq_id;
 foreach my $k ( keys(%list) ) {
     if ( $list{$k} == 1 ) {
         $uniq_id{$k} = 1;
-    }
-    else {
-        $multi_id{$k} = 1;
     }
 }
 
