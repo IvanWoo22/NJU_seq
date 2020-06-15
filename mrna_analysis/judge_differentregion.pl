@@ -10,6 +10,7 @@ Getopt::Long::GetOptions(
     'help|h'         => sub { Getopt::Long::HelpMessage(0) },
     'transwording=s' => \my $mRNA,
     'geneid=s'       => \my $geneid,
+    'transid=s'      => \my $transid,
     'ymlinput=s'     => \my $IN_FH,
 ) or Getopt::Long::HelpMessage(1);
 
@@ -55,7 +56,7 @@ while (<$GENE>) {
         my ( undef, undef, $type, $start, $end, undef, undef, undef,
             $line_info ) = split( /\t/, $line[$t] );
         if ( $type eq $mRNA ) {
-            if ( $line_info =~ /^ID=transcript:([0-9,a-z,A-Z,\.,\_]+);/ ) {
+            if ( $line_info =~ /$transid([0-9,a-z,A-Z,\.,\_]+);/ ) {
                 $transcript = $1;
             }
         }

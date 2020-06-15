@@ -430,6 +430,7 @@ pigz -dcf data/ath.gff3.gz |
   perl ~/NJU_seq/mrna_analysis/judge_differentregion.pl \
     --transwording "mRNA" \
     --geneid "ID=gene:" \
+    --transid "ID=transcript:" \
     --ymlinput "data/ath_unique_gene.yml" \
     >temp/ath_uniquegene_differentregion.yml
 
