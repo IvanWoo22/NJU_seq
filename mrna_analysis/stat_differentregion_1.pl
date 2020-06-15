@@ -8,7 +8,7 @@ use AlignDB::IntSpan;
 my %point_set;
 while (<STDIN>) {
     chomp;
-    my ( $chr, $dir, $point ) = split /\t/;
+    my ( $chr, $point, $dir ) = split /\t/;
     my $chr_dir = $chr . "\t" . $dir;
     if ( $dir eq "+" ) {
         $point--;
@@ -34,7 +34,7 @@ while (<$GENE>) {
         $five_utr_string, $cds_string, $three_utr_string
     ) = split /\t/;
     $chr =~ s/chr//;
-    my $chr_dir = $chr . "\t" . $dir;
+    my $chr_dir          = $chr . "\t" . $dir;
     my $five_utr_set     = AlignDB::IntSpan->new($five_utr_string);
     my $cds_set          = AlignDB::IntSpan->new($cds_string);
     my $three_utr_set    = AlignDB::IntSpan->new($three_utr_string);
@@ -42,6 +42,7 @@ while (<$GENE>) {
     my $cds_length       = $cds_set->cardinality;
     my $three_utr_length = $three_utr_set->cardinality;
     my ( $five_utr_number, $cds_number, $three_utr_number );
+
     if ( exists( $point_set{$chr_dir} ) ) {
         $five_utr_number =
           AlignDB::IntSpan::intersect( $point_set{$chr_dir}, $five_utr_set )

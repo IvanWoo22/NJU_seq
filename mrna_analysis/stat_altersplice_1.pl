@@ -8,7 +8,7 @@ use AlignDB::IntSpan;
 my %point_set;
 while (<STDIN>) {
     chomp;
-    my ( $chr, $dir, $point ) = split /\t/;
+    my ( $chr, $point, $dir ) = split /\t/;
     my $chr_dir = $chr . "\t" . $dir;
     if ( $dir eq "+" ) {
         $point--;

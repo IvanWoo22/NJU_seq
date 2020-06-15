@@ -64,7 +64,7 @@ close($UNIQUEGENE);
 
 while (<STDIN>) {
     chomp;
-    my ( $chr, $dir, $point ) = split /\t/;
+    my ( $chr, $point, $dir ) = split /\t/;
     my $chr_dir = $chr . "\t" . $dir;
     my $set     = AlignDB::IntSpan->new($point);
     my $reg     = 0;

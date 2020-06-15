@@ -362,8 +362,8 @@ for TOP in 50 100 1000 3000 5000; do
     Sample1 temp/sample1.txt \
     Sample2 temp/sample2.txt \
     Sample3 temp/sample3.txt \
-    output/Hsa_${i}_mrna_top${j}_venn.png
-  rm temp/sample1.txt temp/sample2.txt temp/sample3.txt output/Ath_stem_mrna_top${j}_venn.png
+    output/Ath_stem_mrna_top${TOP}_venn.png
+  rm temp/sample1.txt temp/sample2.txt temp/sample3.txt output/Ath_stem_mrna_top${TOP}_venn.png*.log
 done
 
 # perl ~/NJU_seq/tool/common.pl \

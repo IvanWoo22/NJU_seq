@@ -33,7 +33,7 @@ close($FASTA);
 
 while (<$SEG>) {
     s/\r?\n//;
-    my ( $chr, $dir, $position ) = split /\t/;
+    my ( $chr, $position, $dir ) = split /\t/;
     my $info = $_;
     my ( $start, $end );
     if ( $dir eq "+" ) {
