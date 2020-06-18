@@ -386,11 +386,20 @@ perl ~/NJU_seq/mrna_analysis/extract_point.pl \
 ```
 
 ## 5. Statistics and Presentation.
-See the signature of Nm site.
+See the signature of Nm sites.
 ```shell script
 perl ~/NJU_seq/presentation/signature_count.pl \
   output/Ath_stem_mrna_scored_1000p.tsv \
   output/Ath_stem_mrna_signature.pdf
+```
+
+GO(gene ontology) analysis for the top 500 Nm sites.
+
+After submit and analysis using [DAVID](https://david.ncifcrf.gov/tools.jsp), commands below could turn the chart into barplot.
+```shell script
+Rscript ~/NJU_seq/presentation/gene_ontology.R \
+  output/Ath_stem_GO.tsv \
+  output/Ath_stem_GO.pdf
 ```
 
 Divide annotations into two categories.
@@ -425,8 +434,8 @@ perl ~/NJU_seq/mrna_analysis/stat_altersplice_2.pl \
 # Output file is the final result.
 
 pigz -dcf data/ath.gff3.gz |
-  awk '($3=="gene") || ($3=="mRNA") || ($3=="CDS") \
-    || ($3=="five_prime_UTR") || ($3=="three_prime_UTR")' |
+  awk '($3=="gene") || ($3=="CDS") || ($3=="five_prime_UTR") || ($3=="three_prime_UTR") \
+    || (($3=="mRNA")&&($9~/biotype=protein_coding/))' |
   perl ~/NJU_seq/mrna_analysis/judge_differentregion.pl \
     --transwording "mRNA" \
     --geneid "ID=gene:" \
