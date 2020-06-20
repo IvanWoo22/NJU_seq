@@ -71,7 +71,7 @@ foreach my $gene ( sort( keys(%gene_info) ) ) {
     }
     if ( $mane == 1 ) {
         foreach my $trans ( sort( keys( %{ $gene_info{$gene} } ) ) ) {
-            print("$trans\n") if ${ $gene_info{$gene}{$trans} }[0] == 1;
+            print("$trans\t$gene\n") if ${ $gene_info{$gene}{$trans} }[0] == 1;
         }
     }
     else {
@@ -89,7 +89,7 @@ foreach my $gene ( sort( keys(%gene_info) ) ) {
         my @ap_sort = sort { $ap{$a} <=> $ap{$b} } keys %ap;
         if ( ( $#ap_sort == 0 ) or ( $ap{ $ap_sort[0] } < $ap{ $ap_sort[1] } ) )
         {
-            print("$ap_sort[0]\n");
+            print("$ap_sort[0]\t$gene\n");
         }
         else {
             foreach my $trans ( sort( keys( %{ $gene_info{$gene} } ) ) ) {
@@ -107,7 +107,7 @@ foreach my $gene ( sort( keys(%gene_info) ) ) {
             }
             if ( $basic == 1 ) {
                 foreach my $trans ( sort( keys( %{ $gene_info{$gene} } ) ) ) {
-                    print("$trans\n") if $basic{$trans} == 1;
+                    print("$trans\t$gene\n") if $basic{$trans} == 1;
                 }
             }
             else {
@@ -127,7 +127,7 @@ foreach my $gene ( sort( keys(%gene_info) ) ) {
                 if (   ( $#tsl_sort == 0 )
                     or ( $tsl{ $tsl_sort[0] } < $tsl{ $tsl_sort[1] } ) )
                 {
-                    print("$tsl_sort[0]\n");
+                    print("$tsl_sort[0]\t$gene\n");
                 }
                 else {
                     foreach my $trans ( sort( keys( %{ $gene_info{$gene} } ) ) )
@@ -142,7 +142,7 @@ foreach my $gene ( sort( keys(%gene_info) ) ) {
                     }
                     my @length_sort =
                       sort { $length{$a} <=> $length{$b} } keys %length;
-                    print("$length_sort[0]\n");
+                    print("$length_sort[0]\t$gene\n");
                 }
             }
         }
