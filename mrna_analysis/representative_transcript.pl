@@ -38,7 +38,7 @@ sub TAGS {
 sub GET_ID {
     my ( $FEATURE, $INFO ) = @_;
     my $ID;
-    if ( $INFO =~ m/$FEATURE(\w+)\.?[0-9]*;/ ) {
+    if ( $INFO =~ m/$FEATURE(\w+\.?[0-9]*)/ ) {
         $ID = $1;
     }
     else {

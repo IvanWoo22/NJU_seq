@@ -433,34 +433,27 @@ perl ~/NJU_seq/mrna_analysis/stat_altersplice_2.pl \
   >output/Ath_stem_altergene_cov.tsv
 # Output file is the final result.
 
-pigz -dcf data/ath.gff3.gz |
-  awk '($3=="gene") || ($3=="CDS") || ($3=="five_prime_UTR") || ($3=="three_prime_UTR") \
-    || (($3=="mRNA")&&($9~/biotype=protein_coding/))' |
-  perl ~/NJU_seq/mrna_analysis/judge_differentregion.pl \
-    --transwording "mRNA" \
-    --geneid "ID=gene:" \
-    --transid "ID=transcript:" \
-    --ymlinput "data/ath_unique_gene.yml" \
-    >temp/ath_uniquegene_differentregion.yml
-
-perl ~/NJU_seq/mrna_analysis/judge_region.pl \
-  data/ath_alter_gene.yml temp/ath_uniquegene_differentregion.yml \
+pigz -dc data/ath.gff3.gz |
+  awk '(($3=="five_prime_UTR") || ($3=="three_prime_UTR") || ($3=="CDS"))' |
+  perl ~/NJU_seq/mrna_analysis/judge_transcriptregion_1.pl \
+    --transid "Parent=transcript:" \
+    --rep_trans "data/ath_transcript.txt" \
+    >data/ath_transregion.tsv
+# The creation of data/ath_transcript.txt is to be done.
+    
+perl ~/NJU_seq/mrna_analysis/judge_transcriptregion_2.pl \
+  data/ath_transregion.tsv \
   <output/Ath_stem_mrna_scored.tsv \
-  >output/Ath_stem_mrna_scored_region.tsv
-
-perl ~/NJU_seq/mrna_analysis/stat_differentregion_1.pl \
-  temp/ath_uniquegene_differentregion.yml \
+  >temp/Ath_stem_transregion.tsv
+  
+perl ~/NJU_seq/mrna_analysis/judge_transcriptregion_3.pl \
+  <temp/Ath_stem_transregion.tsv \
+  >temp/Ath_stem_transregion_cov.tsv
+  
+perl ~/NJU_seq/mrna_analysis/judge_transcriptregion_4.pl \
+  data/ath_transregion.tsv \
   <output/Ath_stem_mrna_scored.tsv \
-  >temp/Ath_stem_uniquegene.tsv
-
-perl  ~/NJU_seq/mrna_analysis/stat_differentregion_2.pl \
-  <temp/Ath_stem_uniquegene.tsv \
-  >output/Ath_stem_uniquegene_cov.tsv
-
-perl ~/NJU_seq/mrna_analysis/stat_differentregion_3.pl \
-  temp/ath_uniquegene_differentregion.yml \
-  <output/Ath_stem_mrna_scored.tsv \
-  >output/Ath_stem_uniquegene_distribution.tsv
+  >output/Ath_stem_mrna_scored_distribution.tsv
 ```
 
 ## 6. Motif Found in miRNA.
