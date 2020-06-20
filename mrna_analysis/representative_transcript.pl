@@ -19,7 +19,7 @@ sub TAGS {
     else {
         $TSL = 6;
     }
-    my @TMP  = ( $INFO =~ m/tag=([A-Z,a-z,0-9,_,\,]*);/ );
+    my @TMP  = ( $INFO =~ m/tag=([A-Z,a-z,0-9,_,\,]*)/ );
     my @TAG  = split( /,/, $TMP[0] );
     my $MANE = 0;
     $MANE = grep /^MANE_Select$/i, @TAG;
