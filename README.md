@@ -419,6 +419,13 @@ pigz -dcf data/ath.gff3.gz |
     --geneid "ID=gene:" \
     --alter "data/ath_alter_gene.yml" \
     --unique "data/ath_unique_gene.yml"
+    
+#pigz -dc data/hsa.gff3.gz |
+#  awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' |
+#  perl ~/NJU_seq/mrna_analysis/representative_transcript.pl \
+#    --geneid "gene_id=" \
+#    --transid "transcript_id=" \
+#    >data/hsa_represent_transcript.txt
 ```
 
 Analyse the Nm points.
@@ -437,12 +444,12 @@ pigz -dc data/ath.gff3.gz |
   awk '(($3=="five_prime_UTR") || ($3=="three_prime_UTR") || ($3=="CDS"))' |
   perl ~/NJU_seq/mrna_analysis/judge_transcriptregion_1.pl \
     --transid "Parent=transcript:" \
-    --rep_trans "data/ath_transcript.txt" \
-    >data/ath_transregion.tsv
+    --rep_trans "data/ath_represent_transcript.txt" \
+    >data/ath_transcript_region.tsv
 # The creation of data/ath_transcript.txt is to be done.
     
 perl ~/NJU_seq/mrna_analysis/judge_transcriptregion_2.pl \
-  data/ath_transregion.tsv \
+  data/ath_transcript_region.tsv \
   <output/Ath_stem_mrna_scored.tsv \
   >temp/Ath_stem_transregion.tsv
   
@@ -451,7 +458,7 @@ perl ~/NJU_seq/mrna_analysis/judge_transcriptregion_3.pl \
   >temp/Ath_stem_transregion_cov.tsv
   
 perl ~/NJU_seq/mrna_analysis/judge_transcriptregion_4.pl \
-  data/ath_transregion.tsv \
+  data/ath_transcript_region.tsv \
   <output/Ath_stem_mrna_scored.tsv \
   >output/Ath_stem_mrna_scored_distribution.tsv
 ```
