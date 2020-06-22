@@ -10,7 +10,7 @@ sub BASE_CHANGE {
         return ("U");
     }
     else {
-        return ("T");
+        return ($BASE);
     }
 }
 
