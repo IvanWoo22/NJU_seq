@@ -426,10 +426,26 @@ pigz -dcf data/ath.gff3.gz |
 #    --geneid "gene_id=" \
 #    --transid "transcript_id=" \
 #    >data/hsa_represent_transcript.txt
+
+#pigz -dc data/hsa.gff3.gz |
+#  awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' |
+#  perl ~/NJU_seq/mrna_analysis/main_transcript.pl \
+#    --geneid "gene_id=" \
+#    --transid "transcript_id=" \
+#    >data/hsa_main_transcript.txt
 ```
 
 Analyse the Nm points.
 ```shell script
+#pigz -dc data/hsa.gff3.gz |
+#  awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/)) \
+#    ||(($3=="exon")&&($9~/transcript_type=protein_coding/))' |
+#  perl ~/NJU_seq/mrna_analysis/judge_altersplice_1.pl \
+#    --geneid "gene_id=" \
+#    --transid "transcript_id=" \
+#    --rep_trans "data/hsa_main_transcript.txt" \
+#    >data/hsa_gene_spliceregion.yml
+
 perl ~/NJU_seq/mrna_analysis/stat_altersplice_1.pl \
   data/ath_alter_gene.yml \
   <output/Ath_stem_mrna_scored.tsv \
