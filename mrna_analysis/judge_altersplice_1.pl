@@ -25,11 +25,7 @@ sub GET_ID {
     return $ID;
 }
 
-my (
-    %trans,    %gene_info,  %chr,  %dir,
-    %exon,     %intron,     %mrna, %gene_range,
-    %all_exon, %all_intron, %alter_splice
-);
+my ( %trans, %gene_info, %chr, %dir, %exon, %intron, %mrna );
 
 open( my $IN_FH, "<", $IN_TRANS );
 while (<$IN_FH>) {
@@ -75,16 +71,16 @@ while (<STDIN>) {
 }
 
 foreach my $gene ( sort( keys(%gene_info) ) ) {
-    $gene_range{$gene}   = AlignDB::IntSpan->new;
-    $all_exon{$gene}     = AlignDB::IntSpan->new;
-    $all_intron{$gene}   = AlignDB::IntSpan->new;
-    $alter_splice{$gene} = AlignDB::IntSpan->new;
+    my $gene_range   = AlignDB::IntSpan->new;
+    my $all_exon     = AlignDB::IntSpan->new;
+    my $all_intron   = AlignDB::IntSpan->new;
+    my $alter_splice = AlignDB::IntSpan->new;
     foreach my $trans ( sort( keys( %{ $gene_info{$gene} } ) ) ) {
-        $gene_range{$gene}->AlignDB::IntSpan::add( $mrna{$trans} );
+        $gene_range->AlignDB::IntSpan::add( $mrna{$trans} );
         $intron{$trans} =
           $mrna{$trans}->AlignDB::IntSpan::diff( $exon{$trans} );
     }
-    foreach my $point ( $gene_range{$gene}->AlignDB::IntSpan::as_array ) {
+    foreach my $point ( $gene_range->AlignDB::IntSpan::as_array ) {
         my $exon_count   = 0;
         my $intron_count = 0;
         foreach my $trans ( sort( keys( %{ $gene_info{$gene} } ) ) ) {
@@ -93,18 +89,18 @@ foreach my $gene ( sort( keys(%gene_info) ) ) {
             $intron_count++
               if $intron{$trans}->AlignDB::IntSpan::contains_all($point);
         }
-        $all_exon{$gene}->AlignDB::IntSpan::add($point)
+        $all_exon->AlignDB::IntSpan::add($point)
           if ( $exon_count > 0 and $intron_count == 0 );
-        $all_intron{$gene}->AlignDB::IntSpan::add($point)
+        $all_intron->AlignDB::IntSpan::add($point)
           if ( $exon_count == 0 and $intron_count > 0 );
-        $alter_splice{$gene}->AlignDB::IntSpan::add($point)
+        $alter_splice->AlignDB::IntSpan::add($point)
           if ( $exon_count > 0 and $intron_count > 0 );
     }
-    my $all_exon     = $all_exon{$gene}->AlignDB::IntSpan::as_string;
-    my $all_intron   = $all_intron{$gene}->AlignDB::IntSpan::as_string;
-    my $alter_splice = $alter_splice{$gene}->AlignDB::IntSpan::as_string;
+    my $all_exon_string     = $all_exon->AlignDB::IntSpan::as_string;
+    my $all_intron_string   = $all_intron->AlignDB::IntSpan::as_string;
+    my $alter_splice_string = $alter_splice->AlignDB::IntSpan::as_string;
     print(
-"$chr{$gene}\t$gene\t$dir{$gene}\t$all_exon\t$all_intron\t$alter_splice\n"
+"$chr{$gene}\t$gene\t$dir{$gene}\t$all_exon_string\t$all_intron_string\t$alter_splice_string\n"
     );
 }
 

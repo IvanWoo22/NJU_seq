@@ -383,6 +383,15 @@ perl ~/NJU_seq/mrna_analysis/extract_point.pl \
   output/Ath_stem_2_mrna_scored.tsv \
   output/Ath_stem_3_mrna_scored.tsv \
   500 1 >output/Ath_stem_mrna_scored_500p.tsv
+
+#pigz -dc data/hsa.gff3.gz |
+#  awk '$3=="gene"' |
+#  perl ~/NJU_seq/tool/add_gene_name.pl \
+#    --id "gene_id=" \
+#    --name "gene_name=" \
+#    --col "8" \
+#    --file "output/${PREFIX}_mrna_scored_500p.tsv" \
+#    >output/${PREFIX}_mrna_scored_500p_name.tsv
 ```
 
 ## 5. Statistics and Presentation.

@@ -5,7 +5,7 @@ use autodie;
 
 use AlignDB::IntSpan;
 
-my ( %cer, %cir, %vr, %fu, %cds, %tu );
+my ( %cer, %cir, %vr );
 open( my $ALTERSPLICEGENE, "<", $ARGV[0] );
 while (<$ALTERSPLICEGENE>) {
     chomp;
@@ -34,34 +34,6 @@ while (<$ALTERSPLICEGENE>) {
 }
 close($ALTERSPLICEGENE);
 
-open( my $UNIQUEGENE, "<", $ARGV[1] );
-while (<$UNIQUEGENE>) {
-    chomp;
-    my ( $chr, undef, $dir, undef, undef, undef, $five_utr, $cds, $three_utr )
-      = split /\t/;
-    $chr =~ s/chr//;
-    my $chr_dir = $chr . "\t" . $dir;
-    if ( exists( $fu{$chr_dir} ) ) {
-        $fu{$chr_dir}->AlignDB::IntSpan::add_runlist($five_utr);
-    }
-    else {
-        $fu{$chr_dir} = AlignDB::IntSpan->new($five_utr);
-    }
-    if ( exists( $cds{$chr_dir} ) ) {
-        $cds{$chr_dir}->AlignDB::IntSpan::add_runlist($cds);
-    }
-    else {
-        $cds{$chr_dir} = AlignDB::IntSpan->new($cds);
-    }
-    if ( exists( $tu{$chr_dir} ) ) {
-        $tu{$chr_dir}->AlignDB::IntSpan::add_runlist($three_utr);
-    }
-    else {
-        $tu{$chr_dir} = AlignDB::IntSpan->new($three_utr);
-    }
-}
-close($UNIQUEGENE);
-
 while (<STDIN>) {
     chomp;
     my ( $chr, $point, $dir ) = split /\t/;
@@ -76,15 +48,6 @@ while (<STDIN>) {
     }
     if ( ( exists( $vr{$chr_dir} ) ) and ( $set->subset( $vr{$chr_dir} ) ) ) {
         $reg = "VR";
-    }
-    if ( ( exists( $fu{$chr_dir} ) ) and ( $set->subset( $fu{$chr_dir} ) ) ) {
-        $reg = "Five_UTR";
-    }
-    if ( ( exists( $cds{$chr_dir} ) ) and ( $set->subset( $cds{$chr_dir} ) ) ) {
-        $reg = "CDS";
-    }
-    if ( ( exists( $tu{$chr_dir} ) ) and ( $set->subset( $tu{$chr_dir} ) ) ) {
-        $reg = "Three_UTR";
     }
     print("$_\t$reg\n");
 }
