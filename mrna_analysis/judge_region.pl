@@ -5,7 +5,7 @@ use autodie;
 
 use AlignDB::IntSpan;
 
-my ( %cer, %cir, %vr );
+my ( %cse, %csi, %ase );
 open( my $ALTERSPLICEGENE, "<", $ARGV[0] );
 while (<$ALTERSPLICEGENE>) {
     chomp;
@@ -13,23 +13,23 @@ while (<$ALTERSPLICEGENE>) {
       = split /\t/;
     $chr =~ s/chr//;
     my $chr_dir = $chr . "\t" . $dir;
-    if ( exists( $cer{$chr_dir} ) ) {
-        $cer{$chr_dir}->AlignDB::IntSpan::add_runlist($constant_exon);
+    if ( exists( $cse{$chr_dir} ) ) {
+        $cse{$chr_dir}->AlignDB::IntSpan::add_runlist($constant_exon);
     }
     else {
-        $cer{$chr_dir} = AlignDB::IntSpan->new($constant_exon);
+        $cse{$chr_dir} = AlignDB::IntSpan->new($constant_exon);
     }
-    if ( exists( $cir{$chr_dir} ) ) {
-        $cir{$chr_dir}->AlignDB::IntSpan::add_runlist($constant_intron);
-    }
-    else {
-        $cir{$chr_dir} = AlignDB::IntSpan->new($constant_intron);
-    }
-    if ( exists( $vr{$chr_dir} ) ) {
-        $vr{$chr_dir}->AlignDB::IntSpan::add_runlist($variable_area);
+    if ( exists( $csi{$chr_dir} ) ) {
+        $csi{$chr_dir}->AlignDB::IntSpan::add_runlist($constant_intron);
     }
     else {
-        $vr{$chr_dir} = AlignDB::IntSpan->new($variable_area);
+        $csi{$chr_dir} = AlignDB::IntSpan->new($constant_intron);
+    }
+    if ( exists( $ase{$chr_dir} ) ) {
+        $ase{$chr_dir}->AlignDB::IntSpan::add_runlist($variable_area);
+    }
+    else {
+        $ase{$chr_dir} = AlignDB::IntSpan->new($variable_area);
     }
 }
 close($ALTERSPLICEGENE);
@@ -40,14 +40,14 @@ while (<STDIN>) {
     my $chr_dir = $chr . "\t" . $dir;
     my $set     = AlignDB::IntSpan->new($point);
     my $reg     = 0;
-    if ( ( exists( $cer{$chr_dir} ) ) and ( $set->subset( $cer{$chr_dir} ) ) ) {
-        $reg = "CER";
+    if ( ( exists( $cse{$chr_dir} ) ) and ( $set->subset( $cse{$chr_dir} ) ) ) {
+        $reg = "CSE";
     }
-    if ( ( exists( $cir{$chr_dir} ) ) and ( $set->subset( $cir{$chr_dir} ) ) ) {
-        $reg = "CIR";
+    if ( ( exists( $csi{$chr_dir} ) ) and ( $set->subset( $csi{$chr_dir} ) ) ) {
+        $reg = "CSI";
     }
-    if ( ( exists( $vr{$chr_dir} ) ) and ( $set->subset( $vr{$chr_dir} ) ) ) {
-        $reg = "VR";
+    if ( ( exists( $ase{$chr_dir} ) ) and ( $set->subset( $ase{$chr_dir} ) ) ) {
+        $reg = "ASE";
     }
     print("$_\t$reg\n");
 }
