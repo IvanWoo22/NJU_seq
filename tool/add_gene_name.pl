@@ -21,7 +21,7 @@ sub GET_INFO {
     else {
         warn("There is a problem in $INFO;\n");
     }
-    if ( $INFO =~ m/$NAME_FEATURE([A-Za-z0-9\-\.\(\)]);/ ) {
+    if ( $INFO =~ m/$NAME_FEATURE([A-Z,a-z,0-9,\-,\.,\(,\), ,\[,\],%,:,\/,\+,',`]+);/ ) {
         $NAME = $1;
     }
     else {
