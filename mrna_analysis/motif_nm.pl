@@ -23,6 +23,7 @@ my $title_name;
 while (<$FASTA>) {
     if (m/^>(\S+)/) {
         $title_name = $1;
+        $title_name =~ s/chr//;
     }
     else {
         $_ =~ s/\r?\n//;
