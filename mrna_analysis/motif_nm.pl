@@ -38,12 +38,12 @@ while (<$SEG>) {
     my $info = $_;
     my ( $start, $end );
     if ( $dir eq "+" ) {
-        $start = $position - 19;
-        $end   = $position;
+        $start = $position - 20;
+        $end   = $position + 20;
     }
     else {
-        $start = $position;
-        $end   = $position + 19;
+        $start = $position - 20;
+        $end   = $position + 20;
     }
     if ( exists( $fasta{$chr} ) ) {
         my $length = abs( $end - $start ) + 1;
