@@ -2,9 +2,9 @@
 use strict;
 use warnings;
 use autodie;
-use Algorithm::Combinatorics qw(combinations permutations);
+use Algorithm::Combinatorics qw(combinations);
 
-my ( %point, %point_info, @all_set, %point_score );
+my ( %point, %point_info, @all_set );
 foreach my $file_name (@ARGV) {
     open( my $FH, "<", $file_name );
     while (<$FH>) {
