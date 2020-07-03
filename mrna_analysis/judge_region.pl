@@ -37,27 +37,26 @@ my ( %utr5, %cds, %utr3 );
 open( my $TRANSCRIPT_REGION_GENE, "<", $ARGV[1] );
 while (<$TRANSCRIPT_REGION_GENE>) {
     chomp;
-    my ( $chr, undef, $dir, $constant_exon, $constant_intron, $variable_area )
-      = split /\t/;
+    my ( $chr, undef, $dir, undef, $utr5, $cds, $utr3 ) = split /\t/;
     $chr =~ s/chr//;
     my $chr_dir = $chr . "\t" . $dir;
     if ( exists( $utr5{$chr_dir} ) ) {
-        $utr5{$chr_dir}->AlignDB::IntSpan::add_runlist($constant_exon);
+        $utr5{$chr_dir}->AlignDB::IntSpan::add_runlist($utr5);
     }
     else {
-        $utr5{$chr_dir} = AlignDB::IntSpan->new($constant_exon);
+        $utr5{$chr_dir} = AlignDB::IntSpan->new($utr5);
     }
     if ( exists( $cds{$chr_dir} ) ) {
-        $cds{$chr_dir}->AlignDB::IntSpan::add_runlist($constant_intron);
+        $cds{$chr_dir}->AlignDB::IntSpan::add_runlist($cds);
     }
     else {
-        $cds{$chr_dir} = AlignDB::IntSpan->new($constant_intron);
+        $cds{$chr_dir} = AlignDB::IntSpan->new($cds);
     }
     if ( exists( $utr3{$chr_dir} ) ) {
-        $utr3{$chr_dir}->AlignDB::IntSpan::add_runlist($variable_area);
+        $utr3{$chr_dir}->AlignDB::IntSpan::add_runlist($utr3);
     }
     else {
-        $utr3{$chr_dir} = AlignDB::IntSpan->new($variable_area);
+        $utr3{$chr_dir} = AlignDB::IntSpan->new($utr3);
     }
 }
 close($TRANSCRIPT_REGION_GENE);
