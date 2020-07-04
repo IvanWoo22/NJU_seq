@@ -51,7 +51,7 @@ foreach my $number ( 1 .. $#ARGV + 1 ) {
               and ( not( exists( $out_point{$_} ) ) )
           } @all_point;
         if ( @point > 0 ) {
-            print join( " ", @$choose ), "\n";
+            print "#" . join( " ", @$choose ) . "\n";
             foreach my $point (@point) {
                 print "$point_info{$point}\n";
             }

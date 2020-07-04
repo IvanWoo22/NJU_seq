@@ -27,7 +27,7 @@ foreach my $element (@ARGV) {
     my @point =
       grep { ( $all_point{$_} < $number ) } @{ $point{$element} };
     if ( @point > 0 ) {
-        print "$element\n";
+        print "#$element\n";
         foreach my $point (@point) {
             print "$point_info{$point}\n";
         }
