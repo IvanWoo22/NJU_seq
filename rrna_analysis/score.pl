@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use autodie;
+use List::Util qw/min/;
 
 sub JUDGE_ZERO {
     my $IN = shift;
@@ -70,7 +71,7 @@ sub SCORE {
         my ( $SCORE1, $SCORE2, $SCORE3, $SCORE4, $SCORE5, $SCORE );
         $SCORE1 = $T_END_P1 / $T_END;
         $SCORE2 =
-          ( $T_START + $T_START_P1 + $T_START_P2 ) / ( $T_START_P1 * 3 );
+            min( $T_START,$T_START_P2 ) / ( $T_START_P1 );
         $SCORE3 = ( $N_END_M1 + $N_END + $N_END_P1 ) / ( $N_END * 3 );
         $SCORE4 =
           ( $N_START + $N_START_P1 + $N_START_P2 ) / ( $N_START_P1 * 3 );
