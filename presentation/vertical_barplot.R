@@ -30,7 +30,7 @@ df_plot %>%
   geom_point(aes(x = name, y = log_num1), shape = 16, color = "#489DCC", alpha = .9, size = 1.2) +
   geom_point(aes(x = name, y = log_num2), shape = 16, color = "#C6175A", alpha = .9, size = 1.2) +
   geom_point(aes(x = name, y = log_num3), shape = 16, color = "#EF7E5B", alpha = .9, size = 1.2) +
-  coord_flip(ylim = c(0, 11.8)) +
+  coord_flip(ylim = c(0, log10(max(raw_data[,4:6])*1.1)) +
   xlab("") +
   ylab("") +
   theme_bw() +
