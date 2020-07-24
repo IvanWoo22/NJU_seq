@@ -26,9 +26,9 @@ ggplot(mutate(df_plot, name = fct_reorder(name, log_ave))) +
   scale_fill_manual(values = color_scale) +
   expand_limits(y = 0) +
   scale_y_continuous(expand = c(0, 0)) +
-  geom_point(aes(x = name, y = log_num1), shape = 16, color = "#5E95CA", alpha = .9, size = 1.8) +
-  geom_point(aes(x = name, y = log_num2), shape = 16, color = "#91211C", alpha = .9, size = 1.8) +
-  geom_point(aes(x = name, y = log_num3), shape = 16, color = "#F29125", alpha = .9, size = 1.8) +
+  geom_point(aes(x = name, y = log_num1), shape = 16, color = "#5E95CA", alpha = .9, size = 1.2) +
+  geom_point(aes(x = name, y = log_num2), shape = 16, color = "#91211C", alpha = .9, size = 1.2) +
+  geom_point(aes(x = name, y = log_num3), shape = 16, color = "#F29125", alpha = .9, size = 1.2) +
   coord_flip(ylim = c(0, log10(max(raw_data[,4:6])*1.5))) +
   xlab("") +
   ylab("") +
