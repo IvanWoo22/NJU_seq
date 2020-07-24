@@ -81,7 +81,6 @@ sub SCORE {
     }
     push( @SCORE, 0 );
     push( @SCORE, 0 );
-    push( @SCORE, 0 );
     return (@SCORE);
 }
 
