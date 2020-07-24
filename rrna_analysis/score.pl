@@ -20,6 +20,7 @@ sub SCORE {
 
     my @SCORE;
     $SCORE[0] = 0;
+    $SCORE[1] = 0;
     for my $CURRENT ( 2 .. $#{$TR_END_COUNT} - 2 ) {
         my (
             $T_END,      $T_END_P1, $T_END_P2,   $N_END_M2, $N_END_M1,
