@@ -20,26 +20,31 @@ sub SCORE {
 
     my @SCORE;
     $SCORE[0] = 0;
-    for my $CURRENT ( 1 .. $#{$TR_END_COUNT} - 2 ) {
+    for my $CURRENT ( 1 .. $#{$TR_END_COUNT} - 3 ) {
         my (
-            $T_END,    $T_END_P1,   $T_END_P2, $N_END_M1,   $N_END,
-            $N_END_P1, $N_END_P2,   $T_START,  $T_START_P1, $T_START_P2,
-            $N_START,  $N_START_P1, $N_START_P2
+            $T_END,      $T_END_P1, $T_END_P2,   $N_END_M2, $N_END_M1,
+            $N_END,      $N_END_P1, $N_END_P2,   $T_START,  $T_START_P1,
+            $T_START_P2, $N_START,  $N_START_P1, $N_START_P2
           )
           = (
             JUDGE_ZERO( ${$TR_END_COUNT}[$CURRENT] ),
             JUDGE_ZERO( ${$TR_END_COUNT}[ $CURRENT + 1 ] ),
             JUDGE_ZERO( ${$TR_END_COUNT}[ $CURRENT + 2 ] ),
+            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT - 2 ] ),
             JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT - 1 ] ),
             JUDGE_ZERO( ${$NC_END_COUNT}[$CURRENT] ),
             JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 1 ] ),
             JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 2 ] ),
+            JUDGE_ZERO( ${$TR_START_COUNT}[ $CURRENT - 1 ] ),
             JUDGE_ZERO( ${$TR_START_COUNT}[$CURRENT] ),
             JUDGE_ZERO( ${$TR_START_COUNT}[ $CURRENT + 1 ] ),
             JUDGE_ZERO( ${$TR_START_COUNT}[ $CURRENT + 2 ] ),
+            JUDGE_ZERO( ${$TR_START_COUNT}[ $CURRENT + 3 ] ),
+            JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT - 1 ] ),
             JUDGE_ZERO( ${$NC_START_COUNT}[$CURRENT] ),
             JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT + 1 ] ),
-            JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT + 2 ] )
+            JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT + 2 ] ),
+            JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT + 3 ] )
           );
 
         if ( ( $T_END < 4 ) and ( $N_END < 4 ) ) {
@@ -70,15 +75,15 @@ sub SCORE {
         }
         my ( $SCORE1, $SCORE2, $SCORE3, $SCORE4, $SCORE5, $SCORE );
         $SCORE1 = $T_END_P1 / $T_END;
-        $SCORE2 =
-            min( $T_START,$T_START_P2 ) / ( $T_START_P1 );
-        $SCORE3 = ( $N_END_M1 + $N_END + $N_END_P1 ) / ( $N_END * 3 );
-        $SCORE4 =
-          ( $N_START + $N_START_P1 + $N_START_P2 ) / ( $N_START_P1 * 3 );
+        $SCORE2 = ( $T_START * $T_START_P2 )**0.5 / $T_START_P1;
+        $SCORE3 =
+          ( $N_END_M2 * $N_END_M1 * $N_END_P1 * $N_END_P2 )**0.25 / $N_END;
+        $SCORE4 = ( $N_START * $N_START_P2 )**0.5 / $N_START_P1;
         $SCORE5 = ( $T_END_P1 / $T_END_P2 ) / ( $N_END_P1 / $N_END_P2 );
         $SCORE  = $SCORE1 * $SCORE2 * $SCORE3 * $SCORE4 * $SCORE5;
         push( @SCORE, $SCORE );
     }
+    push( @SCORE, 0 );
     push( @SCORE, 0 );
     push( @SCORE, 0 );
     return (@SCORE);
