@@ -35,16 +35,12 @@ sub SCORE {
             JUDGE_ZERO( ${$NC_END_COUNT}[$CURRENT] ),
             JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 1 ] ),
             JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 2 ] ),
-            JUDGE_ZERO( ${$TR_START_COUNT}[ $CURRENT - 1 ] ),
             JUDGE_ZERO( ${$TR_START_COUNT}[$CURRENT] ),
             JUDGE_ZERO( ${$TR_START_COUNT}[ $CURRENT + 1 ] ),
             JUDGE_ZERO( ${$TR_START_COUNT}[ $CURRENT + 2 ] ),
-            JUDGE_ZERO( ${$TR_START_COUNT}[ $CURRENT + 3 ] ),
-            JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT - 1 ] ),
             JUDGE_ZERO( ${$NC_START_COUNT}[$CURRENT] ),
             JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT + 1 ] ),
-            JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT + 2 ] ),
-            JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT + 3 ] )
+            JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT + 2 ] )
           );
 
         if ( ( $T_END < 4 ) and ( $N_END < 4 ) ) {
