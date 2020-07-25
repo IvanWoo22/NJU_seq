@@ -82,6 +82,12 @@ sub SCORE {
     }
     push( @SCORE, 0 );
     push( @SCORE, 0 );
+    foreach my $HEAD ( 0 .. 19 ) {
+        $SCORE[$HEAD] = 0;
+    }
+    foreach my $TAIL ( $#SCORE - 19 .. $#SCORE ) {
+        $SCORE[$TAIL] = 0;
+    }
     return (@SCORE);
 }
 
