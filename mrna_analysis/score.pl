@@ -1,4 +1,3 @@
-
 #!/usr/bin/env perl
 use strict;
 use warnings;
@@ -9,9 +8,8 @@ my %NC_info;
 open( my $IN_NC, "<", $ARGV[0] );
 while (<$IN_NC>) {
     chomp;
-    my ( $chr, $pos, $dir, undef, undef, undef, undef, undef,
-        $end_count ) =
-        split /\t/;
+    my ( $chr, $pos, $dir, undef, undef, undef, undef, undef, $end_count ) =
+      split /\t/;
     my $id = $chr . "\t" . $dir . "\t" . $pos;
     $NC_info{$id}  = $_;
     $NC_count{$id} = $end_count;
@@ -23,9 +21,8 @@ my %TR_info;
 open( my $IN_TR, "<", $ARGV[1] );
 while (<$IN_TR>) {
     chomp;
-    my ( $chr, $pos, $dir, undef, undef, undef, undef, undef,
-        $end_count ) =
-        split /\t/;
+    my ( $chr, $pos, $dir, undef, undef, undef, undef, undef, $end_count ) =
+      split /\t/;
     my $id = $chr . "\t" . $dir . "\t" . $pos;
     $TR_info{$id}  = $_;
     $TR_count{$id} = $end_count;
@@ -43,7 +40,7 @@ foreach my $id ( keys(%TR_count) ) {
     }
     if ( exists( $TR_count{ $chr . "\t" . $dir . "\t" . $formal_pos } ) ) {
         $score =
-            $TR_count{$id} / $TR_count{ $chr . "\t" . $dir . "\t" . $formal_pos };
+          $TR_count{$id} / $TR_count{ $chr . "\t" . $dir . "\t" . $formal_pos };
     }
     else {
         $score = $TR_count{$id} * 2;
@@ -51,7 +48,7 @@ foreach my $id ( keys(%TR_count) ) {
     if ( exists( $NC_count{$id} ) ) {
         if ( exists( $NC_count{ $chr . "\t" . $dir . "\t" . $formal_pos } ) ) {
             $score = $score - $NC_count{$id} /
-                $NC_count{ $chr . "\t" . $dir . "\t" . $formal_pos };
+              $NC_count{ $chr . "\t" . $dir . "\t" . $formal_pos };
         }
         else {
             $score = $score - $NC_count{$id} * 2;
