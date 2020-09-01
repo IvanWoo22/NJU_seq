@@ -13,8 +13,8 @@ sub LIST_INPUT {
     while (<$IN>) {
         chomp;
         my (
-            $CHR,   $POS,     $DIR,  $BASE1, $BASE2,
-            $BASE3, $GENE_ID, undef, undef,  $SCORE
+            $CHR,     $POS,  $DIR,  $BASE1, $BASE2, $BASE3,
+            $GENE_ID, undef, undef, undef,  undef,  $SCORE
         ) = split /\t/;
         push( @ARRAY_LIST, $CHR . "\t" . $POS . "\t" . $DIR );
         $INFO{ $CHR . "\t" . $POS . "\t" . $DIR } =
@@ -34,10 +34,7 @@ my ( $a_array, $a_info, $a_score ) = LIST_INPUT($IN1);
 my ( $b_array, undef,   $b_score ) = LIST_INPUT($IN2);
 my ( $c_array, undef,   $c_score ) = LIST_INPUT($IN3);
 
-my (
-    @common,     @a_extract,
-    @b_extract, @c_extract, %a_list, %b_list, %c_list
-);
+my ( @common, @a_extract, @b_extract, @c_extract, %a_list, %b_list, %c_list );
 
 my $extract = $ARGV[3];
 my $step    = $ARGV[4];

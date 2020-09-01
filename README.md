@@ -294,22 +294,10 @@ time gzip -dcf data/ath.gff3.gz |
     --geneid "AT" \
     --transid "AT" \
     -i temp/"${PREFIX}"/mrna.count.tmp \
-    -o temp/"${PREFIX}"/mrna.position.tmp
+    -o output/"${PREFIX}"/mrna.tsv
 # real  0m6.802s
 # user  0m9.653s
 # sys   0m0.227s
- 
-# The chromosome number changes according to the actual situation.
-for chr in 1 2 3 4 5 Mt Pt; do
-  awk -va=${chr} '$1==a&&$3=="+"' \
-  temp/"${PREFIX}"/mrna.position.tmp |
-    sort -t $'\t' -nk 2,2 \
-  >>output/"${PREFIX}"/mrna.tsv
-  awk -va=${chr} '$1==a&&$3=="-"' \
-  temp/"${PREFIX}"/mrna.position.tmp |
-    sort -t $'\t' -nrk 2,2 \
-  >>output/"${PREFIX}"/mrna.tsv
-done
 ```
 
 Calculate valid sequencing depth (average coverage).
@@ -344,7 +332,7 @@ parallel -j 3 "
   perl ~/NJU_seq/mrna_analysis/score.pl \\
     output/Ath_stem_NC/mrna.tsv \\
     output/{}/mrna.tsv |
-      sort -t $'\t' -nrk 10,10 \\
+      sort -t $'\t' -nrk 12,12 \\
         >output/{}_mrna_scored.tsv
   " ::: Ath_stem_1 Ath_stem_2 Ath_stem_3
 
@@ -377,12 +365,6 @@ perl ~/NJU_seq/mrna_analysis/extract_point.pl \
   output/Ath_stem_2_mrna_scored.tsv \
   output/Ath_stem_3_mrna_scored.tsv \
   1000 1 >output/Ath_stem_mrna_scored_1000p.tsv
-  
-perl ~/NJU_seq/mrna_analysis/extract_point.pl \
-  output/Ath_stem_1_mrna_scored.tsv \
-  output/Ath_stem_2_mrna_scored.tsv \
-  output/Ath_stem_3_mrna_scored.tsv \
-  500 1 >output/Ath_stem_mrna_scored_500p.tsv
 
 #pigz -dc data/hsa.gff3.gz |
 #  awk '$3=="gene"' |
@@ -402,7 +384,7 @@ perl ~/NJU_seq/presentation/signature_count.pl \
   output/Ath_stem_mrna_signature.pdf
 ```
 
-GO(gene ontology) analysis for the top 500 Nm sites.
+GO(gene ontology) analysis for the top common 1000 Nm sites.
 
 After submit and analysis using [DAVID](https://david.ncifcrf.gov/tools.jsp), commands below could turn the chart into barplot.
 ```shell script
