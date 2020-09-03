@@ -337,14 +337,14 @@ parallel -j 3 "
   " ::: Ath_stem_1 Ath_stem_2 Ath_stem_3
 
 for TOP in 50 100 1000 3000 5000; do
-  awk -v a=`head -${TOP} output/Ath_stem_1_mrna_scored.tsv | tail -1 | awk '{print $10}'` \
-    '$10>=a {print $1 $3 $2}' output/Ath_stem_1_mrna_scored.tsv \
+  awk -v a=`head -${TOP} output/Ath_stem_1_mrna_scored.tsv | tail -1 | awk '{print $12}'` \
+    '$12>=a {print $1 $3 $2}' output/Ath_stem_1_mrna_scored.tsv \
     >temp/sample1.txt
-  awk -v a=`head -${TOP} output/Ath_stem_2_mrna_scored.tsv | tail -1 | awk '{print $10}'` \
-    '$10>=a {print $1 $3 $2}' output/Ath_stem_2_mrna_scored.tsv \
+  awk -v a=`head -${TOP} output/Ath_stem_2_mrna_scored.tsv | tail -1 | awk '{print $12}'` \
+    '$12>=a {print $1 $3 $2}' output/Ath_stem_2_mrna_scored.tsv \
     >temp/sample2.txt
-  awk -v a=`head -${TOP} output/Ath_stem_3_mrna_scored.tsv | tail -1 | awk '{print $10}'` \
-    '$10>=a {print $1 $3 $2}' output/Ath_stem_3_mrna_scored.tsv \
+  awk -v a=`head -${TOP} output/Ath_stem_3_mrna_scored.tsv | tail -1 | awk '{print $12}'` \
+    '$12>=a {print $1 $3 $2}' output/Ath_stem_3_mrna_scored.tsv \
     >temp/sample3.txt
   Rscript ~/NJU_seq/presentation/point_venn.R \
     Sample1 temp/sample1.txt \
@@ -384,7 +384,7 @@ perl ~/NJU_seq/presentation/signature_count.pl \
   output/Ath_stem_mrna_signature.pdf
 ```
 
-GO(gene ontology) analysis for the top common 1000 Nm sites.
+GO(Gene Ontology) analysis for the top common 1000 Nm sites.
 
 After submit and analysis using [DAVID](https://david.ncifcrf.gov/tools.jsp), commands below could turn the chart into barplot.
 ```shell script
