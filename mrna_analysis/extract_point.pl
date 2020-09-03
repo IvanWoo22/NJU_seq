@@ -24,11 +24,11 @@ sub LIST_INPUT {
           . $BASE1 . "\t"
           . $BASE2 . "\t"
           . $BASE3 . "\t"
+          . $GENE_ID . "\t"
           . $TR_P1 . "\t"
           . $TR . "\t"
           . $NC_P1 . "\t"
-          . $NC . "\t"
-          . $GENE_ID;
+          . $NC;
         $SCORE{ $CHR . "\t" . $POS . "\t" . $DIR } = $SCORE;
     }
     return ( \@ARRAY_LIST, \%INFO, \%SCORE );
