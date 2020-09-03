@@ -16,8 +16,6 @@ sub SEQ_TR_TU {
 }
 
 my $FASTA = IO::Zlib->new( $ARGV[0], "rb" );
-open( my $SEG, "<", $ARGV[1] );
-
 my %fasta;
 my $title_name;
 while (<$FASTA>) {
@@ -32,18 +30,21 @@ while (<$FASTA>) {
 }
 close($FASTA);
 
+open( my $SEG, "<", $ARGV[1] );
+my $l_len = $ARGV[2];
+my $r_len = $ARGV[3];
 while (<$SEG>) {
     s/\r?\n//;
     my ( $chr, $position, $dir ) = split /\t/;
     my $info = $_;
     my ( $start, $end );
     if ( $dir eq "+" ) {
-        $start = $position - 20;
-        $end   = $position + 20;
+        $start = $position - $l_len;
+        $end   = $position + $r_len;
     }
     else {
-        $start = $position - 20;
-        $end   = $position + 20;
+        $start = $position - $r_len;
+        $end   = $position + $l_len;
     }
     if ( exists( $fasta{$chr} ) ) {
         my $length = abs( $end - $start ) + 1;

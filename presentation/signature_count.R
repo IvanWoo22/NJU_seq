@@ -10,17 +10,30 @@ data$V3 <- c(rep(x = "A",times=16),rep(x = "G",times=16),rep(x = "C",times=16),r
 data$V4 <- c(1:64)
 color_scale <- c("#E8845D","#6ABACC","#D1B84E","#91CE6A")
 sumA<-sum(data[data$V3=="A",]$V2)
+propA<-sum(data[data$V3=="A",]$V2)/sum(data$V2)
+round(propA,digits=4)
+paste(propA*100, "%", sep='')
 sumG<-sum(data[data$V3=="G",]$V2)
+propG<-sum(data[data$V3=="G",]$V2)/sum(data$V2)
+round(propG,digits=4)
+paste(propG*100, "%", sep='')
 sumC<-sum(data[data$V3=="C",]$V2)
+propC<-sum(data[data$V3=="C",]$V2)/sum(data$V2)
+round(propC,digits=4)
+paste(propC*100, "%", sep='')
 sumU<-sum(data[data$V3=="U",]$V2)
+propU<-sum(data[data$V3=="U",]$V2)/sum(data$V2)
+round(propU,digits=4)
+paste(propU*100, "%", sep='')
+
 result_save_path <- args[2]
 
 text_to_plot=data.frame(x=c(8.5,24.5,40.5,56.5),
                         y=c(max(data$V2)+6,max(data$V2)+6,max(data$V2)+6,max(data$V2)+6),
-                        text=c(Reduce('paste0', c("A\n",sumA)),
-                               Reduce('paste0', c("G\n",sumG)),
-                               Reduce('paste0', c("C\n",sumC)),
-                               Reduce('paste0', c("U\n",sumU))))
+                        text=c(Reduce('paste0', c("Am\n",sumA,"\n",propA)),
+                               Reduce('paste0', c("Gm\n",sumG,"\n",propG)),
+                               Reduce('paste0', c("Cm\n",sumC,"\n",propC)),
+                               Reduce('paste0', c("Um\n",sumU,"\n",propU))))
 line_to_plot1=data.frame(x=c(0.8,16.2),y=c(max(data$V2)+11,max(data$V2)+11))
 line_to_plot2=data.frame(x=c(16.8,32.2),y=c(max(data$V2)+11,max(data$V2)+11))
 line_to_plot3=data.frame(x=c(32.8,48.2),y=c(max(data$V2)+11,max(data$V2)+11))
