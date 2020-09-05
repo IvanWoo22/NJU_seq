@@ -47,7 +47,6 @@ p + geom_bar(stat="identity", position="dodge", aes(fill=V3), width = .5, show.l
   xlab("") +
   ylab("") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, size = 13, face = "bold")) +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank()) +
   geom_text(aes(label=V2, y=V2+0.5), vjust=0, size=3.3) +
   geom_line(data = line_to_plot1,aes(x=x,y=y,size=11), color = '#E8845D', show.legend = F) +
   geom_line(data = line_to_plot2,aes(x=x,y=y,size=11), color = '#6ABACC', show.legend = F) +
