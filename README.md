@@ -19,7 +19,7 @@ brew install picard-tools samtools
 Perl packages:
 ```shell script
 cpanm YAML::Syck AlignDB::IntSpan PerlIO::gzip
-``` 
+```
 *To install PerlIO::gzip on [WSL2](https://devblogs.microsoft.com/commandline/announcing-wsl-2/), you might need to install [`zlib.h`](http://www.zlib.net/) manually.*
 
 R packages needed:
@@ -419,11 +419,11 @@ pigz -dcf data/ath.gff3.gz |
 #    >data/hsa_represent_transcript.txt
 
 #pigz -dc data/hsa.gff3.gz |
-#  awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' |
-#  perl ~/NJU_seq/mrna_analysis/main_transcript.pl \
-#    --geneid "gene_id=" \
-#    --transid "transcript_id=" \
-#    >data/hsa_main_transcript.txt
+#	awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' |
+#	perl ~/NJU_seq/mrna_analysis/main_transcript_1.pl \
+#	--geneid "gene_id=" \
+#	--transid "transcript_id=" \
+#	>data/hsa_main_transcript.txt
 ```
 
 Analyse the Nm points.

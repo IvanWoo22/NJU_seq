@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-
 use Getopt::Long;
 
 =head1 NAME
