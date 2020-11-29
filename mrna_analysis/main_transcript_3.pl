@@ -127,11 +127,12 @@ while (<$POINT>) {
     }
     my ($fu,$cds,$tu) = (0,0,0);
 
-        $fu = "five_utr" if exists($type{"five_utr"});
+    $fu = "five_utr" if exists($type{"five_utr"});
     $cds = "cds" if exists($type{"cds"});
     $tu = "three_utr" if exists($type{"three_utr"});
     print $OUT "$line\t$fu\t$cds\t$tu\n";
 }
 close($POINT);
+close($OUT);
 
 __END__
