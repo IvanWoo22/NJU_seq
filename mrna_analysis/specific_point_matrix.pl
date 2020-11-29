@@ -51,7 +51,6 @@ foreach my $number ( 1 .. $#ARGV + 1 ) {
               and ( not( exists( $out_point{$_} ) ) )
           } @all_point;
         if ( @point > 0 ) {
-            print "#\t" . join( "\t", @$choose ) . "\n";
             my %no;
             my @list;
             foreach my $i ( 0 .. $#ARGV ) {
