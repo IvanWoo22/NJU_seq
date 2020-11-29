@@ -63,7 +63,6 @@ foreach my $number ( 1 .. $#ARGV + 1 ) {
             foreach my $point (@point) {
                 print "$point_info{$point}\t" . join( "\t", @list ) . "\n";
             }
-            print "\n";
         }
     }
 }
