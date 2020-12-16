@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
-library("ggplot2")
-library("gridExtra")
-library("RColorBrewer")
+library(ggplot2)
+library(gridExtra)
+library(RColorBrewer)
 args<-commandArgs(T)
 dist_raw<-read.table(args[1],sep="\t",header = F)
 

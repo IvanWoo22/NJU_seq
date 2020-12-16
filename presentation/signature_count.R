@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 args <- commandArgs(T)
 
-library("ggplot2")
-library("reshape2")
-library("dplyr")
+library(ggplot2)
+library(reshape2)
+library(dplyr)
 
 data <- read.table(args[1],
                    header = F,

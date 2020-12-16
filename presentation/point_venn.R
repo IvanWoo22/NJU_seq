@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
-library("VennDiagram")
-library("extrafont")
+library(VennDiagram)
+library(extrafont)
 
 args <- commandArgs(T)
 

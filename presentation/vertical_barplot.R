@@ -3,9 +3,9 @@ args <- commandArgs(T)
 file_path <- args[1]
 result_save_path <- args[2]
 
-library("dplyr")
-library("ggplot2")
-library("forcats")
+library(dplyr)
+library(ggplot2)
+library(forcats)
 
 raw_data <-
   read.table(

@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-library("ggplot2")
+library(ggplot2)
 args <- commandArgs(T)
 
 count <- read.table(args[1], header = F)

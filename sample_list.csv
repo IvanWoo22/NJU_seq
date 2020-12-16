@@ -1,55 +1,16 @@
-ID,sample name,origin and treatment,sequencing platform
-NJU6001,HeLa-2x,HeLa total RNA with 2X MgR,Hiseq X-Ten PE150
-NJU6002,HeLa-4x,HeLa total RNA with 4X MgR,Hiseq X-Ten PE150
-NJU6003,MgR-80,80nt segments by MgR,Hiseq X-Ten PE150
-NJU6004,6x-rRNA,HeLa rRNA with 6X MgR,Hiseq X-Ten PE150
-NJU6005,10x-rRNA,HeLa rRNA with 10X MgR,Hiseq X-Ten PE150
-NJU6006,6x-tRNA,HeLa total RNA with 6X MgR,Hiseq X-Ten PE150
-NJU6007,10x-tRNA,HeLa total RNA with 10X MgR,Hiseq X-Ten PE150
-NJU6008,NC,HeLa rRNA without MgR,Hiseq X-Ten PE150
-NJU6009,6x-tRNA,HeLa total RNA with 6X MgR,Hiseq X-Ten PE150
-NJU6010,6x-rRNA,HeLa rRNA with 6X MgR,Hiseq X-Ten PE150
-NJU6011,10x-tRNA,HeLa total RNA with 10X MgR,Hiseq X-Ten PE150
-NJU6012,10x-rRNA,HeLa rRNA with 10X MgR,Hiseq X-Ten PE150
-NJU6013,Hela-NC,HeLa total RNA without MgR,Hiseq X-Ten PE150
-NJU6014,Hela-6x-1,HeLa total RNA with 6X MgR,Hiseq X-Ten PE150
-NJU6015,Hela-6x-2,HeLa total RNA with 6X MgR,Hiseq X-Ten PE150
-NJU6016,293-NC,293T total RNA without MgR,Hiseq X-Ten PE150
-NJU6017,293-1,293T total RNA with 6X MgR,Hiseq X-Ten PE150
-NJU6018,293-2,293T total RNA with 6X MgR,Hiseq X-Ten PE150
-NJU6019,293-3,293T total RNA with 6X MgR,Hiseq X-Ten PE150
-NJU6020,A549-NC,A549 total RNA without MgR,Hiseq X-Ten PE150
-NJU6021,A549-1,A549 total RNA with MgR,Hiseq X-Ten PE150
-NJU6022,A549-2,A549 total RNA with MgR,Hiseq X-Ten PE150
-NJU6023,A549-3,A549 total RNA with MgR,Hiseq X-Ten PE150
-NJU6024,NC1,Lung AdenoCA normal tissue total RNA with MgR,Hiseq X-Ten PE150
-NJU6025,LC1,Lung AdenoCA tumor tissue total RNA with MgR,Hiseq X-Ten PE150
-NJU6026,NC-2,Lung AdenoCA normal tissue total RNA with MgR,Hiseq X-Ten PE150
-NJU6027,LC-2,Lung AdenoCA tumor tissue total RNA with MgR,Hiseq X-Ten PE150
-NJU6028,NC-3,Lung AdenoCA normal tissue total RNA with MgR,Hiseq X-Ten PE150
-NJU6029,LC-3,Lung AdenoCA tumor tissue total RNA with MgR,Hiseq X-Ten PE150
-NJU6030,733+735(1),Lung SCC tumor tissue total RNA with MgR,Hiseq X-Ten PE150
-NJU6031,740,Lung SCC tumor tissue total RNA with MgR,Hiseq X-Ten PE150
-NJU6042,Ath-stem-NC,Arabidopsis thaliana stem total RNA without MgR,Hiseq X-Ten PE150
-NJU6043,Ath-stem-1,Arabidopsis thaliana stem total RNA with MgR,Hiseq X-Ten PE150
-NJU6044,Ath-stem-2,Arabidopsis thaliana stem total RNA with MgR,Hiseq X-Ten PE150
-NJU6045,Ath-stem-3,Arabidopsis thaliana stem total RNA with MgR,Hiseq X-Ten PE150
-NJU6058,Mmu-lung-NC,Mus musculus lung total RNA without MgR,Hiseq X-Ten PE150
-NJU6059,Mmu-lung-1,Mus musculus lung total RNA with MgR,Hiseq X-Ten PE150
-NJU6060,Mmu-lung-2,Mus musculus lung total RNA with MgR,Hiseq X-Ten PE150
-NJU6061,Mmu-lung-3,Mus musculus lung total RNA with MgR,Hiseq X-Ten PE150
-NJU6066,Ath-flower-NC,Arabidopsis thaliana flower total RNA without MgR,Hiseq X-Ten PE150
-NJU6067,Ath-flower-1,Arabidopsis thaliana flower total RNA with MgR,Hiseq X-Ten PE150
-NJU6068,Ath-flower-2,Arabidopsis thaliana flower total RNA with MgR,Hiseq X-Ten PE150
-NJU6069,Ath-flower-3,Arabidopsis thaliana flower total RNA with MgR,Hiseq X-Ten PE150
-NJU6074,Ath-root-NC,Arabidopsis thaliana root total RNA without MgR,Hiseq X-Ten PE150
-NJU6075,Ath-root-1,Arabidopsis thaliana root total RNA with MgR,Hiseq X-Ten PE150
-NJU6076,Ath-root-2,Arabidopsis thaliana root total RNA with MgR,Hiseq X-Ten PE150
-NJU6077,Ath-root-3,Arabidopsis thaliana root total RNA with MgR,Hiseq X-Ten PE150
-NJU6088,HeLa-RF-NC,HeLa rRNA-free RNA without MgR,HIseq X-Ten PE150
-NJU6089,HeLa-RF-1,HeLa rRNA-free RNA with MgR,Hiseq X-Ten PE150
-NJU6090,HeLa-RF-2,HeLa rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6091,HeLa-RF-3,HeLa rRNA-free RNA with MgR,HIseq X-Ten PE150
+ID,Sample Name,Origin and Treatment,Sequencing Platform
+NJU6012,HeLa-NC,HeLa total RNA without MgR,Hiseq X-Ten PE150
+NJU6013,HeLa-1,HeLa total RNA with 6X MgR,Hiseq X-Ten PE150
+NJU6014,HeLa-2,HeLa total RNA with 6X MgR,Hiseq X-Ten PE150
+NJU6015,HeLa-3,HeLa total RNA with 6X MgR,Hiseq X-Ten PE150
+NJU6016,A549-NC,A549 total RNA without MgR,Hiseq X-Ten PE150
+NJU6017,A549-1,A549 total RNA with MgR,Hiseq X-Ten PE150
+NJU6018,A549-2,A549 total RNA with MgR,Hiseq X-Ten PE150
+NJU6019,A549-3,A549 total RNA with MgR,Hiseq X-Ten PE150
+NJU6020,HEK293T-NC,293T total RNA without MgR,Hiseq X-Ten PE150
+NJU6021,HEK293T-1,293T total RNA with 6X MgR,Hiseq X-Ten PE150
+NJU6022,HEK293T-2,293T total RNA with 6X MgR,Hiseq X-Ten PE150
+NJU6023,HEK293T-3,293T total RNA with 6X MgR,Hiseq X-Ten PE150
 NJU6092,A549-RF-NC,A549 rRNA-free RNA without MgR,HIseq X-Ten PE150
 NJU6093,A549-RF-1,A549 rRNA-free RNA with MgR,HIseq X-Ten PE150
 NJU6094,A549-RF-2,A549 rRNA-free RNA with MgR,HIseq X-Ten PE150
@@ -58,27 +19,7 @@ NJU6096,HEK293T-RF-NC,293T rRNA-free RNA without MgR,HIseq X-Ten PE150
 NJU6097,HEK293T-RF-1,293T rRNA-free RNA with MgR,HIseq X-Ten PE150
 NJU6098,HEK293T-RF-2,293T rRNA-free RNA with MgR,HIseq X-Ten PE150
 NJU6099,HEK293T-RF-3,293T rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6100,Mmu-brain-RF-NC,Mus musculus brain rRNA-free RNA without MgR,HIseq X-Ten PE150
-NJU6101,Mmu-brain-RF-1,Mus musculus brain rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6102,Mmu-brain-RF-2,Mus musculus brain rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6103,Mmu-brain-RF-3,Mus musculus brain rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6104,Mmu-brain-NC,Mus musculus brain total RNA without MgR,HIseq X-Ten PE150
-NJU6105,Mmu-brain-1,Mus musculus brain total RNA with MgR,HIseq X-Ten PE150
-NJU6106,Mmu-brain-2,Mus musculus brain total RNA with MgR,HIseq X-Ten PE150
-NJU6107,Mmu-brain-3,Mus musculus brain total RNA with MgR,HIseq X-Ten PE150
-NJU6108,Mmu-lung-RF-NC,Mus musculus lung rRNA-free RNA without MgR,HIseq X-Ten PE150
-NJU6109,Mmu-lung-RF-1,Mus musculus lung rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6110,Mmu-lung-RF-2,Mus musculus lung rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6111,Mmu-lung-RF-3,Mus musculus lung rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6112,Mmu-lung-NC,Mus musculus lung total RNA without MgR,HIseq X-Ten PE150
-NJU6113,Mmu-lung-1,Mus musculus lung total RNA with MgR,HIseq X-Ten PE150
-NJU6114,Mmu-lung-2,Mus musculus lung total RNA with MgR,HIseq X-Ten PE150
-NJU6115,Mmu-lung-3,Mus musculus lung total RNA with MgR,HIseq X-Ten PE150
-NJU6116,Mmu-spleen-RF-NC,Mus musculus spleen rRNA-free RNA without MgR,HIseq X-Ten PE150
-NJU6117,Mmu-spleen-RF-1,Mus musculus spleen rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6118,Mmu-spleen-RF-2,Mus musculus spleen rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6119,Mmu-spleen-RF-3,Mus musculus spleen rRNA-free RNA with MgR,HIseq X-Ten PE150
-NJU6120,Mmu-spleen-NC,Mus musculus spleen total RNA without MgR,HIseq X-Ten PE150
-NJU6121,Mmu-spleen-1,Mus musculus spleen total RNA with MgR,HIseq X-Ten PE150
-NJU6122,Mmu-spleen-2,Mus musculus spleen total RNA with MgR,HIseq X-Ten PE150
-NJU6123,Mmu-spleen-3,Mus musculus spleen total RNA with MgR,HIseq X-Ten PE150
+NJU6148,HeLa-RF-NC,HeLa rRNA-free RNA without MgR,HIseq X-Ten PE150
+NJU6149,HeLa-RF-1,HeLa rRNA-free RNA with MgR,HIseq X-Ten PE150
+NJU6150,HeLa-RF-2,HeLa rRNA-free RNA with MgR,HIseq X-Ten PE150
+NJU6151,HeLa-RF-3,HeLa rRNA-free RNA with MgR,HIseq X-Ten PE150
