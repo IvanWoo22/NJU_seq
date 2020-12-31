@@ -3,6 +3,8 @@
 A brand-new version of MgR-seq.  
 From clean data to positions with 2-*O*-methylation.
 
+![](.README_images/flow.png)
+
 ## 1. Preparation
 #### Install packages and software.
 
