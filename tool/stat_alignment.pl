@@ -33,7 +33,7 @@ foreach my $filename (@ARGV) {
         }
     }
     $rate = $aligned_reads / $total_reads * 100;
-    $rate = sprintf("%.2f", $rate);
+    $rate = sprintf( "%.2f", $rate );
     $rate .= "%";
     print "$filename\t$total_reads\t$aligned_reads\t$rate\t$time\n";
     close($IN);

@@ -1,4 +1,5 @@
 # NJU-seq
+
 **N**m site **J**udge **U**niversally **seq**uencing.  
 A brand-new version of MgR-seq.  
 From clean data to positions with 2-*O*-methylation.
@@ -6,9 +7,11 @@ From clean data to positions with 2-*O*-methylation.
 ![](.README_images/flow.png)
 
 ## 1. Preparation
+
 #### Install packages and software.
 
 Software managed by [brew](https://brew.sh/).
+
 ```shell script
 # generic tools
 brew install parallel pigz
@@ -19,15 +22,19 @@ brew install picard-tools samtools
 ```
 
 Perl packages:
+
 ```shell script
 cpanm YAML::Syck AlignDB::IntSpan PerlIO::gzip Algorithm::Combinatorics
 ```
-*To install PerlIO::gzip on [WSL2](https://devblogs.microsoft.com/commandline/announcing-wsl-2/), you might need to install [`zlib.h`](http://www.zlib.net/) manually.*
+
+*To install PerlIO::gzip on [WSL2](https://devblogs.microsoft.com/commandline/announcing-wsl-2/), you might need to
+install [`zlib.h`](http://www.zlib.net/) manually.*
 
 R packages needed:
 `ggplot2` `ggpubr` `gridExtra` `forcats` `dplyr` `VennDiagram` `splines` `RColorBrewer` `extrafont` `reshape2`
 
 Make new folders for analysis.
+
 ```shell script
 # NJU_seq_analysis is the main directory of the following analysis. It can be renamed as you like.
 mkdir "NJU_seq_analysis"
@@ -36,8 +43,12 @@ mkdir "data" "index" "temp" "output"
 ```
 
 ## 2. Reference and index.
+
 #### Download reference.
-Get reference sequence of species from [GENCODE](https://www.gencodegenes.org/) and [Ensembl](http://plants.ensembl.org/Arabidopsis_thaliana/Info/Index?db=core).
+
+Get reference sequence of species from [GENCODE](https://www.gencodegenes.org/)
+and [Ensembl](http://plants.ensembl.org/Arabidopsis_thaliana/Info/Index?db=core).
+
 ```shell script
 # GENCODE release 34 for human
 wget -N ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.annotation.gff3.gz -O data/hsa.gff3.gz
@@ -58,7 +69,9 @@ wget -N ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz -O data/mirna.fa.gz
 ```
 
 #### Build index
+
 Create index by `bowtie2-build` for mapping.
+
 ```shell script
 THREAD=16
 
@@ -81,9 +94,12 @@ rm data/hsa_protein_coding.fa
 ```
 
 ## 3. Data Selection and quality overview.
+
 #### Select data for analysing.
+
 Get the sequencing clean data from `NJU_data`.  
 *The representation of `ID` can be found in [`sample_list.csv`](/sample_list.csv).*
+
 ```shell script
 ID='NJU6148'
 PREFIX='HeLa_RF_NC'
@@ -92,10 +108,14 @@ mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
 ln -sf /home/wyf/NJU_data/"${ID}"/R1.fq.gz data/"${PREFIX}"/R1.fq.gz
 ln -sf /home/wyf/NJU_data/"${ID}"/R2.fq.gz data/"${PREFIX}"/R2.fq.gz
 ```
-*Better to process the other samples in the same group according to the above code box. Here NJU6148-6151 are in one group as `HeLa_RF_NC` `HeLa_RF_1` `HeLa_RF_2` `HeLa_RF_3`.*
+
+*Better to process the other samples in the same group according to the above code box. Here NJU6148-6151 are in one
+group as `HeLa_RF_NC` `HeLa_RF_1` `HeLa_RF_2` `HeLa_RF_3`.*
 
 #### Quality control for clean data.
+
 Input a `FastQ` file or a `GZ` file of `FastQ`, and then get some quality information.
+
 ```shell script
 PREFIX='HeLa_RF_NC'
 
@@ -124,11 +144,15 @@ time perl ~/NJU_seq/quality_control/fastq_qc.pl \
 # $ARGV[-2] should be the directory of output files.
 # $ARGV[-1] should be the prefix of the output files.
 ```
+
 *The quality report created in `/output/HeLa_RF.pdf`.*
 
 ## 4. Alignment, Count and Score
+
 #### rRNA workflow
+
 Use `bowtie2` to align the data file.
+
 ```shell script
 THREAD=16
 PREFIX='HeLa_RF_NC'
@@ -150,7 +174,9 @@ time pigz -p "${THREAD}" output/"${PREFIX}"/rrna.raw.sam
 # user  3m54.868s
 # sys   0m7.795s
 ```
+
 Filter and count alignment result.
+
 ```shell script
 THREAD=16
 PREFIX='HeLa_RF_NC'
@@ -176,7 +202,9 @@ time parallel -j 3 "
 # user  0m59.369s
 # sys   0m0.809s
 ```
+
 Score all sites one by one.
+
 ```shell script
 time parallel -j 3 "
   perl ~/NJU_seq/rrna_analysis/score.pl \\
@@ -198,7 +226,9 @@ bash ~/NJU_seq/presentation/point_venn.sh \
 ```
 
 #### Prepare for mRNA.
+
 Extract reads can't be mapped to rRNA.
+
 ```shell script
 PREFIX='HeLa_RF_NC'
 
@@ -212,7 +242,9 @@ time bash ~/NJU_seq/tool/extract_fastq.sh \
 ```
 
 #### mRNA workflow
+
 Alignment with protein_coding transcript.
+
 ```shell script
 THREAD=16
 PREFIX='HeLa_RF_NC'
@@ -236,6 +268,7 @@ time pigz -p "${THREAD}" output/"${PREFIX}"/mrna.raw.sam
 ```
 
 Filter，re-locate and count alignment result.
+
 ```shell script
 THREAD=16
 PREFIX='HeLa_RF_NC'
@@ -301,6 +334,7 @@ time gzip -dcf data/hsa.gff3.gz |
 ```
 
 Calculate valid sequencing depth (average coverage).
+
 ```shell script
 parallel --keep-order -j 4 '
   echo {} >>output/{}/mrna.cov
@@ -327,6 +361,7 @@ parallel --keep-order -j 4 '
 ```
 
 Score each covered site.
+
 ```shell script
 parallel -j 3 "
   perl ~/NJU_seq/mrna_analysis/score.pl \\
@@ -377,7 +412,9 @@ perl ~/NJU_seq/mrna_analysis/extract_point.pl \
 ```
 
 ## 5. Statistics and Presentation.
+
 See the signature of Nm sites.
+
 ```shell script
 perl ~/NJU_seq/presentation/signature_count.pl \
   output/HeLa_RF_mrna_scored_1000p.tsv \
@@ -386,7 +423,9 @@ perl ~/NJU_seq/presentation/signature_count.pl \
 
 GO(Gene Ontology) analysis for the top common 1000 Nm sites.
 
-After submit and analysis using [DAVID](https://david.ncifcrf.gov/tools.jsp), commands below could turn the chart into barplot.
+After submit and analysis using [DAVID](https://david.ncifcrf.gov/tools.jsp), commands below could turn the chart into
+barplot.
+
 ```shell script
 Rscript ~/NJU_seq/presentation/gene_ontology.R \
   output/HeLa_RF_GO.tsv \
@@ -394,6 +433,7 @@ Rscript ~/NJU_seq/presentation/gene_ontology.R \
 ```
 
 Divide annotations into two categories.
+
 ```shell script
 pigz -dcf data/hsa.gff3.gz |
   awk '(($3=="gene")&&($9~/biotype=protein_coding/)) \
@@ -427,6 +467,7 @@ pigz -dcf data/hsa.gff3.gz |
 ```
 
 Analyse the Nm points.
+
 ```shell script
 #pigz -dc data/hsa.gff3.gz |
 #  awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/)) \
@@ -471,7 +512,9 @@ perl ~/NJU_seq/mrna_analysis/judge_transcriptregion_4.pl \
 ```
 
 ## 6. Motif Found in miRNA.
+
 Get miRNA sequence information from ncRNA reference.
+
 ```shell script
 pigz -dc data/mirna.fa.gz |
   perl ~/NJU_seq/tool/fetch_fasta.pl \
