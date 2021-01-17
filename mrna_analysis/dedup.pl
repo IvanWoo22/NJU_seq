@@ -13,13 +13,7 @@ use AlignDB::IntSpan;
 =head1 NAME
 dedup.pl -- Deduplication by finding out these two sites of transcripts located on the same position.
 =head1 SYNOPSIS
-    perl dedup.pl --refstr "ID=exon:" --geneid "ENST" -i input.tmp -o output.tmp
-        Options:
-            --help\-h  Brief help message
-            --refstr  The sign before the gene ID in the reference
-            --transid  Characteristics shared by genes
-            --in\-i  Input file with path
-            --out\-o  Output file with path
+    perl dedup.pl --refstr "Parent=" --transid "ENST" --info data/hsa_exon.info
 =cut
 
 Getopt::Long::GetOptions(

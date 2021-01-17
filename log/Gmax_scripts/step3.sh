@@ -13,9 +13,9 @@ time pigz -dc output/"${PREFIX}"/mrna_basic.raw.sam.gz |
   parallel --tmpdir /scratch/wangq/wyf/. \
     --pipe --block 2G-1 --no-run-if-empty \
     --linebuffer --keep-order -j "${THREAD}" \
-    'perl NJU_seq/mrna_analysis/dedup.pl --refstr "Parent=" --transid "ENST" --info data/hsa_exon.info' |
+    'perl NJU_seq/log/Gmax_scripts/dedup.pl --refstr "Parent=" --transid "Glyma." --info data/gmax_exon.info' |
   parallel --tmpdir /scratch/wangq/wyf/. \
     --pipe --block 2G-1 --no-run-if-empty \
     --linebuffer --keep-order -j "${THREAD}" \
-    'perl NJU_seq/mrna_analysis/dedup.pl --refstr "Parent=" --transid "ENST" --info data/hsa_exon.info' |
+    'perl NJU_seq/log/Gmax_scripts/dedup.pl --refstr "Parent=" --transid "Glyma." --info data/gmax_exon.info' |
   pigz >temp/"${PREFIX}"/mrna_basic.dedup.tmp.gz
