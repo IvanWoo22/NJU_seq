@@ -38,3 +38,5 @@ foreach my $filename (@ARGV) {
     print "$filename\t$total_reads\t$aligned_reads\t$rate\t$time\n";
     close($IN);
 }
+
+__END__

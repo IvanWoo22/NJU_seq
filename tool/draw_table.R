@@ -5,8 +5,8 @@ library(ggpubr)
 args <- commandArgs(T)
 
 mydata <- read.table(file('stdin'), row.names = 1, header = F)
-mydata[,1] <- gsub(" ","",prettyNum(mydata[,1],big.mark = ","))
-mydata[,2] <- gsub(" ","",prettyNum(mydata[,2],big.mark = ","))
+mydata[, 1] <- gsub(" ", "", prettyNum(mydata[, 1], big.mark = ","))
+mydata[, 2] <- gsub(" ", "", prettyNum(mydata[, 2], big.mark = ","))
 colnames(mydata) [1:4] <-
   c("Total reads", "Aligned reads", "Alignment rate", "Time")
 
@@ -45,3 +45,5 @@ ggsave(
   height = 5,
   dpi = "retina"
 )
+
+dev.off()
