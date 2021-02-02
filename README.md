@@ -169,6 +169,11 @@ time bowtie2 -p "${THREAD}" -a -t \
 # user  25m41.846s
 # sys   4m15.462s
 
+perl ~/NJU_seq/tool/stat_alignment.pl \
+  output/"${PREFIX}"/rrna.bowtie2.log |
+  Rscript ~/NJU_seq/tool/draw_table.R \
+  output/"${PREFIX}"/rrna.bowtie2.pdf
+
 time pigz -p "${THREAD}" output/"${PREFIX}"/rrna.raw.sam
 # real  0m57.962s
 # user  3m54.868s

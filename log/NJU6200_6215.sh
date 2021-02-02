@@ -1,4 +1,4 @@
-for PREFIX in NJU62{00..15}; do
+for PREFIX in NJU62{00..15} NJU62{36..51}; do
   mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
   perl NJU_seq/quality_control/pe_consistency.pl \
     data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R2.fq.gz \
@@ -22,7 +22,7 @@ pigz -dc data/ath_ncrna.fa.gz |
 bowtie2-build data/ath_rrna.fa index/ath_rrna
 rm data/ath_rrna.fa
 
-for PREFIX in NJU62{00..15}; do
+for PREFIX in NJU62{00..15} NJU62{36..51}; do
   bsub -n 24 -J "${PREFIX}" -e ${PREFIX}.out "bash NJU_seq/log/Ath_scripts/step1.sh ${PREFIX}"
 done
 

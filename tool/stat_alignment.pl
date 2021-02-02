@@ -5,13 +5,15 @@ use autodie;
 
 foreach my $filename (@ARGV) {
     open( my $IN, "<", $filename );
+    my @tmp  = split "\/", $filename;
+    my $name = $tmp[-1];
     my ( $total_reads, $aligned_reads ) = ( 0, 0 );
-    my ( $time,        $rate );
+    my ( $time, $rate );
     while (<$IN>) {
         chomp;
         my $in = $_;
         if ( $in =~ m/(\d+) reads; of these:/ ) {
-            $total_reads = +$1;
+            $total_reads += $1;
         }
         if (
             (
@@ -35,7 +37,7 @@ foreach my $filename (@ARGV) {
     $rate = $aligned_reads / $total_reads * 100;
     $rate = sprintf( "%.2f", $rate );
     $rate .= "%";
-    print "$filename\t$total_reads\t$aligned_reads\t$rate\t$time\n";
+    print "$name\t$total_reads\t$aligned_reads\t$rate\t$time\n";
     close($IN);
 }
 

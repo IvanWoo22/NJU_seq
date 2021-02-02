@@ -36,14 +36,14 @@ p <-
     )
   )
 
+rheight = 3 + nrow(mydata) * 0.1
+
 result_save_path <- args[1]
 ggsave(
   result_save_path,
   plot = p,
   device = "pdf",
   width = 8,
-  height = 5,
+  height = rheight,
   dpi = "retina"
 )
-
-dev.off()
