@@ -15,12 +15,12 @@ bowtie2-build data/ath_rrna.fa index/ath_rrna
 rm data/ath_rrna.fa
 
 for PREFIX in NJU61{84..99} NJU62{20..35}; do
-  bsub -n 24 -J "${PREFIX}" -e ${PREFIX}.out "bash NJU_seq/log/Ath_scripts/step1.sh ${PREFIX}"
+  bsub -n 24 -J "${PREFIX}" -o ${PREFIX}.out "bash NJU_seq/log/Ath_scripts/step1.sh ${PREFIX}"
 done
 
 perl test.pl output.36412* | Rscript test.R test.pdf
 
-bsub -n 24 -q largemem -J "count" '
+bsub -n 24 -q largemem -e NJU6184_count.out -J "count" '
 parallel --keep-order --xapply -j 10 '\''
 time pigz -dcf output/{}/rrna.raw.sam.gz | awk '\''\'\'''\''$6!="*"&&$7=="="{print $1 "\t" $3 "\t" $4 "\t" $6 "\t" $10}'\''\'\'''\'' | perl NJU_seq/rrna_analysis/matchquality_judge.pl | perl NJU_seq/rrna_analysis/multimatch_judge.pl >temp/{}/rrna.out.tmp
 time bash NJU_seq/tool/extract_fastq.sh temp/{}/rrna.out.tmp data/{}/R1.fq.gz data/{}/R1.mrna.fq.gz data/{}/R2.fq.gz data/{}/R2.mrna.fq.gz

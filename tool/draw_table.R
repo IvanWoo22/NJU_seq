@@ -36,7 +36,7 @@ p <-
     )
   )
 
-rheight = 3 + nrow(mydata) * 0.1
+rheight = 3 + nrow(mydata) * 0.15
 
 result_save_path <- args[1]
 ggsave(

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+set -e
+
 filepath=$(
   cd "$(dirname "${0}")" || exit
   pwd -P
