@@ -93,6 +93,10 @@ for PREFIX in NJU6{276..355}; do
   bsub -q largemem -n 24 -o log/${PREFIX}_dedup.log -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step3.sh ${PREFIX} 16"
 done
 
+for PREFIX in NJU6{184..215}; do
+  bsub -q fat_768 -n 80 -o ${PREFIX}_bac_alignment.log -J "${PREFIX}" "bash bac_target.sh ${PREFIX}"
+done
+
 bsub -n 24 -o log/mash.log -J "mash" '
 parallel --xapply --keep-order -j 6 "
 pigz -dc data/{}/R1.fq.gz >data/{}/R1.fq
