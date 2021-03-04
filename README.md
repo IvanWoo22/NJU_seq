@@ -1,6 +1,6 @@
 # NJU-seq
 
-**N**m site **J**udge **U**niversally **seq**uencing.  
+**N**m site **J**udged **U**niversally **seq**uencing.  
 A brand-new version of MgR-seq.  
 From clean data to positions with 2-*O*-methylation.
 
@@ -298,12 +298,12 @@ cat temp/"${PREFIX}"/mrna.out.tmp |
   parallel --pipe --block 100M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
     perl NJU_seq/mrna_analysis/dedup.pl \
       --refstr "Parent=transcript:" \
-      --transid "AT" \
+      --transid "ENST" \
       --info data/hsa_exon.info
   ' |
   perl NJU_seq/mrna_analysis/dedup.pl \
     --refstr "Parent=transcript:" \
-    --transid "AT" \
+    --transid "ENST" \
     --info data/hsa_exon.info \
     >temp/"${PREFIX}"/mrna.dedup.tmp
 # real  14m32.692s
@@ -330,8 +330,8 @@ time gzip -dcf data/hsa.gff3.gz |
   awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
   perl NJU_seq/mrna_analysis/merge.pl \
     --refstr "Parent=transcript:" \
-    --geneid "AT" \
-    --transid "AT" \
+    --geneid "ENSG" \
+    --transid "ENST" \
     -i temp/"${PREFIX}"/mrna.count.tmp \
     -o output/"${PREFIX}"/mrna.tsv
 # real  0m6.802s

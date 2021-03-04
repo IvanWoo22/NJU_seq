@@ -94,7 +94,7 @@ for PREFIX in NJU6{276..355}; do
 done
 
 for PREFIX in NJU6{184..215}; do
-  bsub -q fat_768 -n 80 -o ${PREFIX}_bac_alignment.log -J "${PREFIX}" "bash bac_target.sh ${PREFIX}"
+  bsub -q fat_768 -n 80 -o log/${PREFIX}_bac_alignment.log -J "${PREFIX}" "bash bac_target.sh ${PREFIX}"
 done
 
 bsub -n 24 -o log/mash.log -J "mash" '
