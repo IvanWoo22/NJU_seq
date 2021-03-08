@@ -26,6 +26,7 @@ sub GET_INFO {
     }
     else {
         warn("There is a problem in $INFO;\n");
+        $NAME = "";
     }
     return ( $ID, $NAME );
 }
