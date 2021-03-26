@@ -72,10 +72,14 @@ sub SCORE {
         my ( $SCORE1, $SCORE2, $SCORE3, $SCORE4, $SCORE5, $SCORE );
         $SCORE1 = $T_END_P1 / $T_END;
         $SCORE2 = ( $T_START * $T_START_P2 )**0.5 / $T_START_P1;
+        $SCORE2 = $SCORE1 if ( $SCORE2 > $SCORE1 );
         $SCORE3 =
           ( $N_END_M2 * $N_END_M1 * $N_END_P1 * $N_END_P2 )**0.25 / $N_END;
+        $SCORE3 = $SCORE1 if ( $SCORE3 > $SCORE1 );
         $SCORE4 = ( $N_START * $N_START_P2 )**0.5 / $N_START_P1;
+        $SCORE4 = $SCORE1 if ( $SCORE4 > $SCORE1 );
         $SCORE5 = ( $T_END_P1 / $T_END_P2 ) / ( $N_END_P1 / $N_END_P2 );
+        $SCORE5 = $SCORE1 if ( $SCORE5 > $SCORE1 );
         $SCORE  = $SCORE1 * $SCORE2 * $SCORE3 * $SCORE4 * $SCORE5;
         push( @SCORE, $SCORE );
     }
