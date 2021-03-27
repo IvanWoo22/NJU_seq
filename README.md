@@ -1,4 +1,5 @@
-![](.README_images/NJU-seq_logo_beta1.png =100x100)
+![](.README_images/NJU-seq_logo_beta1.png)
+
 # NJU-seq
 
 ----
