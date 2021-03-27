@@ -1,4 +1,7 @@
+![](.README_images/NJU-seq_logo_beta1.png =100x100)
 # NJU-seq
+
+----
 
 **N**m site **J**udged **U**niversally **seq**uencing.  
 A brand-new version of MgR-seq.  
