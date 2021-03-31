@@ -30,7 +30,7 @@ p <-
       ),
       tbody.style = tbody_style(
         color = "black",
-        fill = "#ffffff",
+        fill = "transparent",
         linecolor = "#630460"
       )
     )

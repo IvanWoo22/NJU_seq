@@ -27,7 +27,7 @@ p1 <- ggtexttable(
     ),
     tbody.style = tbody_style(
       color = "black",
-      fill = "#ffffff",
+      fill = "transparent",
       linecolor = "#630460"
     )
   )
@@ -58,7 +58,7 @@ p2 <- ggtexttable(
     ),
     tbody.style = tbody_style(
       color = "black",
-      fill = "#ffffff",
+      fill = "transparent",
       linecolor = "#630460"
     )
   )
@@ -89,7 +89,7 @@ p3 <- ggtexttable(
     ),
     tbody.style = tbody_style(
       color = "black",
-      fill = "#ffffff",
+      fill = "transparent",
       linecolor = "#630460"
     )
   )
@@ -141,7 +141,7 @@ p5 <-
       ),
       tbody.style = tbody_style(
         color = "black",
-        fill = "#ffffff",
+        fill = "transparent",
         linecolor = "#630460"
       )
     )
@@ -164,5 +164,8 @@ p <-
     heights = c(0.3, 1, 2, 2, 2, 4)
   )
 
-pdf(args[6], width = 12, height = 15)
+colnum <- ncol(mydata5)
+wid <- 12 + colnum * 1
+
+pdf(args[6], width = wid, height = 15)
 print(p)

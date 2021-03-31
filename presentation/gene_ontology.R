@@ -52,7 +52,7 @@ p + geom_bar(
     axis.ticks.length = unit(0.4, 'mm'),
     plot.margin = unit(c(0.4, 0.5,-0.5,-0.5), 'lines'),
     panel.grid.major = element_blank(),
-    panel.background = element_rect(fill = "#transparent", colour = NA),
+    panel.background = element_rect(fill = "transparent", colour = NA),
     plot.background = element_rect(fill = "transparent", colour = NA),
     panel.grid.minor = element_blank(),
     text = element_text(family = "ArialMT")
