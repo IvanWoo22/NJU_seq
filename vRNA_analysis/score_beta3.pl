@@ -15,8 +15,6 @@ sub JUDGE_ZERO {
 sub SCORE {
     my $TR_END_COUNT = $_[0];
     my $NC_END_COUNT = $_[1];
-    my $TR_TOTAL     = $_[2];
-    my $NC_TOTAL     = $_[3];
 
     my @SCORE;
     $SCORE[0] = 0;
@@ -25,14 +23,8 @@ sub SCORE {
         my ( $T_END, $T_END_P1, $N_END, $N_END_P1 ) = (
             JUDGE_ZERO( ${$TR_END_COUNT}[$CURRENT] ),
             JUDGE_ZERO( ${$TR_END_COUNT}[ $CURRENT + 1 ] ),
-            POSIX::ceil(
-                JUDGE_ZERO( ${$NC_END_COUNT}[$CURRENT] ) *
-                  $TR_TOTAL / $NC_TOTAL
-            ),
-            POSIX::ceil(
-                JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 1 ] ) *
-                  $TR_TOTAL / $NC_TOTAL
-            )
+            JUDGE_ZERO( ${$NC_END_COUNT}[$CURRENT] ),
+            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 1 ] )
         );
 
         if ( ( $T_END < 4 ) and ( $N_END < 4 ) ) {
@@ -65,7 +57,6 @@ my @site;
 my @base;
 my @end_count;
 my @score;
-my @end_total;
 open( my $IN_NC, "<", $ARGV[0] );
 while (<$IN_NC>) {
     chomp;
@@ -73,7 +64,6 @@ while (<$IN_NC>) {
     push( @site,              $site );
     push( @base,              $base );
     push( @{ $end_count[0] }, $end_count );
-    $end_total[0] += $end_count;
 }
 close($IN_NC);
 
@@ -82,13 +72,10 @@ foreach my $sample ( 1 .. $#ARGV ) {
     while (<$IN_TR>) {
         chomp;
         my ( undef, undef, undef, $end_count ) = split /\t/;
-        $end_total[$sample] += $end_count;
         push( @{ $end_count[$sample] }, $end_count );
     }
-    @{ $score[$sample] } = SCORE(
-        \@{ $end_count[$sample] }, \@{ $end_count[0] },
-        $end_total[$sample],       $end_total[0]
-    );
+    @{ $score[$sample] } =
+      SCORE( \@{ $end_count[$sample] }, \@{ $end_count[0] } );
     close($IN_TR);
 }
 
