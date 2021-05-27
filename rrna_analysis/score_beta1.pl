@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use autodie;
+use POSIX;
 
 sub JUDGE_ZERO {
     my $IN = shift;
@@ -12,36 +13,27 @@ sub JUDGE_ZERO {
 }
 
 sub SCORE {
-    my $TR_START_COUNT = $_[0];
-    my $TR_END_COUNT   = $_[1];
-    my $NC_START_COUNT = $_[2];
-    my $NC_END_COUNT   = $_[3];
+    my $TR_END_COUNT = $_[0];
+    my $NC_END_COUNT = $_[1];
+    my $TR_TOTAL     = $_[2];
+    my $NC_TOTAL     = $_[3];
 
     my @SCORE;
     $SCORE[0] = 0;
     $SCORE[1] = 0;
     for my $CURRENT ( 2 .. $#{$TR_END_COUNT} - 2 ) {
-        my (
-            $T_END,      $T_END_P1, $T_END_P2,   $N_END_M2, $N_END_M1,
-            $N_END,      $N_END_P1, $N_END_P2,   $T_START,  $T_START_P1,
-            $T_START_P2, $N_START,  $N_START_P1, $N_START_P2
-          )
-          = (
+        my ( $T_END, $T_END_P1, $N_END, $N_END_P1 ) = (
             JUDGE_ZERO( ${$TR_END_COUNT}[$CURRENT] ),
             JUDGE_ZERO( ${$TR_END_COUNT}[ $CURRENT + 1 ] ),
-            JUDGE_ZERO( ${$TR_END_COUNT}[ $CURRENT + 2 ] ),
-            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT - 2 ] ),
-            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT - 1 ] ),
-            JUDGE_ZERO( ${$NC_END_COUNT}[$CURRENT] ),
-            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 1 ] ),
-            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 2 ] ),
-            JUDGE_ZERO( ${$TR_START_COUNT}[$CURRENT] ),
-            JUDGE_ZERO( ${$TR_START_COUNT}[ $CURRENT + 1 ] ),
-            JUDGE_ZERO( ${$TR_START_COUNT}[ $CURRENT + 2 ] ),
-            JUDGE_ZERO( ${$NC_START_COUNT}[$CURRENT] ),
-            JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT + 1 ] ),
-            JUDGE_ZERO( ${$NC_START_COUNT}[ $CURRENT + 2 ] )
-          );
+            POSIX::ceil(
+                JUDGE_ZERO( ${$NC_END_COUNT}[$CURRENT] ) *
+                    $TR_TOTAL / $NC_TOTAL
+            ),
+            POSIX::ceil(
+                JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 1 ] ) *
+                    $TR_TOTAL / $NC_TOTAL
+            )
+        );
 
         if ( ( $T_END < 4 ) and ( $N_END < 4 ) ) {
             if ( $T_END > $N_END ) {
@@ -52,31 +44,7 @@ sub SCORE {
             }
         }
 
-        if ( ( $T_END_P2 < 4 ) and ( $N_END_P2 < 4 ) ) {
-            if ( $T_END_P2 > $N_END_P2 ) {
-                $N_END_P2 = $T_END_P2;
-            }
-            else {
-                $T_END_P2 = $N_END_P2;
-            }
-        }
-
-        if ( ( $T_START_P1 < 4 ) and ( $N_START_P1 < 4 ) ) {
-            if ( $T_START_P1 > $N_START_P1 ) {
-                $N_START_P1 = $T_START_P1;
-            }
-            else {
-                $T_START_P1 = $N_START_P1;
-            }
-        }
-        my ( $SCORE1, $SCORE2, $SCORE3, $SCORE4, $SCORE5, $SCORE );
-        $SCORE1 = $T_END_P1 / $T_END;
-        $SCORE2 = ( $T_START * $T_START_P2 )**0.5 / $T_START_P1;
-        $SCORE3 =
-          ( $N_END_M2 * $N_END_M1 * $N_END_P1 * $N_END_P2 )**0.25 / $N_END;
-        $SCORE4 = ( $N_START * $N_START_P2 )**0.5 / $N_START_P1;
-        $SCORE5 = ( $T_END_P1 / $T_END_P2 ) / ( $N_END_P1 / $N_END_P2 );
-        $SCORE  = $SCORE1 * $SCORE2 * $SCORE3 * $SCORE4 * $SCORE5;
+        my $SCORE = $T_END_P1 / $T_END - $N_END_P1 / $N_END;
         push( @SCORE, $SCORE );
     }
     push( @SCORE, 0 );
@@ -92,17 +60,17 @@ sub SCORE {
 
 my @site;
 my @base;
-my @start_count;
 my @end_count;
 my @score;
+my @end_total;
 open( my $IN_NC, "<", $ARGV[0] );
 while (<$IN_NC>) {
     chomp;
-    my ( $site, $base, $start_count, $end_count ) = split /\t/;
-    push( @site,                $site );
-    push( @base,                $base );
-    push( @{ $start_count[0] }, $start_count );
-    push( @{ $end_count[0] },   $end_count );
+    my ( $site, $base, undef, $end_count ) = split /\t/;
+    push( @site,              $site );
+    push( @base,              $base );
+    push( @{ $end_count[0] }, $end_count );
+    $end_total[0] += $end_count;
 }
 close($IN_NC);
 
@@ -110,25 +78,21 @@ foreach my $sample ( 1 .. $#ARGV ) {
     open( my $IN_TR, "<", $ARGV[$sample] );
     while (<$IN_TR>) {
         chomp;
-        my ( undef, undef, $start_count, $end_count ) = split /\t/;
-        push( @{ $start_count[$sample] }, $start_count );
-        push( @{ $end_count[$sample] },   $end_count );
+        my ( undef, undef, undef, $end_count ) = split /\t/;
+        $end_total[$sample] += $end_count;
+        push( @{ $end_count[$sample] }, $end_count );
     }
     @{ $score[$sample] } = SCORE(
-        \@{ $start_count[$sample] },
-        \@{ $end_count[$sample] },
-        \@{ $start_count[0] },
-        \@{ $end_count[0] }
+        \@{ $end_count[$sample] }, \@{ $end_count[0] },
+        $end_total[$sample],       $end_total[0]
     );
     close($IN_TR);
 }
 
 foreach my $site ( 0 .. $#site ) {
-    print(
-"$site[$site]\t$base[$site]\t\t$start_count[0][$site]\t$end_count[0][$site]\t\t"
-    );
+    print("$site[$site]\t$base[$site]\t\t$end_count[0][$site]\t\t");
     foreach my $sample ( 1 .. $#ARGV ) {
-        print("$start_count[$sample][$site]\t$end_count[$sample][$site]\t");
+        print("$end_count[$sample][$site]\t");
     }
     print("\t");
     my $score_sum = 0;
