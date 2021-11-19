@@ -10,7 +10,7 @@ open( my $IN3, "<", $ARGV[2] );
 
 sub LIST_INPUT {
     my $IN = shift;
-    my ( @ARRAY_LIST, %INFO, %SCORE );
+    my ( @ARRAY_LIST, %INFO, %SCORE, %COUNT );
     my $COUNT = 0;
     while (<$IN>) {
         $COUNT++;
@@ -28,19 +28,18 @@ sub LIST_INPUT {
           . $BASE2 . "\t"
           . $BASE3 . "\t"
           . $GENE_ID . "\t"
-          . $TR_P1 . "\t"
-          . $TR . "\t"
           . $NC_P1 . "\t"
           . $NC;
+        $COUNT{ $CHR . "\t" . $POS . "\t" . $DIR } = $TR_P1 . "\t" . $TR;
         $SCORE{ $CHR . "\t" . $POS . "\t" . $DIR } = $SCORE;
     }
-    return ( \@ARRAY_LIST, \%INFO, \%SCORE, $COUNT );
+    return ( \@ARRAY_LIST, \%INFO, \%SCORE, \%COUNT, $COUNT );
 }
 
-my ( $a_array, $a_info, $a_score, $a_count ) = LIST_INPUT($IN1);
-my ( $b_array, undef,   $b_score, $b_count ) = LIST_INPUT($IN2);
-my ( $c_array, undef,   $c_score, $c_count ) = LIST_INPUT($IN3);
-my $count_max = max( $a_count, $b_count, $c_count );
+my ( $a_array, $info, $a_score, $a_end, $a_count ) = LIST_INPUT($IN1);
+my ( $b_array, undef, $b_score, $b_end, $b_count ) = LIST_INPUT($IN2);
+my ( $c_array, undef, $c_score, $c_end, $c_count ) = LIST_INPUT($IN3);
+my $count_max = List::Util::max( $a_count, $b_count, $c_count );
 
 my ( @common, @a_extract, @b_extract, @c_extract, %a_list, %b_list, %c_list );
 
@@ -48,9 +47,9 @@ my $extract = $ARGV[3];
 my $step    = $ARGV[4];
 
 my ( $a_extract, $b_extract, $c_extract );
-$a_extract = min( $extract - 1, $a_count - 1 );
-$b_extract = min( $extract - 1, $b_count - 1 );
-$c_extract = min( $extract - 1, $c_count - 1 );
+$a_extract = List::Util::min( $extract - 1, $a_count - 1 );
+$b_extract = List::Util::min( $extract - 1, $b_count - 1 );
+$c_extract = List::Util::min( $extract - 1, $c_count - 1 );
 @a_extract =
   grep( { $a_score->{$_} >= $a_score->{ $a_array->[$a_extract] } }
     @{$a_array} );
@@ -69,9 +68,9 @@ $c_extract = min( $extract - 1, $c_count - 1 );
 
 while ( ( $#common <= $ARGV[3] ) and ( $extract < $count_max ) ) {
     $extract += $step;
-    $a_extract = min( $extract - 1, $a_count - 1 );
-    $b_extract = min( $extract - 1, $b_count - 1 );
-    $c_extract = min( $extract - 1, $c_count - 1 );
+    $a_extract = List::Util::min( $extract - 1, $a_count - 1 );
+    $b_extract = List::Util::min( $extract - 1, $b_count - 1 );
+    $c_extract = List::Util::min( $extract - 1, $c_count - 1 );
     @a_extract =
       grep( { $a_score->{$_} >= $a_score->{ $a_array->[$a_extract] } }
         @{$a_array} );
@@ -106,7 +105,12 @@ while ( ( $#common <= $ARGV[3] ) and ( $extract < $count_max ) ) {
 
 foreach (@common) {
     my $score = $a_score->{$_} + $b_score->{$_} + $c_score->{$_};
-    print( $a_info->{$_} . "\t" . $score . "\n" );
+    print(  $info->{$_} . "\t"
+          . $a_end->{$_} . "\t"
+          . $b_end->{$_} . "\t"
+          . $c_end->{$_} . "\t"
+          . $score
+          . "\n" );
 }
 
 if ( $extract < $count_max ) {

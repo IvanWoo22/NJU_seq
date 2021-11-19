@@ -405,7 +405,7 @@ done
 #  output/HeLa_RF_3_mrna_scored.tsv \
 #  >output/HeLa_RF_mrna_scored.tsv
 
-perl NJU_seq/mrna_analysis/extract_point.pl \
+perl NJU_seq/mrna_analysis/extract_point_neo.pl \
   output/HeLa_RF_1_mrna_scored.tsv \
   output/HeLa_RF_2_mrna_scored.tsv \
   output/HeLa_RF_3_mrna_scored.tsv \
