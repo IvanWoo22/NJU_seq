@@ -15,7 +15,7 @@ sub SEQ_TR_TU {
     return ( $SEQ =~ tr/Tt/Uu/r );
 }
 
-my $FASTA = IO::Zlib->new( $ARGV[0], "rb" );
+open( my $FASTA, "<", $ARGV[0] );
 my %fasta;
 my $title_name;
 while (<$FASTA>) {

@@ -19,20 +19,12 @@ sub SCORE {
     $SCORE[0] = 0;
     $SCORE[1] = 0;
     for my $CURRENT ( 2 .. $#{$TR_END_COUNT} - 2 ) {
-        my (
-            $T_END,    $T_END_P1, $T_END_P2, $N_END_M2,
-            $N_END_M1, $N_END,    $N_END_P1, $N_END_P2
-          )
-          = (
+        my ( $T_END, $T_END_P1, $N_END, $N_END_P1 ) = (
             JUDGE_ZERO( ${$TR_END_COUNT}[$CURRENT] ),
             JUDGE_ZERO( ${$TR_END_COUNT}[ $CURRENT + 1 ] ),
-            JUDGE_ZERO( ${$TR_END_COUNT}[ $CURRENT + 2 ] ),
-            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT - 2 ] ),
-            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT - 1 ] ),
             JUDGE_ZERO( ${$NC_END_COUNT}[$CURRENT] ),
-            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 1 ] ),
-            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 2 ] )
-          );
+            JUDGE_ZERO( ${$NC_END_COUNT}[ $CURRENT + 1 ] )
+        );
 
         if ( ( $T_END < 4 ) and ( $N_END < 4 ) ) {
             if ( $T_END > $N_END ) {
@@ -43,26 +35,9 @@ sub SCORE {
             }
         }
 
-        if ( ( $T_END_P2 < 4 ) and ( $N_END_P2 < 4 ) ) {
-            if ( $T_END_P2 > $N_END_P2 ) {
-                $N_END_P2 = $T_END_P2;
-            }
-            else {
-                $T_END_P2 = $N_END_P2;
-            }
-        }
-
-        my ( $SCORE1, $SCORE2, $SCORE3, $SCORE );
-        $SCORE1 = $T_END_P1 / $T_END - $N_END_P1 / $N_END;
-        $SCORE1 = 1 if $SCORE1 < 1;
-        $SCORE2 = ( $T_END_P1 / $T_END_P2 ) / ( $N_END_P1 / $N_END_P2 );
-        $SCORE2 = 1       if $SCORE2 < 1;
-        $SCORE2 = $SCORE1 if $SCORE2 > $SCORE1;
-        $SCORE3 =
-          ( $N_END_M2 * $N_END_M1 * $N_END_P1 * $N_END_P2 )**0.25 / $N_END;
-        $SCORE3 = $SCORE1 if $SCORE3 > $SCORE1;
-        $SCORE  = $SCORE1 + $SCORE2 + $SCORE3;
-        $SCORE  = 1 if $T_END_P1 < $N_END_P1 * 5;
+        my $SCORE;
+        $SCORE = $T_END_P1 / $T_END - $N_END_P1 / $N_END;
+        $SCORE = 1 if $T_END_P1 < $N_END_P1 * 5;
         push( @SCORE, $SCORE );
     }
     push( @SCORE, 0 );
