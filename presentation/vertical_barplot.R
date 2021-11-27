@@ -1,11 +1,11 @@
 #!/usr/bin/env Rscript
-args <- commandArgs(T)
-file_path <- args[1]
-result_save_path <- args[2]
-
 library(dplyr)
 library(ggplot2)
 library(forcats)
+
+args <- commandArgs(T)
+file_path <- args[1]
+result_save_path <- args[2]
 
 raw_data <-
   read.table(
@@ -42,18 +42,18 @@ df_plot <- raw_data %>%
     log_median
   )
 
-color_scale <- c("#fff173", "#a7d1b8", "#cccccc")
-names(color_scale) <- c("2", "1", "0")
+color_scale <- c("#A2CA86", "#C8C8C8")
+names(color_scale) <- c("1", "0")
 
-color_scale_point <- c("#fff173", "#a7d1b8", "#cccccc")
-names(color_scale_point) <- c("2", "1", "0")
+color_scale_point <- c("#A2CA86", "#C8C8C8")
+names(color_scale_point) <- c("1", "0")
 
 ggplot(mutate(df_plot, name = fct_reorder(name, log_ave))) +
   geom_bar(
     aes(x = name, y = log_ave, fill = color_pattern),
     stat = "identity",
-    alpha = .6,
-    width = .65,
+    alpha = .8,
+    width = .6,
     show.legend = F
   ) +
   scale_fill_manual(values = color_scale) +
@@ -62,27 +62,25 @@ ggplot(mutate(df_plot, name = fct_reorder(name, log_ave))) +
   geom_point(
     aes(x = name, y = log_num1),
     shape = 16,
-    color = "#5E95CA",
+    color = "#EA7B1D",
     alpha = .9,
     size = 1.2
   ) +
   geom_point(
     aes(x = name, y = log_num2),
     shape = 16,
-    color = "#91211C",
+    color = "#2AE9EC",
     alpha = .9,
     size = 1.2
   ) +
   geom_point(
     aes(x = name, y = log_num3),
     shape = 16,
-    color = "#F29125",
+    color = "#1D00EC",
     alpha = .9,
     size = 1.2
   ) +
   coord_flip(ylim = c(0, log10(max(raw_data[, 4:6]) * 1.5))) +
-  xlab("") +
-  ylab("") +
   theme_bw(base_line_size = 0.11672, base_rect_size = 0.11672) +
   theme(
     axis.ticks = element_line(colour = "#000000", size = 0.11672),
@@ -91,8 +89,9 @@ ggplot(mutate(df_plot, name = fct_reorder(name, log_ave))) +
     axis.text.y = element_text(
       face = "bold",
       colour = "#000000",
-      size = 5
+      size = 8
     ),
+    axis.title = element_blank(),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     panel.background = element_rect(fill = "transparent", colour = NA),
