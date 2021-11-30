@@ -23,7 +23,7 @@ sub SCORE {
         }
         else {
             $T_END =
-                POSIX::ceil( ${$TR_END_COUNT}[$CURRENT] * $NC_TOTAL / $TR_TOTAL );
+              POSIX::ceil( ${$TR_END_COUNT}[$CURRENT] * $NC_TOTAL / $TR_TOTAL );
         }
         $T_END_P1 = POSIX::ceil(
             ${$TR_END_COUNT}[ $CURRENT + 1 ] * $NC_TOTAL / $TR_TOTAL );
@@ -35,8 +35,7 @@ sub SCORE {
         }
         $N_END_P1 = ${$NC_END_COUNT}[ $CURRENT + 1 ];
 
-        my $SCORE;
-        $SCORE = $T_END_P1 / $T_END - $N_END_P1 / $N_END;
+        my $SCORE = $T_END_P1 / $T_END - $N_END_P1 / $N_END;
         push( @SCORE,   $SCORE );
         push( @END_COR, $T_END_P1 );
     }
@@ -77,12 +76,12 @@ foreach my $sample ( 1 .. $#ARGV ) {
         push( @{ $end_count[$sample] }, $end_count );
         $total[$sample] += $end_count;
     }
+    close($IN_TR);
     ( $score[$sample], $end_count_cor[$sample] ) = SCORE(
         \@{ $end_count[$sample] },
         \@{ $end_count[0] },
         $total[$sample], $total[0]
     );
-    close($IN_TR);
 }
 
 foreach my $site ( 0 .. $#site - 1 ) {
@@ -118,7 +117,7 @@ foreach my $site ( 0 .. $#site - 1 ) {
         $score_cor3_sum += $socre_cor3[$sample][$site];
         $score_sum      += $score[$sample][$site];
         print(
-            "$end_count[$sample][$site]\t$end_count_cor[$sample][$site]\t$score[$sample][$site]\t$socre_cor1[$sample][$site]\t$socre_cor2[$sample][$site]\t$socre_cor3[$sample][$site]\t"
+"$end_count[$sample][$site]\t$end_count_cor[$sample][$site]\t$score[$sample][$site]\t$socre_cor1[$sample][$site]\t$socre_cor2[$sample][$site]\t$socre_cor3[$sample][$site]\t"
         );
     }
     print("$score_sum\t$score_cor1_sum\t$score_cor2_sum\t$score_cor3_sum\n");
