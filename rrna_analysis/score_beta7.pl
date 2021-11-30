@@ -56,7 +56,7 @@ sub SCORE {
         my $SCORE;
         $SCORE = $T_END_P1 / $T_END - $N_END_P1 / $N_END;
         my $END_RATIO = $SCORE;
-        $END_RATIO = 0 if $T_END_P1 < $N_END_P1 * 5;
+        $END_RATIO = 20 if ( $T_END_P1 < $N_END_P1 * 5 ) and ( $SCORE > 20 );
         push( @SCORE,     $SCORE );
         push( @END_RATIO, $END_RATIO );
     }
@@ -113,7 +113,7 @@ foreach my $site ( 0 .. $#site ) {
     }
     my $lto = 0;
     foreach my $sample ( 1 .. $#ARGV ) {
-        if ( $score[$sample][$site] < 30 ) {
+        if ( $score[$sample][$site] < 20 ) {
             $lto++;
         }
     }
