@@ -23,7 +23,7 @@ sub SCORE {
         }
         else {
             $T_END =
-                POSIX::ceil( ${$TR_END_COUNT}[$CURRENT] * $NC_TOTAL / $TR_TOTAL );
+              POSIX::ceil( ${$TR_END_COUNT}[$CURRENT] * $NC_TOTAL / $TR_TOTAL );
         }
         $T_END_P1 = POSIX::ceil(
             ${$TR_END_COUNT}[ $CURRENT + 1 ] * $NC_TOTAL / $TR_TOTAL );
@@ -118,7 +118,7 @@ foreach my $site ( 0 .. $#site - 1 ) {
         $score_cor3_sum += $socre_cor3[$sample][$site];
         $score_sum      += $score[$sample][$site];
         print(
-            "$end_count[$sample][$site]\t$end_count_cor[$sample][$site]\t$score[$sample][$site]\t$socre_cor1[$sample][$site]\t$socre_cor2[$sample][$site]\t$socre_cor3[$sample][$site]\t"
+"$end_count[$sample][$site]\t$end_count_cor[$sample][$site]\t$score[$sample][$site]\t$socre_cor1[$sample][$site]\t$socre_cor2[$sample][$site]\t$socre_cor3[$sample][$site]\t"
         );
     }
     print("$score_sum\t$score_cor1_sum\t$score_cor2_sum\t$score_cor3_sum\n");

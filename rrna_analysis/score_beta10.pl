@@ -10,11 +10,11 @@ sub SCORE {
     my $TR_TOTAL     = $_[2];
     my $NC_TOTAL     = $_[3];
     my @SCORE;
-    my @END_RATIO;
-    $SCORE[0]     = 0;
-    $SCORE[1]     = 0;
-    $END_RATIO[0] = 0;
-    $END_RATIO[1] = 0;
+    my @END_COR;
+    $SCORE[0]   = 0;
+    $SCORE[1]   = 0;
+    $END_COR[0] = 0;
+    $END_COR[1] = 0;
 
     for my $CURRENT ( 2 .. $#{$TR_END_COUNT} - 2 ) {
         my ( $N_END, $N_END_P1, $T_END, $T_END_P1 );
@@ -44,20 +44,20 @@ sub SCORE {
         }
         my $SCORE;
         $SCORE = $T_END_P1 / $T_END - $N_END_P1 / $N_END;
-        push( @SCORE,     $SCORE );
-        push( @END_RATIO, $T_END_P1 );
+        push( @SCORE,   $SCORE );
+        push( @END_COR, $T_END_P1 );
     }
-    push( @SCORE,     0 );
-    push( @SCORE,     0 );
-    push( @END_RATIO, 0 );
-    push( @END_RATIO, 0 );
+    push( @SCORE,   0 );
+    push( @SCORE,   0 );
+    push( @END_COR, 0 );
+    push( @END_COR, 0 );
     foreach my $TERMIN ( 0 .. 19 ) {
-        $SCORE[$TERMIN]                 = 0;
-        $END_RATIO[$TERMIN]             = 0;
-        $SCORE[ $#SCORE - $TERMIN ]     = 0;
-        $END_RATIO[ $#SCORE - $TERMIN ] = 0;
+        $SCORE[$TERMIN]               = 0;
+        $END_COR[$TERMIN]             = 0;
+        $SCORE[ $#SCORE - $TERMIN ]   = 0;
+        $END_COR[ $#SCORE - $TERMIN ] = 0;
     }
-    return ( \@SCORE, \@END_RATIO );
+    return ( \@SCORE, \@END_COR );
 }
 
 my ( @site, @base, @end_count, @score, @end_count_cor, @total );
@@ -94,24 +94,22 @@ foreach my $sample ( 1 .. $#ARGV ) {
 
 foreach my $site ( 0 .. $#site - 1 ) {
     print("$site[$site]\t$base[$site]\t$end_count[0][$site]\t");
-    my $fto = 0;    # fewer than one
-    my $soa = 0;    # summary of all
+    my $soas = 0;    # summary of all score
+    my $soac = 0;    # summary of all count
     foreach my $sample ( 1 .. $#ARGV ) {
         $socre_cor1[$sample][$site] = $score[$sample][$site];
         $socre_cor2[$sample][$site] = $score[$sample][$site];
         $socre_cor3[$sample][$site] = $score[$sample][$site];
-        $soa += $end_count_cor[$sample][$site];
-        if ( $score[$sample][$site] < 20 ) {
-            $fto++;
-        }
+        $soac += $end_count_cor[$sample][$site];
+        $soas += $score[$sample][$site];
     }
-    if ( $fto > 0 ) {
+    if ( $soas < 90 ) {
         foreach my $sample ( 1 .. $#ARGV ) {
             $socre_cor1[$sample][$site] = 0;
             $socre_cor3[$sample][$site] = 0;
         }
     }
-    if ( $soa < 9 * $end_count[0][ $site + 1 ] ) {
+    if ( $soac < 9 * $end_count[0][ $site + 1 ] ) {
         foreach my $sample ( 1 .. $#ARGV ) {
             $socre_cor2[$sample][$site] = 0;
             $socre_cor3[$sample][$site] = 0;
