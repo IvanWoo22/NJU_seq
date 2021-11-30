@@ -95,7 +95,6 @@ foreach my $sample ( 1 .. $#ARGV ) {
         }
     }
     close($IN_TR);
-    warn("$total[$sample], $total[0]\n");
     ( $score[$sample], $end_count_cor[$sample] ) = SCORE(
         \%{ $end_count[$sample] },
         \%{ $end_count[0] },
