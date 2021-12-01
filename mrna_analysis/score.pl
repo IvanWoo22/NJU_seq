@@ -118,7 +118,7 @@ foreach my $id ( keys(%all_site_id) ) {
             $soas += ${ $score[$sample] }{$id};
         }
         if ( ( $soas >= 90 ) and ( $soac >= 9 * $NC_END_COUNT ) ) {
-            print("$chr\t$dir\t$pos\t$info{$id}\t");
+            print("$chr\t$pos\t$dir\t$info{$id}\t");
             print("$NC_END_COUNT\t");
             foreach my $sample ( 1 .. $#ARGV ) {
                 print(
