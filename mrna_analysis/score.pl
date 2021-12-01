@@ -63,7 +63,8 @@ sub SCORE {
     return ( \%SCORE, \%END_COR );
 }
 
-my ( @end_count, @score, @end_count_cor, @total, %info, %all_site_id );
+my ( @end_count, @score, @end_count_cor, @total, %info, %all_site_id,
+    %score_all );
 open( my $IN_NC, "<", $ARGV[0] );
 while (<$IN_NC>) {
     chomp;
@@ -101,9 +102,7 @@ foreach my $sample ( 1 .. $#ARGV ) {
     );
 }
 
-foreach
-  my $id ( sort { $all_site_id{$b} <=> $all_site_id{$a} } keys %all_site_id )
-{
+foreach my $id ( keys %all_site_id ) {
     if ( $all_site_id{$id} == $#ARGV ) {
         my ( $chr, $dir, $pos ) = split( /\t/, $id );
         my $NC_END_COUNT;
@@ -120,16 +119,18 @@ foreach
             $soas += ${ $score[$sample] }{$id};
         }
         if ( ( $soas >= 90 ) and ( $soac >= 9 * $NC_END_COUNT ) ) {
-            print("$chr\t$pos\t$dir\t$info{$id}\t");
-            print("$NC_END_COUNT\t");
+            my $key = "$chr\t$pos\t$dir\t$info{$id}\t$NC_END_COUNT";
             foreach my $sample ( 1 .. $#ARGV ) {
-                print(
-"${$end_count[$sample]}{$id}\t${$end_count_cor[$sample]}{$id}\t${$score[$sample]}{$id}\t"
-                );
+                $key = $key
+                  . "\t${$end_count[$sample]}{$id}\t${$end_count_cor[$sample]}{$id}\t${$score[$sample]}{$id}";
             }
-            print("$soas\n");
+            $score_all{$key} = $soas;
         }
     }
+}
+
+foreach my $key ( sort { $score_all{$b} <=> $score_all{$a} } keys %score_all ) {
+    print("$key\t$score_all{$key}\n");
 }
 
 __END__
