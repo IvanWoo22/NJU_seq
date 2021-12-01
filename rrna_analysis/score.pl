@@ -52,8 +52,10 @@ sub SCORE {
     return ( \@SCORE, \@END_COR );
 }
 
-my ( @site, @base, @end_count, @score, @end_count_cor, @total );
-my ( @socre_cor1, @socre_cor2, @socre_cor3 );
+my (
+    @site,  @base,       @end_count,  @score, @end_count_cor,
+    @total, @socre_cor1, @socre_cor2, @socre_cor3
+);
 $total[0] = 0;
 open( my $IN_NC, "<", $ARGV[0] );
 

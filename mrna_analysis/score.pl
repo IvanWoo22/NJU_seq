@@ -101,7 +101,9 @@ foreach my $sample ( 1 .. $#ARGV ) {
     );
 }
 
-foreach my $id ( keys(%all_site_id) ) {
+foreach
+  my $id ( sort { $all_site_id{$b} <=> $all_site_id{$a} } keys %all_site_id )
+{
     if ( $all_site_id{$id} == $#ARGV ) {
         my ( $chr, $dir, $pos ) = split( /\t/, $id );
         my $NC_END_COUNT;
