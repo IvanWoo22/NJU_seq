@@ -17,15 +17,15 @@ sub SCORE {
     $END_COR[1] = 0;
 
     for my $CURRENT ( 2 .. $#{$TR_END_COUNT} - 2 ) {
-        my ( $N_END, $N_END_P1, $T_END, $T_END_P1 );
+        my ( $N_END, $N_END_P1, $T_END, $T_END_P1, $END_COR );
         if ( ${$TR_END_COUNT}[$CURRENT] == 0 ) {
             $T_END = 1;
         }
         else {
-            $T_END =
-              POSIX::ceil( ${$TR_END_COUNT}[$CURRENT] * $NC_TOTAL / $TR_TOTAL );
+            $T_END = ${$TR_END_COUNT}[$CURRENT];
         }
-        $T_END_P1 = POSIX::ceil(
+        $T_END_P1 = ${$TR_END_COUNT}[ $CURRENT + 1 ];
+        $END_COR  = POSIX::ceil(
             ${$TR_END_COUNT}[ $CURRENT + 1 ] * $NC_TOTAL / $TR_TOTAL );
         if ( ${$NC_END_COUNT}[$CURRENT] == 0 ) {
             $N_END = 1;
@@ -37,7 +37,7 @@ sub SCORE {
 
         my $SCORE = $T_END_P1 / $T_END - $N_END_P1 / $N_END;
         push( @SCORE,   $SCORE );
-        push( @END_COR, $T_END_P1 );
+        push( @END_COR, $END_COR );
     }
     push( @SCORE,   0 );
     push( @SCORE,   0 );

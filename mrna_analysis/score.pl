@@ -13,7 +13,7 @@ sub SCORE {
     my %END_COR;
     for my $CURRENT ( keys( %{$TR_END_COUNT} ) ) {
         my ( $CHR, $DIR, $POS ) = split( /\t/, $CURRENT );
-        my ($FORMAL_POS);
+        my ( $FORMAL_POS, $END_COR );
         if ( $DIR eq "+" ) {
             $FORMAL_POS = $POS - 1;
         }
@@ -30,10 +30,8 @@ sub SCORE {
             $T_END = 1;
         }
         else {
-            $T_END = POSIX::ceil(
-                ${$TR_END_COUNT}{ $CHR . "\t" . $DIR . "\t" . $FORMAL_POS } *
-                  $NC_TOTAL /
-                  $TR_TOTAL );
+            $T_END =
+              ${$TR_END_COUNT}{ $CHR . "\t" . $DIR . "\t" . $FORMAL_POS };
         }
         if (
             not exists(
@@ -47,7 +45,8 @@ sub SCORE {
             $N_END =
               ${$NC_END_COUNT}{ $CHR . "\t" . $DIR . "\t" . $FORMAL_POS };
         }
-        $T_END_P1 =
+        $T_END_P1 = ${$TR_END_COUNT}{$CURRENT};
+        $END_COR =
           POSIX::ceil( ${$TR_END_COUNT}{$CURRENT} * $NC_TOTAL / $TR_TOTAL );
 
         if ( not exists( ${$NC_END_COUNT}{$CURRENT} ) ) {
@@ -59,7 +58,7 @@ sub SCORE {
 
         my $SCORE = $T_END_P1 / $T_END - $N_END_P1 / $N_END;
         $SCORE{$CURRENT}   = $SCORE;
-        $END_COR{$CURRENT} = $T_END_P1;
+        $END_COR{$CURRENT} = $END_COR;
     }
     return ( \%SCORE, \%END_COR );
 }
