@@ -125,7 +125,7 @@ while (<$POINT>) {
             }
         }
     }
-    my ($fu,$cds,$tu) = (0,0,0);
+    my ($fu,$cds,$tu) = ("-","-","-");
 
     $fu = "five_utr" if exists($type{"five_utr"});
     $cds = "cds" if exists($type{"cds"});
