@@ -4,7 +4,6 @@ library(splines)
 library(gridExtra)
 
 args <- commandArgs(T)
-
 start <- read.table(args[1], header = F)
 stop <- read.table(args[2], header = F)
 ymax = max(start$V2, stop$V2)
