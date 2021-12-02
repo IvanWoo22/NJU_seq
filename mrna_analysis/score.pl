@@ -114,11 +114,13 @@ foreach my $id ( keys %all_site_id ) {
         }
         my $soas = 0;
         my $soac = 0;
+        my $soas_tv = 30 * $#ARGV;
+        my $soac_tv = 3 * $#ARGV;
         foreach my $sample ( 1 .. $#ARGV ) {
             $soac += ${ $end_count_cor[$sample] }{$id};
             $soas += ${ $score[$sample] }{$id};
         }
-        if ( ( $soas >= 90 ) and ( $soac >= 9 * $NC_END_COUNT ) ) {
+        if ( ( $soas >= $soas_tv ) and ( $soac >= $soac_tv * $NC_END_COUNT ) ) {
             my $key = "$chr\t$pos\t$dir\t$info{$id}\t$NC_END_COUNT";
             foreach my $sample ( 1 .. $#ARGV ) {
                 $key = $key

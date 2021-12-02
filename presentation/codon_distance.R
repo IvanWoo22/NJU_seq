@@ -2,13 +2,16 @@
 library(ggplot2)
 library(splines)
 library(gridExtra)
+library(tidyquant)
 
 args <- commandArgs(T)
+
 start <- read.table(args[1], header = F)
 stop <- read.table(args[2], header = F)
 ymax = max(start$V2, stop$V2)
 
 p1 <- ggplot() +
+  geom_ma(aes(x = start$V1, y = start$V2), ma_fun = SMA, n = 3) +
   xlab("Distance to Start Codon (nt)") +
   ylab("Nmuber of Nm Sites") +
   geom_line(
@@ -77,6 +80,7 @@ p1 <- ggplot() +
   )
 
 p2 <- ggplot() +
+  geom_ma(aes(x = stop$V1, y = stop$V2), ma_fun = SMA, n = 3) +
   xlab("Distance to Stop Codon (nt)") +
   ylab("Nmuber of Nm Sites") +
   geom_line(
@@ -144,13 +148,13 @@ p2 <- ggplot() +
     text = element_text(family = "ArialMT")
   )
 
-p <- grid.arrange(p1, p2, nrow = 1, widths = c(4 / 9, 5 / 9))
+p <- grid.arrange(p1, p2, nrow = 1, widths = c(0.5, 0.5))
 result_save_path <- args[3]
 ggsave(
   result_save_path,
   plot = p,
   device = "pdf",
-  width = 1.9,
+  width = 4.9,
   height = 3.2,
   dpi = "retina"
 )
