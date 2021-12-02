@@ -11,3 +11,4 @@ COL=$2
 
 cut -f "${COL}" "${FH}" >"${FH}".seqlogo.tmp
 Rscript "${FP}"/seq_logo.R "${FH}".seqlogo.tmp "${3}"
+rm "${FH}".seqlogo.tmp

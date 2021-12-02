@@ -9,39 +9,15 @@ start <- read.table(args[1], header = F)
 stop <- read.table(args[2], header = F)
 ymax = max(start$V2, stop$V2)
 
-
 p1 <- ggplot() +
   xlab("Distance to Start Codon (nt)") +
   ylab("Nmuber of Nm Sites") +
   geom_line(
-    aes(x = start1$V1, y = start1$V2),
+    aes(x = start$V1, y = start$V2),
     size = 0.4669,
     show.legend = F,
     colour = "#A2CA86",
     alpha = 0.8
-  ) +
-  geom_line(
-    aes(x = start2$V1, y = start2$V2),
-    size = 0.4669,
-    show.legend = F,
-    colour = "#7664AD",
-    alpha = 0.8
-  ) +
-  geom_line(
-    aes(x = start3$V1, y = start3$V2),
-    size = 0.4669,
-    show.legend = F,
-    colour = "#7995BD",
-    alpha = 0.8
-  ) +
-  geom_smooth(
-    aes(x = start$V1, y = start$V2),
-    method = "glm",
-    formula = y ~ ns(x, 8),
-    size = 0.701,
-    show.legend = F,
-    colour = "#FF335C",
-    alpha = 0.4
   ) +
   geom_line(aes(x = c(0, 0), y = c(0, ymax)),
             size = 0.23343,
@@ -105,34 +81,11 @@ p2 <- ggplot() +
   xlab("Distance to Stop Codon (nt)") +
   ylab("Nmuber of Nm Sites") +
   geom_line(
-    aes(x = stop1$V1, y = stop1$V2),
+    aes(x = stop$V1, y = stop$V2),
     size = 0.4669,
     show.legend = F,
     colour = "#A2CA86",
     alpha = 0.8
-  ) +
-  geom_line(
-    aes(x = stop2$V1, y = stop2$V2),
-    size = 0.4669,
-    show.legend = F,
-    colour = "#7664AD",
-    alpha = 0.8
-  ) +
-  geom_line(
-    aes(x = stop3$V1, y = stop3$V2),
-    size = 0.4669,
-    show.legend = F,
-    colour = "#7995BD",
-    alpha = 0.8
-  ) +
-  geom_smooth(
-    aes(x = stop$V1, y = stop$V2),
-    method = "glm",
-    formula = y ~ ns(x, 8),
-    size = 0.701,
-    show.legend = F,
-    colour = "#FF335C",
-    alpha = 0.4
   ) +
   geom_line(aes(x = c(0, 0), y = c(0, ymax)),
             size = 0.23343,
@@ -192,8 +145,8 @@ p2 <- ggplot() +
     text = element_text(family = "ArialMT")
   )
 
-p <- grid.arrange(p1, p2, ncol = 1)
-result_save_path <- args[7]
+p <- grid.arrange(p1, p2, nrow = 1, widths = c(4 / 9, 5 / 9))
+result_save_path <- args[3]
 ggsave(
   result_save_path,
   plot = p,
