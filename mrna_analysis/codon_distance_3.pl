@@ -98,7 +98,74 @@ while (<$IN2>) {
                 else {
                     $distance = 0;
                 }
-                if ( ( $distance < 500 ) and ( $distance >= -500 ) ) {
+
+                my ( $left_length, $site_1, $right_length, $site_2 );
+                if ( $strand eq "+" ) {
+                    $site_1 = $exon{ $gene{$gene}[$no] }->AlignDB::IntSpan::min;
+                    $site_2 = $exon{ $gene{$gene}[$no] }->AlignDB::IntSpan::max;
+                }
+                else {
+                    $site_1 = $exon{ $gene{$gene}[$no] }->AlignDB::IntSpan::max;
+                    $site_2 = $exon{ $gene{$gene}[$no] }->AlignDB::IntSpan::min;
+                }
+                my ( $distance_neo_1, $direction_1 ) =
+                  DISTANCE( $site_1, $codon{ $gene{$gene}[$no] } );
+                my ( $distance_neo_2, $direction_2 ) =
+                  DISTANCE( $site_2, $codon{ $gene{$gene}[$no] } );
+                if ( $distance_neo_1 ne "0" ) {
+                    my $set1 = AlignDB::IntSpan->new;
+                    $set1->add($distance_neo_1);
+                    my $set2 = $set1->diff( $intron{ $gene{$gene}[$no] } );
+                    if ( $strand eq "+" ) {
+                        $left_length =
+                          ( $set2->cardinality - 1 ) * $direction_1 * 1;
+                    }
+                    else {
+                        $left_length =
+                          ( $set2->cardinality - 1 ) * $direction_1 * (-1);
+                    }
+                }
+                else {
+                    $left_length = 0;
+                }
+                if ( $distance_neo_2 ne "0" ) {
+                    my $set1 = AlignDB::IntSpan->new;
+                    $set1->add($distance_neo_2);
+                    my $set2 = $set1->diff( $intron{ $gene{$gene}[$no] } );
+                    if ( $strand eq "+" ) {
+                        $right_length =
+                          ( $set2->cardinality - 1 ) * $direction_2 * 1;
+                    }
+                    else {
+                        $right_length =
+                          ( $set2->cardinality - 1 ) * $direction_2 * (-1);
+                    }
+                }
+                else {
+                    $right_length = 0;
+                }
+
+                if ( $distance_neo ne "0" ) {
+                    my $set1 = AlignDB::IntSpan->new;
+                    $set1->add($distance_neo);
+                    my $set2 = $set1->diff( $intron{ $gene{$gene}[$no] } );
+                    if ( $strand eq "+" ) {
+                        $distance = ( $set2->cardinality - 1 ) * $direction * 1;
+                    }
+                    else {
+                        $distance =
+                          ( $set2->cardinality - 1 ) * $direction * (-1);
+                    }
+                }
+                else {
+                    $distance = 0;
+                }
+
+                if (    ( $distance < 500 )
+                    and ( $distance >= -500 )
+                    and ( abs($left_length) > $ARGV[3] )
+                    and ( abs($right_length) > $ARGV[4] ) )
+                {
                     $window[ POSIX::floor( ( $distance + 500 ) / 50 ) ] +=
                       $weight;
                 }
