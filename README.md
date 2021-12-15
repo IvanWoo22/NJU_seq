@@ -4,9 +4,7 @@
 
 ----
 
-**N**m site **J**udged **U**niversally **seq**uencing.  
-A brand-new version of MgR-seq.  
-From clean data to positions with 2-*O*-methylation.
+**N**m-site **J**udged **U**niversally **seq**uencing. From clean data to positions with 2′-*O*-methylation.
 
 ![](.README_images/flow.png)
 
@@ -78,8 +76,6 @@ wget -N ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz -O data/mirna.fa.gz
 Create index by `bowtie2-build` for mapping.
 
 ```shell script
-THREAD=16
-
 # rRNA index
 # 5.8s,18s and 28s rRNA.
 cat NJU_seq/data/hsa_rrna/* >data/hsa_rrna.fa
@@ -92,9 +88,7 @@ pigz -dc data/hsa_transcript.fa.gz |
   perl NJU_seq/tool/fetch_fasta.pl \
   --stdin -s 'transcript_biotype:protein_coding' \
   >data/hsa_protein_coding.fa
-
-bowtie2-build --threads "${THREAD}" \
-  data/hsa_protein_coding.fa index/hsa_protein_coding
+bowtie2-build data/hsa_protein_coding.fa index/hsa_protein_coding
 rm data/hsa_protein_coding.fa
 ```
 
@@ -110,6 +104,7 @@ ID='NJU6148'
 PREFIX='HeLa_RF_NC'
 
 mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
+# Link the NJU-seq data, or you can directly download to the folder.
 ln -sf /home/wyf/NJU_data/"${ID}"/R1.fq.gz data/"${PREFIX}"/R1.fq.gz
 ln -sf /home/wyf/NJU_data/"${ID}"/R2.fq.gz data/"${PREFIX}"/R2.fq.gz
 ```
@@ -150,7 +145,7 @@ time perl NJU_seq/quality_control/fastq_qc.pl \
 # $ARGV[-1] should be the prefix of the output files.
 ```
 
-*The quality report created in `/output/HeLa_RF.pdf`.*
+*The quality report created in `./output/HeLa_RF.pdf`.*
 
 ## 4. Alignment, Count and Score
 
@@ -227,12 +222,6 @@ time parallel -j 3 "
 # real  0m0.459s
 # user  0m0.661s
 # sys   0m0.048s
-
-bash NJU_seq/presentation/point_venn.sh \
-  Sample1 output/HeLa_RF_rrna_18s_scored.tsv 14\
-  Sample2 output/HeLa_RF_rrna_18s_scored.tsv 15\
-  Sample3 output/HeLa_RF_rrna_18s_scored.tsv 16\
-  output/HeLa_RF_rrna_venn.png 40
 ```
 
 #### Prepare for mRNA.
@@ -373,43 +362,12 @@ parallel --keep-order -j 4 '
 Score each covered site.
 
 ```shell script
-parallel -j 3 "
-  perl NJU_seq/mrna_analysis/score.pl \\
-    output/HeLa_RF_NC/mrna.tsv \\
-    output/{}/mrna.tsv |
-      sort -t $'\t' -nrk 12,12 \\
-        >output/{}_mrna_scored.tsv
-  " ::: HeLa_RF_1 HeLa_RF_2 HeLa_RF_3
-
-for TOP in 50 100 1000 3000 5000; do
-  awk -v a=`head -${TOP} output/HeLa_RF_1_mrna_scored.tsv | tail -1 | awk '{print $12}'` \
-    '$12>=a {print $1 $3 $2}' output/HeLa_RF_1_mrna_scored.tsv \
-    >temp/sample1.txt
-  awk -v a=`head -${TOP} output/HeLa_RF_2_mrna_scored.tsv | tail -1 | awk '{print $12}'` \
-    '$12>=a {print $1 $3 $2}' output/HeLa_RF_2_mrna_scored.tsv \
-    >temp/sample2.txt
-  awk -v a=`head -${TOP} output/HeLa_RF_3_mrna_scored.tsv | tail -1 | awk '{print $12}'` \
-    '$12>=a {print $1 $3 $2}' output/HeLa_RF_3_mrna_scored.tsv \
-    >temp/sample3.txt
-  Rscript NJU_seq/presentation/point_venn.R \
-    Sample1 temp/sample1.txt \
-    Sample2 temp/sample2.txt \
-    Sample3 temp/sample3.txt \
-    output/HeLa_RF_mrna_top${TOP}_venn.png
-  rm temp/sample1.txt temp/sample2.txt temp/sample3.txt output/HeLa_RF_mrna_top${TOP}_venn.png*.log
-done
-
-# perl NJU_seq/tool/common.pl \
-#  output/HeLa_RF_1_mrna_scored.tsv \
-#  output/HeLa_RF_2_mrna_scored.tsv \
-#  output/HeLa_RF_3_mrna_scored.tsv \
-#  >output/HeLa_RF_mrna_scored.tsv
-
-perl NJU_seq/mrna_analysis/extract_point_neo.pl \
-  output/HeLa_RF_1_mrna_scored.tsv \
-  output/HeLa_RF_2_mrna_scored.tsv \
-  output/HeLa_RF_3_mrna_scored.tsv \
-  1000 1 >output/HeLa_RF_mrna_scored_1000p.tsv
+perl NJU_seq/mrna_analysis/score.pl \
+  output/HeLa_RF_NC/mrna.tsv \
+  output/HeLa_RF_1/mrna.tsv \
+  output/HeLa_RF_2/mrna.tsv \
+  output/HeLa_RF_3/mrna.tsv \
+  >output/HeLa_RF_mrna_Nm_score.tsv
 
 #pigz -dc data/hsa.gff3.gz |
 #  awk '$3=="gene"' |
@@ -427,7 +385,7 @@ See the signature of Nm sites.
 
 ```shell script
 perl NJU_seq/presentation/signature_count.pl \
-  output/HeLa_RF_mrna_scored_1000p.tsv \
+  output/HeLa_RF_mrna_Nm_score.tsv \
   output/HeLa_RF_mrna_signature.pdf
 ```
 
@@ -445,99 +403,68 @@ Rscript NJU_seq/presentation/gene_ontology.R \
 Divide annotations into two categories.
 
 ```shell script
-pigz -dcf data/hsa.gff3.gz |
-  awk '(($3=="gene")&&($9~/biotype=protein_coding/)) \
-    || (($3=="mRNA")&&($9~/biotype=protein_coding/)) \
-    || ($3=="exon")' |
-  perl NJU_seq/mrna_analysis/filter_nonsenseexon.pl \
-    --transwording "mRNA" \
-    --transid "ID=transcript:" \
-    --exonid "Parent=transcript:" |
-  perl NJU_seq/mrna_analysis/filter_nonsensegene.pl |
-  perl NJU_seq/mrna_analysis/filter_overlapgene.pl |
-  perl NJU_seq/mrna_analysis/judge_altersplice.pl \
-    --transwording "mRNA" \
-    --geneid "ID=gene:" \
-    --alter "data/hsa_alter_gene.yml" \
-    --unique "data/hsa_unique_gene.yml"
-    
-#pigz -dc data/hsa.gff3.gz |
-#  awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' |
-#  perl NJU_seq/mrna_analysis/representative_transcript.pl \
-#    --geneid "gene_id=" \
-#    --transid "transcript_id=" \
-#    >data/hsa_represent_transcript.txt
+pigz -dc data/hsa.gff3.gz |
+  awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' |
+  perl NJU_seq/mrna_analysis/representative_transcript.pl \
+    --geneid "gene_id=" \
+    --transid "transcript_id=" \
+    >data/hsa_represent_transcript.txt
 
-#pigz -dc data/hsa.gff3.gz |
-#	awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' |
-#	perl NJU_seq/mrna_analysis/main_transcript_1.pl \
-#	--geneid "gene_id=" \
-#	--transid "transcript_id=" \
-#	>data/hsa_main_transcript.txt
-```
-
-Analyse the Nm points.
-
-```shell script
-#pigz -dc data/hsa.gff3.gz |
-#  awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/)) \
-#    ||(($3=="exon")&&($9~/transcript_type=protein_coding/))' |
-#  perl NJU_seq/mrna_analysis/judge_altersplice_1.pl \
-#    --geneid "gene_id=" \
-#    --transid "transcript_id=" \
-#    --rep_trans "data/hsa_main_transcript.txt" \
-#    >data/hsa_gene_spliceregion.yml
-
-perl NJU_seq/mrna_analysis/stat_altersplice_1.pl \
-  data/hsa_alter_gene.yml \
-  <output/HeLa_RF_mrna_scored.tsv \
-  >temp/HeLa_RF_altergene.tsv
-
-perl NJU_seq/mrna_analysis/stat_altersplice_2.pl \
-  <temp/HeLa_RF_altergene.tsv \
-  >output/HeLa_RF_altergene_cov.tsv
-# Output file is the final result.
+pigz -dc data/hsa.gff3.gz |
+	awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' |
+	perl NJU_seq/mrna_analysis/main_transcript_1.pl \
+	--geneid "gene_id=" \
+	--transid "transcript_id=" \
+	>data/hsa_main_transcript.txt
 
 pigz -dc data/hsa.gff3.gz |
   awk '(($3=="five_prime_UTR") || ($3=="three_prime_UTR") || ($3=="CDS"))' |
-  perl NJU_seq/mrna_analysis/judge_transcriptregion_1.pl \
-    --transid "Parent=transcript:" \
-    --rep_trans "data/hsa_represent_transcript.txt" \
+  perl NJU_seq/mrna_analysis/main_transcript_2.pl \
+    --transid "Parent=" \
+    --rep_trans "data/hsa_main_transcript.txt" \
     >data/hsa_transcript_region.tsv
-# The creation of data/hsa_transcript.txt is to be done.
-    
-perl NJU_seq/mrna_analysis/judge_transcriptregion_2.pl \
-  data/hsa_transcript_region.tsv \
-  <output/HeLa_RF_mrna_scored.tsv \
-  >temp/HeLa_RF_transregion.tsv
-  
-perl NJU_seq/mrna_analysis/judge_transcriptregion_3.pl \
-  <temp/HeLa_RF_transregion.tsv \
-  >temp/HeLa_RF_transregion_cov.tsv
-  
-perl NJU_seq/mrna_analysis/judge_transcriptregion_4.pl \
-  data/hsa_transcript_region.tsv \
-  <output/HeLa_RF_mrna_scored.tsv \
-  >output/HeLa_RF_mrna_scored_distribution.tsv
 ```
 
-## 6. Motif Found in miRNA.
-
-Get miRNA sequence information from ncRNA reference.
+Analyse mRNA Nm sites.
 
 ```shell script
-pigz -dc data/mirna.fa.gz |
-  perl NJU_seq/tool/fetch_fasta.pl \
-    --stdin -s 'thaliana' |
-  perl NJU_seq/mrna_analysis/motif_mirna.pl \
-    >data/hsa_mirna_motif.tsv
+PREFIX='HeLa_RF'
+
+pigz -dc data/hsa.gff3.gz |
+  awk '$3=="gene"' |
+  perl NJU_seq/tool/add_gene_name.pl \
+    --id "gene_id=" --name "gene_name=" \
+    --col "8" --file "output/${PREFIX}_mrna_Nm_tmp1.tsv" \
+    >output/${PREFIX}_mrna_Nm_tmp1.tsv
+
+pigz -dc data/hsa_ens.gff3.gz |
+  awk '$3=="gene"' | perl NJU_seq/tool/add_gene_name.pl \
+    --id "gene_id=" --name "description=" \
+    --col "9" --file "output/${PREFIX}_mrna_Nm_tmp2.tsv" \
+    >output/${PREFIX}_mrna_Nm_tmp2.tsv
 
 perl NJU_seq/mrna_analysis/motif_nm.pl \
-  data/hsa_dna.fa.gz \
-  output/HeLa_RF_mrna_scored_sorted.tsv \
-  >output/HeLa_RF_mrna_motif.tsv
+  data/GRCh38.primary_assembly.genome.fa \
+  output/${PREFIX}_mrna_Nm_tmp2.tsv \
+  10 10 >output/${PREFIX}_mrna_Nm_tmp3.tsv
 
-perl NJU_seq/mrna_analysis/motif_compare.pl \
-  data/hsa_mirna_motif.tsv \
-  output/HeLa_RF_mrna_motif.tsv
+perl NJU_seq/mrna_analysis/motif_nm.pl \
+  data/GRCh38.primary_assembly.genome.fa \
+  output/${PREFIX}_mrna_Nm_tmp3.tsv \
+  20 20 >output/${PREFIX}_mrna_Nm_tmp4.tsv
+  
+perl NJU_seq/mrna_analysis/motif_nm.pl \
+  data/GRCh38.primary_assembly.genome.fa \
+  output/${PREFIX}_mrna_Nm_tmp4.tsv \
+  50 50 >output/${PREFIX}_mrna_Nm_tmp5.tsv
+  
+perl NJU_seq/mrna_analysis/main_transcript_3.pl \
+    data/hsa_transcript_region.tsv \
+    output/${PREFIX}_mrna_Nm_tmp5.tsv \
+    output/${PREFIX}_mrna_Nm_list.tsv \
+    >output/${PREFIX}_mrna_Nm_distribution.tsv
+
+rm output/${PREFIX}_mrna_Nm_tmp{1..5}.tsv
 ```
+
+Here, we get `HeLa_RF_mrna_Nm_list.tsv` as the Nm list.
