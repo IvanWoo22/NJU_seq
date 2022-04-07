@@ -2,6 +2,7 @@
 require("ggplot2")
 require("ggseqlogo")
 
+args <- commandArgs(T)
 data <- read.table(args[1], header = F)
 
 p <- ggseqlogo(data, method = 'p') +
@@ -16,9 +17,7 @@ p <- ggseqlogo(data, method = 'p') +
   )
 
 result_save_path <- args[2]
-
 width = nchar(data[1, 1]) * .3
-
 ggsave(
   result_save_path,
   plot = p,
