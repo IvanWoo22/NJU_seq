@@ -5,134 +5,125 @@ use autodie;
 use POSIX;
 
 sub SCORE {
-    my $TR_END_COUNT = $_[0];
-    my $NC_END_COUNT = $_[1];
-    my $TR_TOTAL     = $_[2];
-    my $NC_TOTAL     = $_[3];
+    my ( $TR_END_COUNT, $NC_END_COUNT, $TR_TOTAL, $NC_TOTAL ) = @_;
+
     my %SCORE;
     my %END_COR;
-    for my $CURRENT ( keys( %{$TR_END_COUNT} ) ) {
+
+    for my $CURRENT ( keys %$TR_END_COUNT ) {
         my ( $CHR, $DIR, $POS ) = split( /\t/, $CURRENT );
         my ( $FORMAL_POS, $END_COR );
+
         if ( $DIR eq "+" ) {
             $FORMAL_POS = $POS - 1;
         }
         else {
             $FORMAL_POS = $POS + 1;
         }
-        my ( $N_END, $N_END_P1, $T_END, $T_END_P1 );
-        if (
-            not exists(
-                ${$TR_END_COUNT}{ $CHR . "\t" . $DIR . "\t" . $FORMAL_POS }
-            )
-          )
-        {
-            $T_END = 1;
-        }
-        else {
-            $T_END =
-              ${$TR_END_COUNT}{ $CHR . "\t" . $DIR . "\t" . $FORMAL_POS };
-        }
-        if (
-            not exists(
-                ${$NC_END_COUNT}{ $CHR . "\t" . $DIR . "\t" . $FORMAL_POS }
-            )
-          )
-        {
-            $N_END = 1;
-        }
-        else {
-            $N_END =
-              ${$NC_END_COUNT}{ $CHR . "\t" . $DIR . "\t" . $FORMAL_POS };
-        }
-        $T_END_P1 = ${$TR_END_COUNT}{$CURRENT};
-        $END_COR =
-          POSIX::ceil( ${$TR_END_COUNT}{$CURRENT} * $NC_TOTAL / $TR_TOTAL );
 
-        if ( not exists( ${$NC_END_COUNT}{$CURRENT} ) ) {
-            $N_END_P1 = 1;
-        }
-        else {
-            $N_END_P1 = ${$NC_END_COUNT}{$CURRENT};
-        }
+        my ( $N_END, $N_END_P1, $T_END, $T_END_P1 );
+
+        $T_END = $TR_END_COUNT->{ $CHR . "\t" . $DIR . "\t" . $FORMAL_POS }
+          // 1;
+        $N_END = $NC_END_COUNT->{ $CHR . "\t" . $DIR . "\t" . $FORMAL_POS }
+          // 1;
+
+        $T_END_P1 = $TR_END_COUNT->{$CURRENT};
+        $END_COR =
+          POSIX::ceil( $TR_END_COUNT->{$CURRENT} * $NC_TOTAL / $TR_TOTAL );
+
+        $N_END_P1 = $NC_END_COUNT->{$CURRENT} // 1;
 
         my $SCORE = $T_END_P1 / $T_END - $N_END_P1 / $N_END;
         $SCORE{$CURRENT}   = $SCORE;
         $END_COR{$CURRENT} = $END_COR;
     }
+
     return ( \%SCORE, \%END_COR );
 }
 
 my ( @end_count, @score, @end_count_cor, @total, %info, %all_site_id,
     %score_all );
+
 open( my $IN_NC, "<", $ARGV[0] );
-while (<$IN_NC>) {
-    chomp;
-    my @tmp = split /\t/;
+
+while ( my $line = <$IN_NC> ) {
+    chomp $line;
+    my @tmp = split /\t/, $line;
     my $id  = $tmp[0] . "\t" . $tmp[2] . "\t" . $tmp[1];
-    ${ $end_count[0] }{$id} = $tmp[8];
+    $end_count[0]{$id} = $tmp[8];
 }
+
 close($IN_NC);
 
-foreach my $sample ( 1 .. $#ARGV ) {
+for my $sample ( 1 .. $#ARGV ) {
     $total[0] = 0;
+
     open( my $IN_TR, "<", $ARGV[$sample] );
-    while (<$IN_TR>) {
-        chomp;
-        my @tmp = split /\t/;
+
+    while ( my $line = <$IN_TR> ) {
+        chomp $line;
+        my @tmp = split /\t/, $line;
         my $id  = $tmp[0] . "\t" . $tmp[2] . "\t" . $tmp[1];
-        if ( exists( $all_site_id{$id} ) ) {
+
+        if ( exists $all_site_id{$id} ) {
             $all_site_id{$id}++;
         }
         else {
             $info{$id}        = join( "\t", @tmp[ 3 .. 6 ] );
             $all_site_id{$id} = 1;
         }
-        ${ $end_count[$sample] }{$id} = $tmp[8];
+
+        $end_count[$sample]{$id} = $tmp[8];
         $total[$sample] += $tmp[8];
-        if ( exists( ${ $end_count[0] }{$id} ) ) {
-            $total[0] += ${ $end_count[0] }{$id};
+
+        if ( exists $end_count[0]{$id} ) {
+            $total[0] += $end_count[0]{$id};
         }
     }
+
     close($IN_TR);
-    ( $score[$sample], $end_count_cor[$sample] ) = SCORE(
+
+    my ( $score_ref, $end_count_cor_ref ) = SCORE(
         \%{ $end_count[$sample] },
         \%{ $end_count[0] },
         $total[$sample], $total[0]
     );
+    $score[$sample]         = $score_ref;
+    $end_count_cor[$sample] = $end_count_cor_ref;
 }
 
-foreach my $id ( keys %all_site_id ) {
+for my $id ( keys %all_site_id ) {
     if ( $all_site_id{$id} == $#ARGV ) {
         my ( $chr, $dir, $pos ) = split( /\t/, $id );
-        my $NC_END_COUNT;
-        if ( exists( ${ $end_count[0] }{$id} ) ) {
-            $NC_END_COUNT = ${ $end_count[0] }{$id};
+        my $NC_END_COUNT = exists $end_count[0]{$id} ? $end_count[0]{$id} : 0;
+        my ( $SoaS, $SoaC ) = ( 0, 0 );
+        my $SoaStv = 30 * $#ARGV;
+        my $SoaCtv = 3 * $#ARGV;
+
+        for my $sample ( 1 .. $#ARGV ) {
+            $SoaC += $end_count_cor[$sample]{$id};
+            $SoaS += $score[$sample]{$id};
         }
-        else {
-            $NC_END_COUNT = 0;
-        }
-        my $soas = 0;
-        my $soac = 0;
-        my $soas_tv = 30 * $#ARGV;
-        my $soac_tv = 3 * $#ARGV;
-        foreach my $sample ( 1 .. $#ARGV ) {
-            $soac += ${ $end_count_cor[$sample] }{$id};
-            $soas += ${ $score[$sample] }{$id};
-        }
-        if ( ( $soas >= $soas_tv ) and ( $soac >= $soac_tv * $NC_END_COUNT ) ) {
+
+        if ( $SoaS >= $SoaStv && $SoaC >= $SoaCtv * $NC_END_COUNT ) {
             my $key = "$chr\t$pos\t$dir\t$info{$id}\t$NC_END_COUNT";
-            foreach my $sample ( 1 .. $#ARGV ) {
-                $key = $key
-                  . "\t${$end_count[$sample]}{$id}\t${$end_count_cor[$sample]}{$id}\t${$score[$sample]}{$id}";
+            $NC_END_COUNT = 1 if $NC_END_COUNT == 0;
+            my $fc  = $SoaC / $NC_END_COUNT;
+            my $fca = $fc / $#ARGV;
+            for my $sample ( 1 .. $#ARGV ) {
+                $key .=
+"\t$end_count[$sample]{$id}\t$end_count_cor[$sample]{$id}\t$score[$sample]{$id}";
             }
-            $score_all{$key} = $soas;
+            $key .= "\t$fc\t$fca";
+            $score_all{$key} = $SoaS;
         }
     }
 }
 
 foreach my $key ( sort { $score_all{$b} <=> $score_all{$a} } keys %score_all ) {
-    print("$key\t$score_all{$key}\n");
+    my $ScoreAve = $score_all{$key} / $#ARGV;
+    print("$key\t$score_all{$key}\t$ScoreAve\n");
 }
 
 __END__

@@ -86,7 +86,7 @@ rm data/hsa_rrna.fa
 # Only protein_coding transcripts will be extract to build index.
 pigz -dc data/hsa_transcript.fa.gz |
   perl NJU_seq/tool/fetch_fasta.pl \
-  --stdin -s 'transcript_biotype:protein_coding' \
+  --stdin -s 'protein_coding' \
   >data/hsa_protein_coding.fa
 bowtie2-build data/hsa_protein_coding.fa index/hsa_protein_coding
 rm data/hsa_protein_coding.fa
