@@ -16,8 +16,8 @@ sub TAG_SCORE {
     my @TMP = ( $INFO =~ m/tag=([A-Z,a-z,0-9,_,\,]*)/ );
     my @TAG = split( /,/, $TMP[0] );
     my ( $INCOMPLETE, $CDS_S, $CDS_E ) = ( 0, 0, 0, );
-    $CDS_S = grep /^cds_start_NF$/i, @TAG;
-    $CDS_E = grep /^cds_end_NF$/i,   @TAG;
+    $CDS_S      = grep /^cds_start_NF$/i, @TAG;
+    $CDS_E      = grep /^cds_end_NF$/i,   @TAG;
     $INCOMPLETE = -( $CDS_S + $CDS_E ) * 10;
     my $BASIC = 0;
     $BASIC = grep /^basic$/i, @TAG;

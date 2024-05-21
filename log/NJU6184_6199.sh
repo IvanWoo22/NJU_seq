@@ -1,21 +1,21 @@
 for PREFIX in NJU61{84..99} NJU62{20..35}; do
-  mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
-  perl NJU_seq/quality_control/pe_consistency.pl \
-    data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R2.fq.gz \
-    temp/"${PREFIX}".fq.gz
+	mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
+	perl NJU_seq/quality_control/pe_consistency.pl \
+		data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R2.fq.gz \
+		temp/"${PREFIX}".fq.gz
 done
 
 cat NJU_seq/data/ath_rrna/* >data/ath_rrna.fa
 
-pigz -dc data/ath_ncrna.fa.gz |
-  perl NJU_seq/tool/fetch_fasta.pl \
-    --stdin -s 'transcript_biotype:rRNA' \
-    >>data/ath_rrna.fa
+pigz -dc data/ath_ncrna.fa.gz \
+	| perl NJU_seq/tool/fetch_fasta.pl \
+		--stdin -s 'transcript_biotype:rRNA' \
+		>>data/ath_rrna.fa
 bowtie2-build data/ath_rrna.fa index/ath_rrna
 rm data/ath_rrna.fa
 
 for PREFIX in NJU61{84..99} NJU62{20..35}; do
-  bsub -n 24 -J "${PREFIX}" -o ${PREFIX}.out "bash NJU_seq/log/Ath_scripts/step1.sh ${PREFIX}"
+	bsub -n 24 -J "${PREFIX}" -o ${PREFIX}.out "bash NJU_seq/log/Ath_scripts/step1.sh ${PREFIX}"
 done
 
 perl test.pl output.36412* | Rscript test.R test.pdf
@@ -28,13 +28,13 @@ time bash NJU_seq/tool/extract_fastq.sh temp/{}/rrna.out.tmp data/{}/R1.fq.gz da
 '
 
 for RNA in 25s 18s 5-8s; do
-  parallel --keep-order --xapply -j 10 "
+	parallel --keep-order --xapply -j 10 "
   perl NJU_seq/rrna_analysis/readend_count.pl NJU_seq/data/ath_rrna/${RNA}.fa temp/{}/rrna.out.tmp ${RNA} >output/{}/rrna_${RNA}.tsv
 " ::: NJU61{84..99} NJU62{20..35}
 done
 
 for RNA in 25s 18s 5-8s; do
-  parallel --keep-order --xapply -j 8 "
+	parallel --keep-order --xapply -j 8 "
   perl NJU_seq/rrna_analysis/score.pl \\
     output/NJU{1}/rrna_${RNA}.tsv \\
     output/NJU{2}/rrna_${RNA}.tsv \\
@@ -45,19 +45,19 @@ for RNA in 25s 18s 5-8s; do
 done
 
 for PREFIX in Ath_sixl Ath_bolt Ath_bloom Ath_fruit Ath_root Ath_stem Ath_flower Ath_leaf; do
-  bash NJU_seq/presentation/point_venn.sh \
-    Sample1 output/${PREFIX}_rrna_18s_scored.tsv 14 \
-    Sample2 output/${PREFIX}_rrna_18s_scored.tsv 15 \
-    Sample3 output/${PREFIX}_rrna_18s_scored.tsv 16 \
-    output/${PREFIX}_rrna_18s_venn.png 40
+	bash NJU_seq/presentation/point_venn.sh \
+		Sample1 output/${PREFIX}_rrna_18s_scored.tsv 14 \
+		Sample2 output/${PREFIX}_rrna_18s_scored.tsv 15 \
+		Sample3 output/${PREFIX}_rrna_18s_scored.tsv 16 \
+		output/${PREFIX}_rrna_18s_venn.png 40
 done
 
 for PREFIX in NJU61{84..99} NJU62{20..35}; do
-  bsub -q largemem -n 24 -e ${PREFIX}_mrna_alignment.log -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step2.sh ${PREFIX}"
+	bsub -q largemem -n 24 -e ${PREFIX}_mrna_alignment.log -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step2.sh ${PREFIX}"
 done
 
 for PREFIX in NJU61{84..99} NJU62{20..35}; do
-  bsub -q largemem -n 24 -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step3.sh ${PREFIX} 16"
+	bsub -q largemem -n 24 -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step3.sh ${PREFIX} 16"
 done
 
 bsub -n 24 -J "almostunique" '

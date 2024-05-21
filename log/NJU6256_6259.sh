@@ -1,20 +1,20 @@
 for PREFIX in NJU62{56..59} NJU62{68..71}; do
-  mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
-  perl NJU_seq/quality_control/pe_consistency.pl \
-    data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R2.fq.gz \
-    temp/"${PREFIX}".fq.gz
+	mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
+	perl NJU_seq/quality_control/pe_consistency.pl \
+		data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R2.fq.gz \
+		temp/"${PREFIX}".fq.gz
 done
 
 time perl NJU_seq/quality_control/fastq_qc.pl \
-  temp/HeLa_RF_NC.fq.gz \
-  temp/HeLa_RF_1.fq.gz \
-  temp/HeLa_RF_2.fq.gz \
-  temp/HeLa_RF_3.fq.gz \
-  output \
-  HeLa_RF
+	temp/HeLa_RF_NC.fq.gz \
+	temp/HeLa_RF_1.fq.gz \
+	temp/HeLa_RF_2.fq.gz \
+	temp/HeLa_RF_3.fq.gz \
+	output \
+	HeLa_RF
 
 for PREFIX in NJU62{56..59} NJU62{68..71}; do
-  bsub -n 24 -o ${PREFIX}_rrna_alignment.log -J "${PREFIX}" "bash NJU_seq/log/Gmax_scripts/step1.sh ${PREFIX}"
+	bsub -n 24 -o ${PREFIX}_rrna_alignment.log -J "${PREFIX}" "bash NJU_seq/log/Gmax_scripts/step1.sh ${PREFIX}"
 done
 
 bsub -n 24 -J "count" '
@@ -25,11 +25,11 @@ time bash NJU_seq/tool/extract_fastq.sh temp/{}/rrna.out.tmp data/{}/R1.fq.gz da
 '
 
 for PREFIX in NJU62{56..59} NJU62{68..71}; do
-  bsub -q fat_768 -n 80 -o ${PREFIX}_mrna_alignment.log -J "${PREFIX}" "bash NJU_seq/log/Gmax_scripts/step2.sh ${PREFIX}"
+	bsub -q fat_768 -n 80 -o ${PREFIX}_mrna_alignment.log -J "${PREFIX}" "bash NJU_seq/log/Gmax_scripts/step2.sh ${PREFIX}"
 done
 
 for PREFIX in NJU62{56..59} NJU62{68..71}; do
-  bsub -n 24 -o ${PREFIX}_filter.log -J "${PREFIX}" "bash NJU_seq/log/Gmax_scripts/step3.sh ${PREFIX} 16"
+	bsub -n 24 -o ${PREFIX}_filter.log -J "${PREFIX}" "bash NJU_seq/log/Gmax_scripts/step3.sh ${PREFIX} 16"
 done
 
 bsub -n 24 -J "almostunique" '
@@ -93,25 +93,25 @@ sort -t $'\t' -nrk 12,12 \\
 " ::: NBG00{10..12}
 
 perl NJU_seq/mrna_analysis/extract_point.pl \
-  output/NBG0002/mrna_basic_scored.tsv \
-  output/NBG0003/mrna_basic_scored.tsv \
-  output/NBG0004/mrna_basic_scored.tsv \
-  1000 1 >output/NBG_group1_mrna_scored_1000p.tsv
+	output/NBG0002/mrna_basic_scored.tsv \
+	output/NBG0003/mrna_basic_scored.tsv \
+	output/NBG0004/mrna_basic_scored.tsv \
+	1000 1 >output/NBG_group1_mrna_scored_1000p.tsv
 
 perl NJU_seq/mrna_analysis/extract_point.pl \
-  output/NBG0006/mrna_basic_scored.tsv \
-  output/NBG0007/mrna_basic_scored.tsv \
-  output/NBG0008/mrna_basic_scored.tsv \
-  1000 1 >output/NBG_group2_mrna_scored_1000p.tsv
+	output/NBG0006/mrna_basic_scored.tsv \
+	output/NBG0007/mrna_basic_scored.tsv \
+	output/NBG0008/mrna_basic_scored.tsv \
+	1000 1 >output/NBG_group2_mrna_scored_1000p.tsv
 
 perl NJU_seq/mrna_analysis/extract_point.pl \
-  output/NBG0010/mrna_basic_scored.tsv \
-  output/NBG0011/mrna_basic_scored.tsv \
-  output/NBG0012/mrna_basic_scored.tsv \
-  1000 1 >output/NBG_group3_mrna_scored_1000p.tsv
+	output/NBG0010/mrna_basic_scored.tsv \
+	output/NBG0011/mrna_basic_scored.tsv \
+	output/NBG0012/mrna_basic_scored.tsv \
+	1000 1 >output/NBG_group3_mrna_scored_1000p.tsv
 
 for PREFIX in group1 group2 group3; do
-  perl NJU_seq/presentation/signature_count.pl \
-    output/NBG_${PREFIX}_mrna_scored_1000p.tsv \
-    output/NBG_${PREFIX}_mrna_signature.pdf
+	perl NJU_seq/presentation/signature_count.pl \
+		output/NBG_${PREFIX}_mrna_scored_1000p.tsv \
+		output/NBG_${PREFIX}_mrna_signature.pdf
 done

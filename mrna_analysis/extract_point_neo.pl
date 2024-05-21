@@ -64,7 +64,7 @@ $c_extract = List::Util::min( $extract - 1, $c_count - 1 );
 %c_list = map( { $_ => 1 } @c_extract );
 
 @common =
-  grep ( { $a_list{$_} && $b_list{$_} } @c_extract );
+  grep( { $a_list{$_} && $b_list{$_} } @c_extract );
 
 while ( ( $#common <= $ARGV[3] ) and ( $extract < $count_max ) ) {
     $extract += $step;
@@ -84,7 +84,7 @@ while ( ( $#common <= $ARGV[3] ) and ( $extract < $count_max ) ) {
     %b_list = map( { $_ => 1 } @b_extract );
     %c_list = map( { $_ => 1 } @c_extract );
     @common =
-      grep ( { $a_list{$_} && $b_list{$_} } @c_extract );
+      grep( { $a_list{$_} && $b_list{$_} } @c_extract );
 }
 
 @a_extract =
@@ -101,7 +101,7 @@ while ( ( $#common <= $ARGV[3] ) and ( $extract < $count_max ) ) {
 %c_list = map( { $_ => 1 } @c_extract );
 
 @common =
-  grep ( { $a_list{$_} && $b_list{$_} } @c_extract );
+  grep( { $a_list{$_} && $b_list{$_} } @c_extract );
 
 foreach (@common) {
     my $score = $a_score->{$_} + $b_score->{$_} + $c_score->{$_};

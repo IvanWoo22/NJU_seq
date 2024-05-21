@@ -17,7 +17,7 @@ p <- ggseqlogo(data, method = 'p') +
   )
 
 result_save_path <- args[2]
-width = nchar(data[1, 1]) * .3
+width <- nchar(data[1, 1]) * .3
 ggsave(
   result_save_path,
   plot = p,

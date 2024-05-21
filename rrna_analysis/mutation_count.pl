@@ -76,7 +76,7 @@ foreach ( 0 .. $#site_base ) {
       sort { ${ $site[$_] }{$b} <=> ${ $site[$_] }{$a} } keys %{ $site[$_] };
     my $max = shift(@base_sort);
     print(
-"$site_number\t$site_base[$_]\t${ $site[$_] }{\"A\"}\t${ $site[$_] }{\"G\"}\t${ $site[$_] }{\"C\"}\t${ $site[$_] }{\"T\"}\t${ $site[$_] }{\"N\"}\t$max"
+"$site_number\t$site_base[$_]\t${$site[$_]}{\"A\"}\t${$site[$_]}{\"G\"}\t${$site[$_]}{\"C\"}\t${$site[$_]}{\"T\"}\t${$site[$_]}{\"N\"}\t$max"
     );
     if ( $site_base[$_] ne $max ) {
         print("\tmut\n");

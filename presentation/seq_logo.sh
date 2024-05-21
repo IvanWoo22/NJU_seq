@@ -2,8 +2,8 @@
 set -e
 
 FP=$(
-  cd "$(dirname "${0}")" || exit
-  pwd -P
+	cd "$(dirname "${0}")" || exit
+	pwd -P
 )
 
 FH=$1

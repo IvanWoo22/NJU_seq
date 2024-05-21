@@ -6,7 +6,7 @@ use File::Basename;
 
 sub BASE_CHANGE {
     my $BASE = shift;
-    if ( $BASE eq "T" ) {
+    if ($BASE eq "T") {
         return ("U");
     }
     else {
@@ -16,20 +16,20 @@ sub BASE_CHANGE {
 
 sub METHYL {
     my $BASE = shift;
-    return ( $BASE . "m" );
+    return ($BASE . "m");
 }
 
 my $filedir = dirname(__FILE__);
-my $envdir  = $ENV{'PWD'};
+my $envdir = $ENV{'PWD'};
 
-open( my $IN,  "<", $ARGV[0] );
-open( my $OUT, ">", $envdir . "/" . $ARGV[0] . ".tmp" );
+open(my $IN, "<", $ARGV[0]);
+open(my $OUT, ">", $envdir . "/" . $ARGV[0] . ".tmp");
 
 my %sig;
 while (<$IN>) {
     chomp;
-    my ( undef, undef, undef, $lef, $nm, $rgt, undef ) = split;
-    if ( exists( $sig{ $lef . $nm . $rgt } ) ) {
+    my (undef, undef, undef, $lef, $nm, $rgt, undef) = split;
+    if (exists($sig{ $lef . $nm . $rgt })) {
         $sig{ $lef . $nm . $rgt }++;
     }
     else {
@@ -41,18 +41,18 @@ my $data_table;
 foreach my $nm (qw(A G C T)) {
     foreach my $lef (qw(A G C T)) {
         foreach my $rgt (qw(A G C T)) {
-            if ( exists( $sig{ $lef . $nm . $rgt } ) ) {
+            if (exists($sig{ $lef . $nm . $rgt })) {
                 $data_table .=
                     BASE_CHANGE($lef)
-                  . METHYL( BASE_CHANGE($nm) )
-                  . BASE_CHANGE($rgt)
-                  . "\t$sig{$lef . $nm . $rgt}\n";
+                        . METHYL(BASE_CHANGE($nm))
+                        . BASE_CHANGE($rgt)
+                        . "\t$sig{$lef . $nm . $rgt}\n";
             }
             else {
                 $data_table .=
                     BASE_CHANGE($lef)
-                  . METHYL( BASE_CHANGE($nm) )
-                  . BASE_CHANGE($rgt) . "\t0\n";
+                        . METHYL(BASE_CHANGE($nm))
+                        . BASE_CHANGE($rgt) . "\t0\n";
             }
         }
     }

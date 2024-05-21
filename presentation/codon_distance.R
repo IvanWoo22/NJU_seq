@@ -8,7 +8,7 @@ args <- commandArgs(T)
 
 start <- read.table(args[1], header = F)
 stop <- read.table(args[2], header = F)
-ymax = max(start$V2, stop$V2)
+ymax <- max(start$V2, stop$V2)
 
 p1 <- ggplot() +
   geom_ma(aes(x = start$V1, y = start$V2), ma_fun = SMA, n = 3) +

@@ -52,29 +52,29 @@ ggsave(
   dpi = "retina"
 )
 
-a = prettyNum(as.numeric(cse_total),
-              big.mark = ",",
-              scientific = F)
-b = prettyNum(as.numeric(ase_total),
-              big.mark = ",",
-              scientific = F)
-c = prettyNum(as.numeric(cse_number),
-              big.mark = ",",
-              scientific = F)
-d = prettyNum(as.numeric(ase_number),
-              big.mark = ",",
-              scientific = F)
-ase_densi = format(
+a <- prettyNum(as.numeric(cse_total),
+               big.mark = ",",
+               scientific = F)
+b <- prettyNum(as.numeric(ase_total),
+               big.mark = ",",
+               scientific = F)
+c <- prettyNum(as.numeric(cse_number),
+               big.mark = ",",
+               scientific = F)
+d <- prettyNum(as.numeric(ase_number),
+               big.mark = ",",
+               scientific = F)
+ase_densi <- format(
   as.numeric(ase_number) / as.numeric(ase_total),
   digits = 2,
   scientific = T
 )
-cse_densi = format(
+cse_densi <- format(
   as.numeric(cse_number) / as.numeric(cse_total),
   digits = 2,
   scientific = T
 )
-pvalue = format(test[["p.value"]], digits = 2, scientific = T)
+pvalue <- format(test[["p.value"]], digits = 2, scientific = T)
 pdf(args[2], width = 270 / 127, height = 135 / 127)
 par(mar = c(0.1, 0.1, 0.1, 0.1))
 plot(

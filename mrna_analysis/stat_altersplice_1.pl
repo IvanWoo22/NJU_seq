@@ -29,7 +29,8 @@ open( my $GENE, "<", $ARGV[0] );
 while (<$GENE>) {
     chomp;
     my ( $chr, $gene_id, $dir, $constant_exon, $constant_intron,
-        $variable_area ) = split /\t/;
+        $variable_area )
+      = split /\t/;
     $chr =~ s/chr//;
     my $exon_set       = AlignDB::IntSpan->new($constant_exon);
     my $intron_set     = AlignDB::IntSpan->new($constant_intron);

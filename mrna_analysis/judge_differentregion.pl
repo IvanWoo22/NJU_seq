@@ -53,8 +53,10 @@ while (<$GENE>) {
     foreach
       my $t ( $gene[ $gene_info{$name} ] .. $gene[ $gene_info{$name} + 1 ] - 1 )
     {
-        my ( undef, undef, $type, $start, $end, undef, undef, undef,
-            $line_info ) = split( /\t/, $line[$t] );
+        my (
+            undef, undef, $type, $start, $end,
+            undef, undef, undef, $line_info
+        ) = split( /\t/, $line[$t] );
         if ( $type eq $mRNA ) {
             if ( $line_info =~ /$transid([0-9,a-z,A-Z,\.,\_]+);/ ) {
                 $transcript = $1;

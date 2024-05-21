@@ -1,5 +1,5 @@
 for PREFIX in NJU6{276..355}; do
-  bsub -n 24 -o ../log/${PREFIX}_cutadapt.log -J "${PREFIX}" "
+	bsub -n 24 -o ../log/${PREFIX}_cutadapt.log -J "${PREFIX}" "
   cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -A GATCGTCGGACTGTAGAACTCTGAACGTGTAGAT \
     -O 6 -m 10 -e 0.1 --discard-untrimmed -o ${PREFIX}/R1.fq.gz -p ${PREFIX}/R2.fq.gz \
     arabidopsis/${PREFIX}_*_R1_*.gz arabidopsis/${PREFIX}_*_R2_*.gz -j 20
@@ -7,8 +7,8 @@ for PREFIX in NJU6{276..355}; do
 done
 
 for PREFIX in NJU6{252..255} NJU6{260..267} NJU6{272..275}; do
-  mkdir ${PREFIX}
-  bsub -n 24 -o ../log/${PREFIX}_cutadapt.log -J "${PREFIX}" "
+	mkdir ${PREFIX}
+	bsub -n 24 -o ../log/${PREFIX}_cutadapt.log -J "${PREFIX}" "
   cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -A GATCGTCGGACTGTAGAACTCTGAACGTGTAGAT \
     -O 6 -m 10 -e 0.1 --discard-untrimmed -o ${PREFIX}/R1.fq.gz -p ${PREFIX}/R2.fq.gz \
     plant/${PREFIX}_*_R1_*.gz plant/${PREFIX}_*_R2_*.gz -j 20
@@ -16,8 +16,8 @@ for PREFIX in NJU6{252..255} NJU6{260..267} NJU6{272..275}; do
 done
 
 for PREFIX in NJU6{252..255} NJU6{260..267} NJU6{272..355}; do
-  mkdir -p "temp/${PREFIX}" "output/${PREFIX}"
-  bsub -n 4 -o log/${PREFIX}_peco.log -J "${PREFIX}" "
+	mkdir -p "temp/${PREFIX}" "output/${PREFIX}"
+	bsub -n 4 -o log/${PREFIX}_peco.log -J "${PREFIX}" "
   perl NJU_seq/quality_control/pe_consistency.pl \
     data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
     temp/${PREFIX}.fq.gz
@@ -25,8 +25,8 @@ for PREFIX in NJU6{252..255} NJU6{260..267} NJU6{272..355}; do
 done
 
 for PREFIX in NJU6{280..299}; do
-  mkdir -p "temp/${PREFIX}" "output/${PREFIX}"
-  bsub -n 4 -o log/${PREFIX}_peco.log -J "${PREFIX}" "
+	mkdir -p "temp/${PREFIX}" "output/${PREFIX}"
+	bsub -n 4 -o log/${PREFIX}_peco.log -J "${PREFIX}" "
   perl NJU_seq/quality_control/pe_consistency.pl \
     data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
     temp/${PREFIX}.fq.gz
@@ -34,8 +34,8 @@ for PREFIX in NJU6{280..299}; do
 done
 
 for PREFIX in NJU6{300..319}; do
-  mkdir -p "temp/${PREFIX}" "output/${PREFIX}"
-  bsub -n 4 -o log/${PREFIX}_peco.log -J "${PREFIX}" "
+	mkdir -p "temp/${PREFIX}" "output/${PREFIX}"
+	bsub -n 4 -o log/${PREFIX}_peco.log -J "${PREFIX}" "
   perl NJU_seq/quality_control/pe_consistency.pl \
     data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
     temp/${PREFIX}.fq.gz
@@ -43,8 +43,8 @@ for PREFIX in NJU6{300..319}; do
 done
 
 for PREFIX in NJU6{320..339}; do
-  mkdir -p "temp/${PREFIX}" "output/${PREFIX}"
-  bsub -n 4 -o log/${PREFIX}_peco.log -J "${PREFIX}" "
+	mkdir -p "temp/${PREFIX}" "output/${PREFIX}"
+	bsub -n 4 -o log/${PREFIX}_peco.log -J "${PREFIX}" "
   perl NJU_seq/quality_control/pe_consistency.pl \
     data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
     temp/${PREFIX}.fq.gz
@@ -52,8 +52,8 @@ for PREFIX in NJU6{320..339}; do
 done
 
 for PREFIX in NJU6{340..355}; do
-  mkdir -p "temp/${PREFIX}" "output/${PREFIX}"
-  bsub -n 4 -o log/${PREFIX}_peco.log -J "${PREFIX}" "
+	mkdir -p "temp/${PREFIX}" "output/${PREFIX}"
+	bsub -n 4 -o log/${PREFIX}_peco.log -J "${PREFIX}" "
   perl NJU_seq/quality_control/pe_consistency.pl \
     data/${PREFIX}/R1.fq.gz data/${PREFIX}/R2.fq.gz \
     temp/${PREFIX}.fq.gz
@@ -61,7 +61,7 @@ for PREFIX in NJU6{340..355}; do
 done
 
 for PREFIX in NJU6{276..355}; do
-  bsub -n 24 -o log/${PREFIX}_rrna_alignment.log -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step1.sh ${PREFIX}"
+	bsub -n 24 -o log/${PREFIX}_rrna_alignment.log -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step1.sh ${PREFIX}"
 done
 
 bsub -n 24 -o log/NJU6276_6300_rrna_count.log -J "NJU6276_6300_count" '
@@ -86,15 +86,15 @@ time bash NJU_seq/tool/extract_fastq.sh temp/{}/rrna.out.tmp data/{}/R1.fq.gz da
 '
 
 for PREFIX in NJU6{276..355}; do
-  bsub -q largemem -n 24 -o log/${PREFIX}_mrna_alignment.log -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step2.sh ${PREFIX}"
+	bsub -q largemem -n 24 -o log/${PREFIX}_mrna_alignment.log -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step2.sh ${PREFIX}"
 done
 
 for PREFIX in NJU6{276..355}; do
-  bsub -q largemem -n 24 -o log/${PREFIX}_dedup.log -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step3.sh ${PREFIX} 16"
+	bsub -q largemem -n 24 -o log/${PREFIX}_dedup.log -J "${PREFIX}" "bash NJU_seq/log/Ath_scripts/step3.sh ${PREFIX} 16"
 done
 
 for PREFIX in NJU6{184..215}; do
-  bsub -q fat_768 -n 80 -o log/${PREFIX}_bac_alignment.log -J "${PREFIX}" "bash bac_target.sh ${PREFIX}"
+	bsub -q fat_768 -n 80 -o log/${PREFIX}_bac_alignment.log -J "${PREFIX}" "bash bac_target.sh ${PREFIX}"
 done
 
 bsub -n 24 -o log/mash.log -J "mash" '
@@ -111,4 +111,3 @@ rm data/{}/R1.fq
 rm data/{}/R1_filter_min21.fq
 " ::: NJU6{184..215}
 '
-

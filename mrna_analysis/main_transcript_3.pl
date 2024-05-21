@@ -30,7 +30,7 @@ while (<$GENE>) {
 close($GENE);
 
 open( my $POINT, "<", $ARGV[1] );
-open( my $OUT, ">", $ARGV[2]);
+open( my $OUT,   ">", $ARGV[2] );
 while (<$POINT>) {
     chomp;
     my $line = $_;
@@ -125,11 +125,11 @@ while (<$POINT>) {
             }
         }
     }
-    my ($fu,$cds,$tu) = ("-","-","-");
+    my ( $fu, $cds, $tu ) = ( "-", "-", "-" );
 
-    $fu = "five_utr" if exists($type{"five_utr"});
-    $cds = "cds" if exists($type{"cds"});
-    $tu = "three_utr" if exists($type{"three_utr"});
+    $fu  = "five_utr"  if exists( $type{"five_utr"} );
+    $cds = "cds"       if exists( $type{"cds"} );
+    $tu  = "three_utr" if exists( $type{"three_utr"} );
     print $OUT "$line\t$fu\t$cds\t$tu\n";
 }
 close($POINT);

@@ -4,9 +4,9 @@ library(extrafont)
 
 args <- commandArgs(T)
 
-data1 = read.table(args[2], header = F, sep = "\t")
-data2 = read.table(args[4], header = F, sep = "\t")
-data3 = read.table(args[6], header = F, sep = "\t")
+data1 <- read.table(args[2], header = F, sep = "\t")
+data2 <- read.table(args[4], header = F, sep = "\t")
+data3 <- read.table(args[6], header = F, sep = "\t")
 
 datalist <- list(data1$V1, data2$V1, data3$V1)
 names(datalist) <- c(args[1], args[3], args[5])

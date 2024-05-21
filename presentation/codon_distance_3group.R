@@ -13,7 +13,7 @@ stop1 <- read.table(args[4], header = F)
 stop2 <- read.table(args[5], header = F)
 stop3 <- read.table(args[6], header = F)
 stop <- rbind(stop1, stop2, stop3)
-ymax = max(start$V2, stop$V2)
+ymax <- max(start$V2, stop$V2)
 
 
 p1 <- ggplot() +

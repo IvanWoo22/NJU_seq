@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 use strict;
 use warnings;
 use autodie;
@@ -37,7 +38,7 @@ close($IN_FH1);
 while (<STDIN>) {
     chomp;
     my ( undef, undef, $type, $start, $end, undef, undef, undef, $info ) =
-        split /\t/;
+      split /\t/;
     my $trans_id = GET_ID( "transcript_id=", $info );
     if ( exists( $trans{$trans_id} ) ) {
         if ( $type eq "transcript" ) {
@@ -59,7 +60,7 @@ while (<STDIN>) {
 foreach my $trans ( keys(%trans) ) {
     $intron{$trans} = $mrna{$trans}->AlignDB::IntSpan::diff( $exon{$trans} );
     print
-        "$trans\t$gene{$trans}\t$no{$trans}\t$mrna{$trans}\t$exon{$trans}\t$intron{$trans}\t$codon{$trans}\n";
+"$trans\t$gene{$trans}\t$no{$trans}\t$mrna{$trans}\t$exon{$trans}\t$intron{$trans}\t$codon{$trans}\n";
 }
 
 __END__

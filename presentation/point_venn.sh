@@ -3,8 +3,8 @@
 set -e
 
 filepath=$(
-  cd "$(dirname "${0}")" || exit
-  pwd -P
+	cd "$(dirname "${0}")" || exit
+	pwd -P
 )
 
 sort -t $'\t' -nrk "$3","$3" "$2" | head -n "${11}" | awk -F $'\t' '{print $1 $3 $2}' >templist1.tmp

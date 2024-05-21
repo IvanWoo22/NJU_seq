@@ -65,7 +65,7 @@ foreach my $number ( 1 .. $#ARGV + 1 ) {
                 foreach my $sample_id ( 1 .. $#{$choose} ) {
                     foreach my $col ( 0 .. 10 ) {
                         $out_col[$col] .=
-";${ ${ $combine{${$choose}[$sample_id]} }{ $point } }[$col]";
+";${${$combine{${$choose}[$sample_id]}}{ $point }}[$col]";
                     }
                     $score +=
                       ${ ${ $combine{ ${$choose}[$sample_id] } }{$point} }[-1];

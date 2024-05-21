@@ -40,10 +40,10 @@ sub TAG_SCORE {
         $ALT = 0;
     }
     my ( $INCOMPLETE, $MRNA_S, $MRNA_E, $CDS_S, $CDS_E ) = ( 0, 0, 0, 0, 0 );
-    $MRNA_S = grep /^mRNA_start_NF$/i, @TAG;
-    $MRNA_E = grep /^mRNA_end_NF$/i,   @TAG;
-    $CDS_S  = grep /^cds_start_NF$/i,  @TAG;
-    $CDS_E  = grep /^cds_end_NF$/i,    @TAG;
+    $MRNA_S     = grep /^mRNA_start_NF$/i, @TAG;
+    $MRNA_E     = grep /^mRNA_end_NF$/i,   @TAG;
+    $CDS_S      = grep /^cds_start_NF$/i,  @TAG;
+    $CDS_E      = grep /^cds_end_NF$/i,    @TAG;
     $INCOMPLETE = -( $CDS_S + $CDS_E ) * 100 - ( $MRNA_S + $MRNA_E ) * 10;
     my $BASIC = grep /^basic$/i, @TAG;
     $BASIC *= 60;

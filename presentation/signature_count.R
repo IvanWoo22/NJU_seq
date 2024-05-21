@@ -18,26 +18,26 @@ data$V3 <-
   )
 data$V4 <- c(1:64)
 color_scale <- c("#109648", "#255c99", "#f7b32b", "#d62839")
-sumA <- sum(data[data$V3 == "A", ]$V2)
-propA <- sum(data[data$V3 == "A", ]$V2) / sum(data$V2)
+sumA <- sum(data[data$V3 == "A",]$V2)
+propA <- sum(data[data$V3 == "A",]$V2) / sum(data$V2)
 propA <- round(propA, digits = 4)
 propA <- paste(propA * 100, "%", sep = '')
-sumG <- sum(data[data$V3 == "G", ]$V2)
-propG <- sum(data[data$V3 == "G", ]$V2) / sum(data$V2)
+sumG <- sum(data[data$V3 == "G",]$V2)
+propG <- sum(data[data$V3 == "G",]$V2) / sum(data$V2)
 propG <- round(propG, digits = 4)
 propG <- paste(propG * 100, "%", sep = '')
-sumC <- sum(data[data$V3 == "C", ]$V2)
-propC <- sum(data[data$V3 == "C", ]$V2) / sum(data$V2)
+sumC <- sum(data[data$V3 == "C",]$V2)
+propC <- sum(data[data$V3 == "C",]$V2) / sum(data$V2)
 propC <- round(propC, digits = 4)
 propC <- paste(propC * 100, "%", sep = '')
-sumU <- sum(data[data$V3 == "U", ]$V2)
-propU <- sum(data[data$V3 == "U", ]$V2) / sum(data$V2)
+sumU <- sum(data[data$V3 == "U",]$V2)
+propU <- sum(data[data$V3 == "U",]$V2) / sum(data$V2)
 propU <- round(propU, digits = 4)
 propU <- paste(propU * 100, "%", sep = '')
 
 result_save_path <- args[2]
 
-text_to_plot = data.frame(
+text_to_plot <- data.frame(
   x = c(8.5, 24.5, 40.5, 56.5),
   y = c(
     max(data$V2) + 6,
@@ -52,20 +52,21 @@ text_to_plot = data.frame(
     Reduce('paste0', c("Um\n", sumU, "\n", propU))
   )
 )
-line_to_plot1 = data.frame(x = c(0.65, 16.5), y = c(max(data$V2) + 11, max(data$V2) + 11))
-line_to_plot2 = data.frame(x = c(16.5, 32.5), y = c(max(data$V2) + 11, max(data$V2) + 11))
-line_to_plot3 = data.frame(x = c(32.5, 48.5), y = c(max(data$V2) + 11, max(data$V2) + 11))
-line_to_plot4 = data.frame(x = c(48.5, 64.35), y = c(max(data$V2) + 11, max(data$V2) + 11))
+line_to_plot1 <- data.frame(x = c(0.65, 16.5), y = c(max(data$V2) + 11, max(data$V2) + 11))
+line_to_plot2 <- data.frame(x = c(16.5, 32.5), y = c(max(data$V2) + 11, max(data$V2) + 11))
+line_to_plot3 <- data.frame(x = c(32.5, 48.5), y = c(max(data$V2) + 11, max(data$V2) + 11))
+line_to_plot4 <- data.frame(x = c(48.5, 64.35), y = c(max(data$V2) + 11, max(data$V2) + 11))
 p <- ggplot(data, aes(x = V4, y = V2))
-p + geom_bar(
-  stat = "identity",
-  position = "dodge",
-  aes(fill = V3),
-  width = .7,
-  show.legend = F,
-  colour = 'black',
-  size = 0.04669
-) +
+p +
+  geom_bar(
+    stat = "identity",
+    position = "dodge",
+    aes(fill = V3),
+    width = .7,
+    show.legend = F,
+    colour = 'black',
+    size = 0.04669
+  ) +
   ggplot2:::limits(data$V1, "x") +
   scale_y_continuous(expand = c(0, 1)) +
   scale_fill_manual(values = color_scale) +

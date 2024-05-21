@@ -19,8 +19,7 @@ Software managed by [brew](https://brew.sh/).
 brew install parallel pigz
 
 # bioinformatics tools
-brew install bowtie2
-brew install picard-tools samtools
+brew install bowtie2 picard-tools samtools
 ```
 
 Perl packages:
@@ -84,10 +83,10 @@ rm data/hsa_rrna.fa
 
 # mRNA index
 # Only protein_coding transcripts will be extract to build index.
-pigz -dc data/hsa_transcript.fa.gz |
-  perl NJU_seq/tool/fetch_fasta.pl \
-  --stdin -s 'protein_coding' \
-  >data/hsa_protein_coding.fa
+pigz -dc data/hsa_transcript.fa.gz \
+	| perl NJU_seq/tool/fetch_fasta.pl \
+		--stdin -s 'protein_coding' \
+		>data/hsa_protein_coding.fa
 bowtie2-build data/hsa_protein_coding.fa index/hsa_protein_coding
 rm data/hsa_protein_coding.fa
 ```
@@ -121,8 +120,8 @@ PREFIX='HeLa_RF_NC'
 
 # For pair-end sequence data, we firstly turn them to single-end file.
 perl NJU_seq/quality_control/pe_consistency.pl \
-  data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R2.fq.gz \
-  temp/"${PREFIX}".fq.gz
+	data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R2.fq.gz \
+	temp/"${PREFIX}".fq.gz
 # Total:  12627217
 # Consistency:  12450207
 # Proportion: 98.60%
@@ -131,12 +130,12 @@ perl NJU_seq/quality_control/pe_consistency.pl \
 
 # Quality control
 time perl NJU_seq/quality_control/fastq_qc.pl \
-  temp/HeLa_RF_NC.fq.gz \
-  temp/HeLa_RF_1.fq.gz \
-  temp/HeLa_RF_2.fq.gz \
-  temp/HeLa_RF_3.fq.gz \
-  output \
-  HeLa_RF
+	temp/HeLa_RF_NC.fq.gz \
+	temp/HeLa_RF_1.fq.gz \
+	temp/HeLa_RF_2.fq.gz \
+	temp/HeLa_RF_3.fq.gz \
+	output \
+	HeLa_RF
 # real  3m28.250s
 # user  3m26.499s
 # sys   0m0.495s
@@ -158,21 +157,21 @@ THREAD=16
 PREFIX='HeLa_RF_NC'
 
 time bowtie2 -p "${THREAD}" -a -t \
-  --end-to-end -D 20 -R 3 \
-  -N 0 -L 10 -i S,1,0.50 --np 0 \
-  --xeq -x index/hsa_rrna \
-  -1 data/"${PREFIX}"/R1.fq.gz -2 data/"${PREFIX}"/R2.fq.gz \
-  -S output/"${PREFIX}"/rrna.raw.sam \
-  2>&1 |
-  tee output/"${PREFIX}"/rrna.bowtie2.log
+	--end-to-end -D 20 -R 3 \
+	-N 0 -L 10 -i S,1,0.50 --np 0 \
+	--xeq -x index/hsa_rrna \
+	-1 data/"${PREFIX}"/R1.fq.gz -2 data/"${PREFIX}"/R2.fq.gz \
+	-S output/"${PREFIX}"/rrna.raw.sam \
+	2>&1 \
+	| tee output/"${PREFIX}"/rrna.bowtie2.log
 # real  1m53.474s
 # user  25m41.846s
 # sys   4m15.462s
 
 perl NJU_seq/tool/stat_alignment.pl \
-  output/"${PREFIX}"/rrna.bowtie2.log |
-  Rscript NJU_seq/tool/draw_table.R \
-  output/"${PREFIX}"/rrna.bowtie2.pdf
+	output/"${PREFIX}"/rrna.bowtie2.log \
+	| Rscript NJU_seq/tool/draw_table.R \
+		output/"${PREFIX}"/rrna.bowtie2.pdf
 
 time pigz -p "${THREAD}" output/"${PREFIX}"/rrna.raw.sam
 # real  0m57.962s
@@ -186,14 +185,14 @@ Filter and count alignment result.
 THREAD=16
 PREFIX='HeLa_RF_NC'
 
-time pigz -dcf output/"${PREFIX}"/rrna.raw.sam.gz |
-  parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
-    awk '\''$6!="*"&&$7=="="{print $1 "\t" $3 "\t" $4 "\t" $6 "\t" $10}
-    '\'' |
+time pigz -dcf output/"${PREFIX}"/rrna.raw.sam.gz \
+	| parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
+    # shellcheck disable=SC2016
+    awk '\''$6!="*"&&$7=="="{print $1 "\t" $3 "\t" $4 "\t" $6 "\t" $10}'\'' |
     perl NJU_seq/rrna_analysis/matchquality_judge.pl |
     perl NJU_seq/rrna_analysis/multimatch_judge.pl
   ' \
-  >temp/"${PREFIX}"/rrna.out.tmp
+		>temp/"${PREFIX}"/rrna.out.tmp
 # real  1m59.185s
 # user  20m44.643s
 # sys   1m24.060s
@@ -232,9 +231,9 @@ Extract reads can't be mapped to rRNA.
 PREFIX='HeLa_RF_NC'
 
 time bash NJU_seq/tool/extract_fastq.sh \
-  temp/"${PREFIX}"/rrna.out.tmp \
-  data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R1.mrna.fq.gz \
-  data/"${PREFIX}"/R2.fq.gz data/"${PREFIX}"/R2.mrna.fq.gz
+	temp/"${PREFIX}"/rrna.out.tmp \
+	data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R1.mrna.fq.gz \
+	data/"${PREFIX}"/R2.fq.gz data/"${PREFIX}"/R2.mrna.fq.gz
 # real  1m10.382s
 # user  1m45.610s
 # sys   0m3.268s
@@ -249,13 +248,13 @@ THREAD=16
 PREFIX='HeLa_RF_NC'
 
 time bowtie2 -p "${THREAD}" -a -t \
-  --end-to-end -D 20 -R 3 \
-  -N 0 -L 10 --score-min C,0,0 \
-  --xeq -x index/hsa_protein_coding \
-  -1 data/"${PREFIX}"/R1.mrna.fq.gz -2 data/"${PREFIX}"/R2.mrna.fq.gz \
-  -S output/"${PREFIX}"/mrna.raw.sam \
-  2>&1 |
-  tee output/"${PREFIX}"/mrna.bowtie2.log
+	--end-to-end -D 20 -R 3 \
+	-N 0 -L 10 --score-min C,0,0 \
+	--xeq -x index/hsa_protein_coding \
+	-1 data/"${PREFIX}"/R1.mrna.fq.gz -2 data/"${PREFIX}"/R2.mrna.fq.gz \
+	-S output/"${PREFIX}"/mrna.raw.sam \
+	2>&1 \
+	| tee output/"${PREFIX}"/mrna.bowtie2.log
 # real  6m43.243s
 # user  119m34.749s
 # sys   8m1.470s
@@ -264,6 +263,7 @@ time pigz -p "${THREAD}" output/"${PREFIX}"/mrna.raw.sam
 # real  0m22.663s
 # user  5m38.943s
 # sys   0m9.316s
+
 ```
 
 Filter，re-locate and count alignment result.
@@ -272,61 +272,55 @@ Filter，re-locate and count alignment result.
 THREAD=16
 PREFIX='HeLa_RF_NC'
 
-time gzip -dcf output/"${PREFIX}"/mrna.raw.sam.gz |
-  parallel --pipe --block 100M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
-    awk '\''$6!="*"&&$7=="="{print $1 "\t" $3 "\t" $4 "\t" $6 "\t" $10}
-    '\'' |
+time gzip -dcf output/"${PREFIX}"/mrna.raw.sam.gz \
+	| parallel --pipe --block 100M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
+    awk '\''$6!="*"&&$7=="="{print $1 "\t" $3 "\t" $4 "\t" $6 "\t" $10}'\'' |
     perl NJU_seq/mrna_analysis/multimatch_judge.pl
   ' | perl NJU_seq/mrna_analysis/multimatch_judge.pl \
-  >temp/"${PREFIX}"/mrna.out.tmp
+	>temp/"${PREFIX}"/mrna.out.tmp
 # real  2m31.558s
 # user  18m38.617s
 # sys   2m8.716s
 
-gzip -dcf data/hsa.gff3.gz |
-  awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' \
-  >data/hsa_exon.info
+gzip -dcf data/hsa.gff3.gz \
+	| awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' \
+		>data/hsa_exon.info
 
-cat temp/"${PREFIX}"/mrna.out.tmp |
-  parallel --pipe --block 100M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
-    perl NJU_seq/mrna_analysis/dedup.pl \
-      --refstr "Parent=transcript:" \
-      --transid "ENST" \
-      --info data/hsa_exon.info
-  ' |
-  perl NJU_seq/mrna_analysis/dedup.pl \
-    --refstr "Parent=transcript:" \
-    --transid "ENST" \
-    --info data/hsa_exon.info \
-    >temp/"${PREFIX}"/mrna.dedup.tmp
+parallel --pipe --block 100M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
+    perl NJU_seq/mrna_analysis/dedup.pl --refstr "Parent=transcript:" --transid "ENST" --info data/hsa_exon.info
+  ' <temp/"${PREFIX}"/mrna.out.tmp | perl NJU_seq/mrna_analysis/dedup.pl \
+	--refstr "Parent=transcript:" \
+	--transid "ENST" \
+	--info data/hsa_exon.info \
+	>temp/"${PREFIX}"/mrna.dedup.tmp
 # real  14m32.692s
 # user  14m22.635s
 # sys   0m10.268s
 
 time bash NJU_seq/mrna_analysis/almostunique.sh \
-  temp/"${PREFIX}"/mrna.dedup.tmp \
-  data/"${PREFIX}"/R1.mrna.fq.gz \
-  temp/"${PREFIX}" \
-  temp/"${PREFIX}"/mrna.almostunique.tmp
+	temp/"${PREFIX}"/mrna.dedup.tmp \
+	data/"${PREFIX}"/R1.mrna.fq.gz \
+	temp/"${PREFIX}" \
+	temp/"${PREFIX}"/mrna.almostunique.tmp
 # real  2m52.775s
 # user  2m41.319s
 # sys   0m4.881s
 
 time perl NJU_seq/mrna_analysis/count.pl \
-  temp/"${PREFIX}"/mrna.almostunique.tmp \
-  >temp/"${PREFIX}"/mrna.count.tmp
+	temp/"${PREFIX}"/mrna.almostunique.tmp \
+	>temp/"${PREFIX}"/mrna.count.tmp
 # real  0m3.072s
 # user  0m3.036s
 # sys   0m0.036s
 
-time gzip -dcf data/hsa.gff3.gz |
-  awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' |
-  perl NJU_seq/mrna_analysis/merge.pl \
-    --refstr "Parent=transcript:" \
-    --geneid "ENSG" \
-    --transid "ENST" \
-    -i temp/"${PREFIX}"/mrna.count.tmp \
-    -o output/"${PREFIX}"/mrna.tsv
+time gzip -dcf data/hsa.gff3.gz \
+	| awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' \
+	| perl NJU_seq/mrna_analysis/merge.pl \
+		--refstr "Parent=transcript:" \
+		--geneid "ENSG" \
+		--transid "ENST" \
+		-i temp/"${PREFIX}"/mrna.count.tmp \
+		-o output/"${PREFIX}"/mrna.tsv
 # real  0m6.802s
 # user  0m9.653s
 # sys   0m0.227s
@@ -337,10 +331,7 @@ Calculate valid sequencing depth (average coverage).
 ```shell script
 parallel --keep-order -j 4 '
   echo {} >>output/{}/mrna.cov
-  bash NJU_seq/presentation/seq_depth.sh \
-    temp/{}/mrna.almostunique.tmp \
-    output/{}/mrna.tsv \
-    >>output/{}/mrna.cov
+  bash NJU_seq/presentation/seq_depth.sh temp/{}/mrna.almostunique.tmp output/{}/mrna.tsv >>output/{}/mrna.cov
   ' ::: HeLa_RF_NC HeLa_RF_1 HeLa_RF_2 HeLa_RF_3
 # All stop times: 319414
 # All positions:  18550
@@ -357,17 +348,18 @@ parallel --keep-order -j 4 '
 # All stop times: 356951
 # All positions:  19098
 # Coverage:       18.69
+
 ```
 
 Score each covered site.
 
 ```shell script
 perl NJU_seq/mrna_analysis/score.pl \
-  output/HeLa_RF_NC/mrna.tsv \
-  output/HeLa_RF_1/mrna.tsv \
-  output/HeLa_RF_2/mrna.tsv \
-  output/HeLa_RF_3/mrna.tsv \
-  >output/HeLa_RF_mrna_Nm_score.tsv
+	output/HeLa_RF_NC/mrna.tsv \
+	output/HeLa_RF_1/mrna.tsv \
+	output/HeLa_RF_2/mrna.tsv \
+	output/HeLa_RF_3/mrna.tsv \
+	>output/HeLa_RF_mrna_Nm_score.tsv
 
 #pigz -dc data/hsa.gff3.gz |
 #  awk '$3=="gene"' |
@@ -385,8 +377,8 @@ See the signature of Nm sites.
 
 ```shell script
 perl NJU_seq/presentation/signature_count.pl \
-  output/HeLa_RF_mrna_Nm_score.tsv \
-  output/HeLa_RF_mrna_signature.pdf
+	output/HeLa_RF_mrna_Nm_score.tsv \
+	output/HeLa_RF_mrna_signature.pdf
 ```
 
 GO(Gene Ontology) analysis for the top common 1000 Nm sites.
@@ -396,33 +388,34 @@ barplot.
 
 ```shell script
 Rscript NJU_seq/presentation/gene_ontology.R \
-  output/HeLa_RF_GO.tsv \
-  output/HeLa_RF_GO.pdf
+	output/HeLa_RF_GO.tsv \
+	output/HeLa_RF_GO.pdf
 ```
 
 Divide annotations into two categories.
 
 ```shell script
-pigz -dc data/hsa.gff3.gz |
-  awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' |
-  perl NJU_seq/mrna_analysis/representative_transcript.pl \
-    --geneid "gene_id=" \
-    --transid "transcript_id=" \
-    >data/hsa_represent_transcript.txt
+pigz -dc data/hsa.gff3.gz \
+	| awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' \
+	| perl NJU_seq/mrna_analysis/representative_transcript.pl \
+		--geneid "gene_id=" \
+		--transid "transcript_id=" \
+		>data/hsa_represent_transcript.txt
 
-pigz -dc data/hsa.gff3.gz |
-	awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' |
-	perl NJU_seq/mrna_analysis/main_transcript_1.pl \
-	--geneid "gene_id=" \
-	--transid "transcript_id=" \
-	>data/hsa_main_transcript.txt
+pigz -dc data/hsa.gff3.gz \
+	| awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' \
+	| perl NJU_seq/mrna_analysis/main_transcript_1.pl \
+		--geneid "gene_id=" \
+		--transid "transcript_id=" \
+		>data/hsa_main_transcript.txt
 
-pigz -dc data/hsa.gff3.gz |
-  awk '(($3=="five_prime_UTR") || ($3=="three_prime_UTR") || ($3=="CDS"))' |
-  perl NJU_seq/mrna_analysis/main_transcript_2.pl \
-    --transid "Parent=" \
-    --rep_trans "data/hsa_main_transcript.txt" \
-    >data/hsa_transcript_region.tsv
+pigz -dc data/hsa.gff3.gz \
+	| awk '(($3=="five_prime_UTR") || ($3=="three_prime_UTR") || ($3=="CDS"))' \
+	| perl NJU_seq/mrna_analysis/main_transcript_2.pl \
+		--transid "Parent=" \
+		--rep_trans "data/hsa_main_transcript.txt" \
+		>data/hsa_transcript_region.tsv
+
 ```
 
 Analyse mRNA Nm sites.
@@ -430,39 +423,39 @@ Analyse mRNA Nm sites.
 ```shell script
 PREFIX='HeLa_RF'
 
-pigz -dc data/hsa.gff3.gz |
-  awk '$3=="gene"' |
-  perl NJU_seq/tool/add_gene_name.pl \
-    --id "gene_id=" --name "gene_name=" \
-    --col "8" --file "output/${PREFIX}_mrna_Nm_tmp1.tsv" \
-    >output/${PREFIX}_mrna_Nm_tmp1.tsv
+pigz -dc data/hsa.gff3.gz \
+	| awk '$3=="gene"' \
+	| perl NJU_seq/tool/add_gene_name.pl \
+		--id "gene_id=" --name "gene_name=" \
+		--col "8" --file "output/${PREFIX}_mrna_Nm_tmp1.tsv" \
+		>output/${PREFIX}_mrna_Nm_tmp1.tsv
 
-pigz -dc data/hsa_ens.gff3.gz |
-  awk '$3=="gene"' | perl NJU_seq/tool/add_gene_name.pl \
-    --id "gene_id=" --name "description=" \
-    --col "9" --file "output/${PREFIX}_mrna_Nm_tmp2.tsv" \
-    >output/${PREFIX}_mrna_Nm_tmp2.tsv
-
-perl NJU_seq/mrna_analysis/motif_nm.pl \
-  data/GRCh38.primary_assembly.genome.fa \
-  output/${PREFIX}_mrna_Nm_tmp2.tsv \
-  10 10 >output/${PREFIX}_mrna_Nm_tmp3.tsv
+pigz -dc data/hsa_ens.gff3.gz \
+	| awk '$3=="gene"' | perl NJU_seq/tool/add_gene_name.pl \
+	--id "gene_id=" --name "description=" \
+	--col "9" --file "output/${PREFIX}_mrna_Nm_tmp2.tsv" \
+	>output/${PREFIX}_mrna_Nm_tmp2.tsv
 
 perl NJU_seq/mrna_analysis/motif_nm.pl \
-  data/GRCh38.primary_assembly.genome.fa \
-  output/${PREFIX}_mrna_Nm_tmp3.tsv \
-  20 20 >output/${PREFIX}_mrna_Nm_tmp4.tsv
-  
+	data/GRCh38.primary_assembly.genome.fa \
+	output/${PREFIX}_mrna_Nm_tmp2.tsv \
+	10 10 >output/${PREFIX}_mrna_Nm_tmp3.tsv
+
 perl NJU_seq/mrna_analysis/motif_nm.pl \
-  data/GRCh38.primary_assembly.genome.fa \
-  output/${PREFIX}_mrna_Nm_tmp4.tsv \
-  50 50 >output/${PREFIX}_mrna_Nm_tmp5.tsv
-  
+	data/GRCh38.primary_assembly.genome.fa \
+	output/${PREFIX}_mrna_Nm_tmp3.tsv \
+	20 20 >output/${PREFIX}_mrna_Nm_tmp4.tsv
+
+perl NJU_seq/mrna_analysis/motif_nm.pl \
+	data/GRCh38.primary_assembly.genome.fa \
+	output/${PREFIX}_mrna_Nm_tmp4.tsv \
+	50 50 >output/${PREFIX}_mrna_Nm_tmp5.tsv
+
 perl NJU_seq/mrna_analysis/main_transcript_3.pl \
-    data/hsa_transcript_region.tsv \
-    output/${PREFIX}_mrna_Nm_tmp5.tsv \
-    output/${PREFIX}_mrna_Nm_list.tsv \
-    >output/${PREFIX}_mrna_Nm_distribution.tsv
+	data/hsa_transcript_region.tsv \
+	output/${PREFIX}_mrna_Nm_tmp5.tsv \
+	output/${PREFIX}_mrna_Nm_list.tsv \
+	>output/${PREFIX}_mrna_Nm_distribution.tsv
 
 rm output/${PREFIX}_mrna_Nm_tmp{1..5}.tsv
 ```
@@ -475,4 +468,7 @@ Copyright ©IvanWoo. All Rights Reserved.
 
 Licensed GPLv3 for open source use or contact wuyifanwd@hotmail.com for commercial use.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

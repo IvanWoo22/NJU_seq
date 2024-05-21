@@ -2,8 +2,8 @@
 library(ggplot2)
 library(gridExtra)
 library(RColorBrewer)
-args<-commandArgs(T)
-dist_raw<-read.table(args[1],sep="\t",header = F)
+args <- commandArgs(T)
+dist_raw <- read.table(args[1], sep = "\t", header = F)
 
 x1max <-
   ceiling(max(dist_raw[dist_raw$V1 == "five_utr",]$V2) / 5) * 5
@@ -28,7 +28,7 @@ five_utr <- dist_raw[dist_raw$V1 == "five_utr",]
 cds <- dist_raw[dist_raw$V1 == "cds",]
 three_utr <- dist_raw[dist_raw$V1 == "three_utr",]
 
-text_to_plot = data.frame(
+text_to_plot <- data.frame(
   x = c(x1max / 2, x1max + x2max / 2, x1max + x2max + x3max / 2),
   y = c(y1max,
         y2max,
@@ -88,7 +88,7 @@ p <- ggplot() +
     expand = c(0, 0)
   ) +
   theme(
-    plot.margin = unit(c(0.4, 0.4,-0.5,-0.6), 'lines'),
+    plot.margin = unit(c(0.4, 0.4, -0.5, -0.6), 'lines'),
     panel.grid = element_blank(),
     panel.background = element_blank(),
     axis.ticks.x = element_blank(),

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use autodie;
 
-while (<>) {
+while (<STDIN>) {
     chomp;
     my (
         $id,   undef,             undef,

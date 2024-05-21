@@ -38,8 +38,9 @@ while (<$IN_SAM>) {
         $site_end{$end}++;
     }
     else {
-        $site_end{$end}  = 1;
-        $site_base{$end} = $string[-3]."\t".$string[-2]."\t".$string[-1];
+        $site_end{$end} = 1;
+        $site_base{$end} =
+          $string[-3] . "\t" . $string[-2] . "\t" . $string[-1];
     }
 
     my $start = $rname . "\t" . $site;
