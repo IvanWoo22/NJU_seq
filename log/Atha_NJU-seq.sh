@@ -1,4 +1,4 @@
-for SAMPLE in NJUzp{4..10}; do
+for SAMPLE in NJUzp{3..10}; do
 	cutadapt -a AGATCGGAAGAGCACA -A GATCGTCGGACTGTAG \
 		-O 6 -m 10 -e 0.1 --discard-untrimmed -o ${SAMPLE}/R1_clean.fq.gz -p ${SAMPLE}/R2_clean.fq.gz \
 		-j 16 ${SAMPLE}/R1.fq.gz ${SAMPLE}/R2.fq.gz \

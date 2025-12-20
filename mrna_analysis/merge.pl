@@ -21,6 +21,7 @@ merge.pl -- Merge the different transcript sites which on the same position of t
             --transid Characteristics shared by transcripts
             --in\-i  Input file with path
             --out\-o  Output file with path
+            --stdout   Output to STDOUT instead of file (mutually exclusive with --out)
 =cut
 
 Getopt::Long::GetOptions(
@@ -30,7 +31,12 @@ Getopt::Long::GetOptions(
     'transid=s' => \my $transid,
     'in|i=s'    => \my $in_fq,
     'out|o=s'   => \my $out_fq,
+    'stdout'    => \my $stdout,
 ) or Getopt::Long::HelpMessage(1);
+
+if ( ( $out_fq && $stdout ) || ( !$out_fq && !$stdout ) ) {
+    die "ERROR: You must specify exactly one of --out|-o or --stdout\n";
+}
 
 my %trans_range;
 my %trans_chr;
@@ -93,10 +99,18 @@ while (<$IN_FH>) {
 }
 close($IN_FH);
 
-open( my $OUT_FH, ">", $out_fq );
+my $OUT_FH;
+if ( defined $stdout ) {
+    $OUT_FH = *STDOUT;
+}
+else {
+    open( $OUT_FH, ">", $out_fq );
+}
+
 foreach ( keys(%gene_id) ) {
     print $OUT_FH ("$_\t$base{$_}\t$gene_id{$_}\t$t5{$_}\t$t3{$_}\n");
 }
-close($OUT_FH);
+
+close($OUT_FH) unless defined $stdout;
 
 __END__
