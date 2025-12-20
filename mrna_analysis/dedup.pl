@@ -31,7 +31,7 @@ while (<$IN_FH>) {
     chomp;
     my ( $chr, $start, $end, $dir, $info ) = split( /\t/, $_ );
     $chr  =~ s/chr//;
-    $info =~ /$refstr(\w+\.[0-9]+)/;
+    $info =~ /$refstr($transid\w+\.[0-9]+)/;
     if ( exists( $trans_chr{$1} ) ) {
         $trans_range{$1}->AlignDB::IntSpan::add_range( $start, $end );
     }

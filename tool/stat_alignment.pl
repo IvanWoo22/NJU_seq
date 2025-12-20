@@ -5,9 +5,7 @@ use autodie;
 
 foreach my $filename (@ARGV) {
     open( my $IN, "<", $filename );
-    my @tmp  = split /\//, $filename;
-    my @ttmp = split /\./, $tmp[-1];
-    my $name = $ttmp[0];
+    my ($name) = split /\./, $filename;
     my ( $total_reads, $aligned_reads ) = ( 0, 0 );
     my ( $time, $rate );
     while (<$IN>) {
