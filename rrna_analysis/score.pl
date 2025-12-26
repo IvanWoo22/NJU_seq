@@ -4,6 +4,8 @@ use warnings;
 use autodie;
 use POSIX;
 use File::ReadBackwards;
+use File::Basename;
+use File::Spec;
 
 sub SCORE {
     my ( $TR_END_COUNT, $NC_END_COUNT, $TR_TOTAL, $NC_TOTAL ) = @_;
@@ -46,6 +48,16 @@ sub SCORE {
     return ( \@SCORE, \@END_COR );
 }
 
+my @sample_names;
+
+for my $i ( 0 .. $#ARGV ) {
+    my $file = $ARGV[$i];
+    my $dir = File::Basename::dirname($file);
+    my $prefix = File::Basename::basename($dir);
+
+    push @sample_names, $prefix;
+}
+
 my ( @site, @base, @end_count, @score, @end_count_cor, @total );
 $total[0] = 0;
 my $nc_content = do {
@@ -82,6 +94,12 @@ foreach my $sample ( 1 .. $#ARGV ) {
     ( $score[$sample], $end_count_cor[$sample] ) =
       SCORE( $end_count[$sample], $end_count[0], $total[$sample], $total[0] );
 }
+
+print "Position\tBase\t${sample_names[0]}_count";
+foreach my $s ( 1 .. $#ARGV ) {
+    print "\t${sample_names[$s]}_count\t${sample_names[$s]}_score";
+}
+print "\tFoldChange\tFC_criteria\tTotalScore\tScore_criteria\n";
 
 foreach my $site ( 0 .. $#site - 1 ) {
     print("$site[$site]\t$base[$site]\t$end_count[0][$site]\t");
