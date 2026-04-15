@@ -6,6 +6,12 @@ use autodie;
 use Getopt::Long;
 use AlignDB::IntSpan;
 
+my $transid = "transcript_id=";
+Getopt::Long::GetOptions(
+    'help|h'    => sub { Getopt::Long::HelpMessage(0) },
+    'transid=s' => \$transid,
+) or Getopt::Long::HelpMessage(1);
+
 sub GET_ID {
     my ( $FEATURE, $INFO ) = @_;
     my $ID;
@@ -32,7 +38,7 @@ while (<STDIN>) {
     chomp;
     my ( undef, undef, undef, $start, $end, undef, undef, undef, $info ) =
       split /\t/;
-    my $trans_id = GET_ID( "transcript_id=", $info );
+    my $trans_id = GET_ID( $transid, $info );
     if ( exists( $gene{$trans_id} ) ) {
         if ( exists( $exon{$trans_id} ) ) {
             $exon{$trans_id}->AlignDB::IntSpan::add_range( $start, $end );

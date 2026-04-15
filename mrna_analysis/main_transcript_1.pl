@@ -8,6 +8,7 @@ Getopt::Long::GetOptions(
     'help|h'    => sub { Getopt::Long::HelpMessage(0) },
     'geneid=s'  => \my $geneid,
     'transid=s' => \my $transid,
+    'tag'       => \my $use_tag,
 ) or Getopt::Long::HelpMessage(1);
 
 sub TAG_SCORE {
@@ -21,7 +22,10 @@ sub TAG_SCORE {
         $TSL = -10;
     }
     my @TMP  = ( $INFO =~ m/tag=([A-Z,a-z,0-9,_,\,]*)/ );
-    my @TAG  = split( /,/, $TMP[0] );
+    my @TAG = ();
+    if (defined $TMP[0]) {
+        @TAG = split( /,/, $TMP[0] );
+    }
     my $MANE = 0;
     $MANE = grep /^MANE_Select$/i, @TAG;
     $MANE *= 30;
@@ -66,24 +70,32 @@ sub GET_ID {
     return $ID;
 }
 
-my %gene_score;
+my %gene_data;
 while (<STDIN>) {
     chomp;
-    my ( undef, undef, undef, undef, undef, undef, undef, undef, $info ) =
+    my ( undef, undef, undef, $start, $end, undef, undef, undef, $info ) =
       split /\t/;
     my $trans_name = GET_ID( $transid, $info );
     my $gene_name  = GET_ID( $geneid,  $info );
-    my $score      = TAG_SCORE($info);
-    if ( $score > 20 ) {
-        $gene_score{$gene_name}{$trans_name} = $score;
+    
+    if (defined $trans_name && defined $gene_name) {
+        if ($use_tag) {
+            my $score = TAG_SCORE($info);
+            if ( $score > 20 ) {
+                $gene_data{$gene_name}{$trans_name} = $score;
+            }
+        } else {
+            my $length = abs($end - $start) + 1;
+            $gene_data{$gene_name}{$trans_name} = $length;
+        }
     }
 }
 
-foreach my $gene ( sort( keys(%gene_score) ) ) {
+foreach my $gene ( sort( keys(%gene_data) ) ) {
     my $number = 0;
     foreach my $trans (
-        sort { ${ $gene_score{$gene} }{$b} <=> ${ $gene_score{$gene} }{$a} }
-        keys %{ $gene_score{$gene} }
+        sort { ${ $gene_data{$gene} }{$b} <=> ${ $gene_data{$gene} }{$a} }
+        keys %{ $gene_data{$gene} }
       )
     {
         $number++;

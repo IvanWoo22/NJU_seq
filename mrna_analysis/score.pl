@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use autodie;
 use POSIX;
+use File::Basename;
 
 sub SCORE {
     my ( $TR_END_COUNT, $NC_END_COUNT, $TR_TOTAL, $NC_TOTAL ) = @_;
@@ -40,6 +41,14 @@ sub SCORE {
     }
 
     return ( \%SCORE, \%END_COR );
+}
+
+my @sample_names;
+for my $i ( 0 .. $#ARGV ) {
+    my $file   = $ARGV[$i];
+    my $dir    = dirname($file);
+    my $prefix = basename($dir);
+    push @sample_names, $prefix;
 }
 
 my ( @end_count, @score, @end_count_cor, @total, %info, %all_site_id,
@@ -92,6 +101,13 @@ for my $sample ( 1 .. $#ARGV ) {
     $score[$sample]         = $score_ref;
     $end_count_cor[$sample] = $end_count_cor_ref;
 }
+
+print "Position\tBase\tDirection\tInfo\t${sample_names[0]}_count(NC)";
+foreach my $s ( 1 .. $#ARGV ) {
+    print
+"\t${sample_names[$s]}_count\t${sample_names[$s]}_count_corr\t${sample_names[$s]}_score";
+}
+print "\tTotalFoldChange\tAveFC\tTotalScore\tAveScore\n";
 
 for my $id ( keys %all_site_id ) {
     if ( $all_site_id{$id} == $#ARGV ) {

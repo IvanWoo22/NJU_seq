@@ -95,7 +95,7 @@ foreach my $sample ( 1 .. $#ARGV ) {
       SCORE( $end_count[$sample], $end_count[0], $total[$sample], $total[0] );
 }
 
-print "Position\tBase\t${sample_names[0]}_count";
+print "#Position\tBase\t${sample_names[0]}_count";
 foreach my $s ( 1 .. $#ARGV ) {
     print "\t${sample_names[$s]}_count\t${sample_names[$s]}_score";
 }
