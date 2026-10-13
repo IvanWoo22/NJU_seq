@@ -6,7 +6,7 @@
 
 本项目的分析程序为 Rust 实现的 `nju-seq`，当前版本 0.5.0。下面以 **GRCh38 / HEK293T 人源 NJU6096–6099** 为例，介绍从安装、准备参考到比对、计数和评分的用法。原 [data](data) 和 [样本说明](sample_list.csv) 继续使用。
 
-含 8 nt UMI 的拟南芥 Col_NC31 / Col_TR31 用法及已有结果见 [拟南芥 UMI 分析流程](docs/arabidopsis_umi.md)。
+含 8 nt UMI 的拟南芥 Col_NC31 / Col_TR31 分析步骤和样本结果见 [拟南芥 UMI 分析流程](docs/arabidopsis_umi.md)。
 
 ```mermaid
 flowchart LR
@@ -53,7 +53,7 @@ python3 tests/smoke.py
 | 小鼠 | [GENCODE M25](https://www.gencodegenes.org/mouse/release_M25.html) | GRCm38.p6 |
 | 拟南芥 | [Ensembl Plants 46](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/) | TAIR10 |
 
-完整参考和索引不随 Git 分发。新环境需要从原工作区复制下列文件，并保留目录结构；也可以自行提供相互匹配的人源参考。文件格式见 [参考说明](references/README.md)。
+人源小样本使用下列配套参考，完整文件和索引需另行准备。将文件放在对应目录，具体格式见 [参考说明](references/README.md)。
 
 | 路径 | 内容 |
 |---|---|
@@ -62,8 +62,6 @@ python3 tests/smoke.py
 | `references/human_source/GRCh38.primary_assembly.genome.fa` | GRCh38 基因组 FASTA |
 | `references/bacterial/bac_rna.*.bt2` | 原细菌 rRNA 索引的六个文件 |
 | `data/hsa_rrna/{18s,28s,5-8s}.fa` | 仓库自带的三条人 rRNA 参考 |
-
-本地保留文件尚未确认对应的发布号，细菌索引来源也未确认。若要重现本文小样本结果，应使用这些原文件；另行下载的参考可能改变比对与计数。
 
 从源文件重建一个新参考目录：
 

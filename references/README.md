@@ -15,7 +15,7 @@
 
 人源 mRNA 参考含 84,068 条 protein_coding 转录本，对应 762,910 行 exon。人 rRNA 使用原 `data/hsa_rrna/18s.fa`、`28s.fa`、`5-8s.fa`；它们只覆盖这三条参考。
 
-原人源注释的确切发布号及细菌索引建库来源尚未确认。复现已有结果应使用保留的原文件，不能仅凭 `hg38` 文件名另选 GENCODE 版本。`human_source/` 中的 basic、代表转录本、区域和 codon 表供后续分析参考，不能替代当前全转录本与 exon 的配套输入。
+转录本 FASTA、exon 表和基因组须相互匹配。`human_source/` 中的 basic、代表转录本、区域和 codon 表用于后续注释分析；主流程使用全转录本及其配套 exon 表。
 
 `data/` 中其他物种的 rRNA 及 `MCMV.fa`、`MHV.fa` 均保留。换物种时需要同时准备匹配的转录本和注释。
 

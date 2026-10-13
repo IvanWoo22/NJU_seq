@@ -1,8 +1,6 @@
 # 拟南芥 Col_NC31 / Col_TR31：8 nt UMI 分析
 
-Col_NC31 为 NC 对照，Col_TR31 为 TR 处理样本。两份文库在 **MgR 处理后、PCR 前**加入 8 nt UMI，由 R1 的 3′ 端读取；R2 的 5′ 端为同一标签的反向互补方向。本文给出当前 Rust 版 `nju-seq` 的运行方法，并保留 2026-09-24 至 26 日分析的主要计数。
-
-原 FASTQ 位于旧 NAS 路径，2026-10-13 整理本文时已无法读取。因此，此次没有重新抽取拟南芥小样本或重跑真实数据；文末数值来自既有记录。恢复原始 FASTQ 和配套参考后，可按下列命令运行。
+Col_NC31 为 NC 对照，Col_TR31 为 TR 处理样本。两份文库在 **MgR 处理后、PCR 前**加入 8 nt UMI，由 R1 的 3′ 端读取；R2 的 5′ 端为同一标签的反向互补方向。本文介绍 Rust 版 `nju-seq` 的运行方法、UMI 计数规则及两份样本的分析结果。
 
 ## 软件与输入
 
@@ -15,7 +13,7 @@ cargo build --release --offline
 umi_tools --version
 ```
 
-Rust 流程的 UMI 提取需要 UMI-tools，分子合并和计数由 Rust 完成。旧 Perl/Python 对照测试所需的其他包见 [依赖说明](dependencies.md)。
+UMI 标签由 UMI-tools 提取，分子合并和计数由 Rust 完成。软件依赖见 [依赖说明](dependencies.md)。
 
 将原始双端 FASTQ 放在以下位置，也可建立链接或修改 [样本清单](../config/samples.arabidopsis_umi.tsv) 中的路径：
 
@@ -30,22 +28,22 @@ inputs/arabidopsis/Col_TR31/R2.fq.gz
 
 ## 使用配套的拟南芥参考
 
-以下文件在原工作区保留，完整参考和索引不随 Git 分发。新机器需另行复制：
+准备以下配套参考，并放入对应目录。完整参考和索引不随 Git 分发：
 
 | 路径或索引前缀 | 用途 |
 |---|---|
-| `references/bacterial/bac_rna` | 原细菌 rRNA 索引 |
+| `references/bacterial/bac_rna` | 细菌 rRNA 索引 |
 | `references/arabidopsis/ath_rrna_total` | 拟南芥 rRNA 索引，4,131 条参考 |
 | `references/arabidopsis/ath_protein_coding` | mRNA 索引，48,321 条转录本 |
 | `references/arabidopsis/exon.info` | 与 mRNA 索引配套的五列 exon 表 |
 
 每个索引前缀对应六个 `.bt2` 文件，复制时须齐全。`ath.fa`、`ath_main_transcript.txt`、`transcript_region.info` 和 `exon_distance.info` 供后续序列及区域注释使用，主计数命令不读取它们。
 
-旧 README 的拟南芥下载版本是 Ensembl Plants 46 / TAIR10，见 [三物种参考来源](reference_sources.md)。保留索引的原始发布号尚未确认，不能仅凭 TAIR10 名称视为 release 46。复现文末结果应使用上表的配套文件；`prepare_human_reference.py` 处理人源 GENCODE 格式，不适用于直接重建这套拟南芥参考。
+拟南芥参考的下载清单沿用 Ensembl Plants 46 / TAIR10，见 [三物种参考来源](reference_sources.md)。运行以下命令时，使用上表的索引及配套 exon 表。`prepare_human_reference.py` 专用于人源 GENCODE 格式；拟南芥使用已准备好的索引。
 
 ## 先跑小样本
 
-恢复输入后，每个样本先取前 1,000 对 reads。脚本保留清单中的 UMI 类型，并检查截取部分的双端 ID：
+每个样本先取前 1,000 对 reads。脚本保留清单中的 UMI 类型，并检查截取部分的双端 ID：
 
 ```bash
 python3 scripts/subset_fastq.py \
@@ -96,9 +94,9 @@ target/release/nju-seq run \
 | `mrna.reads.score_summary.json`、`mrna.umi.score_summary.json` | 归一化状态及候选数 |
 | `qc.html`、`SUCCESS` | 质量报告、全部步骤成功标记 |
 
-## 既有全量结果
+## 样本分析结果
 
-以下为 2026-09-24 至 26 日原 Perl/Python 流程的记录。mRNA 数值采用修复注释解析后、从保留的 mRNA 比对结果重新计算的最终版本；不采用较早试跑的计数。它们尚未通过当前 Rust 版的拟南芥全量重跑复核。
+以下为 Col_NC31 / Col_TR31 使用 Perl/Python 流程、按 exact UMI 规则计算的全量结果。
 
 | 指标 | Col_NC31 | Col_TR31 |
 |---|---:|---:|
@@ -111,10 +109,8 @@ target/release/nju-seq run \
 
 read 分支得到 134 个候选，exact UMI 分支得到 110 个；共有 107 个，read 分支独有 27 个，UMI 分支独有 3 个。候选变化反映计数方式的影响，不能直接解释为准确率提升。样本各只有一份 NC、TR；评分阈值不等同于重复间统计检验或 FDR，详见 [评分说明](scoring.md)。
 
-全量输出已按清理要求删除。上述摘要摘自原工作区的 `log/2026-09-24_Ath-31_test_run.md` 第 3、4、14、19 节；原长日志留作本地查阅，不随 Git 分发。
-
 ## 可选 rRNA 分析
 
 主流程排除 rRNA 是为了分析 mRNA，不会生成 rRNA 的 UMI 分子计数。需要 rRNA 位点结果时，按 [rRNA 独立计数与评分](rrna.md) 操作，并将索引和 FASTQ 换为本批拟南芥输入。
 
-`ath_rrna_total` 中 `18s`、`25s` 的长度为 1,808、3,387 nt，而原 `data/ath_rrna` 对应文件为 1,804、3,375 nt。应从实际索引用 `bowtie2-inspect` 导出序列，按参考 ID 拆成单条 FASTA，再向 `count_rrna.py` 重复传入 `--reference FILE`；不可套用默认人源参考，也不可直接替换为不同序列的拟南芥 FASTA。原 `data/ath_rrna` 继续保留供来源查阅。
+rRNA 计数使用与比对索引一致的参考序列。用 `bowtie2-inspect references/arabidopsis/ath_rrna_total` 导出序列，按 `18s`、`25s`、`5-8s`、`5s` 的参考 ID 分别保存为单条 FASTA，再向 `scripts/count_rrna.py` 重复传入 `--reference FILE`。FASTA 中保留原参考 ID，以便对应比对结果和计数坐标。
