@@ -10,6 +10,8 @@ Getopt::Long::GetOptions(
     'transid=s' => \my $transid,
     'tag'       => \my $use_tag,
 ) or Getopt::Long::HelpMessage(1);
+defined($geneid) && length($geneid) && defined($transid) && length($transid)
+    or die "Both --geneid and --transid attribute prefixes are required\n";
 
 sub TAG_SCORE {
     my $INFO = shift;
@@ -52,7 +54,7 @@ sub TAG_SCORE {
     my $BASIC = grep /^basic$/i, @TAG;
     $BASIC *= 60;
     $BASIC = -60 if $BASIC == 0;
-    my $CCDS = grep /^basic$/i, @TAG;
+    my $CCDS = grep /^CCDS$/i, @TAG;
     $CCDS *= 5;
     $SCORE = $TSL + $MANE + $BASIC + $INCOMPLETE + $AP + $ALT + $CCDS;
     return ($SCORE);
@@ -73,8 +75,9 @@ sub GET_ID {
 my %gene_data;
 while (<STDIN>) {
     chomp;
-    my ( undef, undef, undef, $start, $end, undef, undef, undef, $info ) =
+    my ( undef, undef, $type, $start, $end, undef, undef, undef, $info ) =
       split /\t/;
+    next unless defined($info) && $type =~ /^(?:mRNA|transcript)$/;
     my $trans_name = GET_ID( $transid, $info );
     my $gene_name  = GET_ID( $geneid,  $info );
     
@@ -94,7 +97,7 @@ while (<STDIN>) {
 foreach my $gene ( sort( keys(%gene_data) ) ) {
     my $number = 0;
     foreach my $trans (
-        sort { ${ $gene_data{$gene} }{$b} <=> ${ $gene_data{$gene} }{$a} }
+        sort { ${ $gene_data{$gene} }{$b} <=> ${ $gene_data{$gene} }{$a} || $a cmp $b }
         keys %{ $gene_data{$gene} }
       )
     {

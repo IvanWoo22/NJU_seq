@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-ALL_STOP=$(wc -l <"$1")
-ALL_POS=$(wc -l <"$2")
-COV=$(echo "scale=2; ${ALL_STOP}/${ALL_POS}" | bc)
-echo -e "Stop times:\t${ALL_STOP}\nPositions:\t${ALL_POS}\nCoverage:\t${COV}\n"
+# Mean records per listed site; not per-base sequencing coverage.
+set -euo pipefail
+[[ $# == 2 ]] || { echo 'Usage: seq_depth.sh read_records.tsv site_records.tsv' >&2; exit 2; }
+RECORDS=$(awk 'END {print NR+0}' "$1")
+SITES=$(awk 'END {print NR+0}' "$2")
+awk -v r="$RECORDS" -v s="$SITES" 'BEGIN {
+    printf "Stop times:\t%d\nPositions:\t%d\n",r,s;
+    if(s==0) print "Mean records per listed site:\tNA";
+    else printf "Mean records per listed site:\t%.2f\n",r/s;
+}'

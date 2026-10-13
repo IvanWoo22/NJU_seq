@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-13",
+  "platform": "Linux x86_64",
+  "same_host_new_conda_environment": true,
+  "checkout_path_contains_spaces": true,
+  "inherited_environment_cleared": true,
+  "old_build_artifacts_reused": false,
+  "reference_inputs_copied": true,
+  "commands_from_readme": [
+    {
+      "name": "build_and_smoke",
+      "commands": "cargo build --release --offline\ntarget/release/nju-seq --help\npython3 tests/smoke.py",
+      "exit_code": 0,
+      "seconds": 9.235
+    },
+    {
+      "name": "human_reference",
+      "commands": "python3 scripts/prepare_human_reference.py \\\n  --mrna references/human_source/hsa_protein_coding.fa \\\n  --exons references/human_source/hsa_exon.info \\\n  --genome references/human_source/GRCh38.primary_assembly.genome.fa \\\n  --bac-index references/bacterial/bac_rna \\\n  --out references/human_rebuilt --threads 4 \\\n  --label 'retained GRCh38 reference; release unspecified' \\\n  --copy-inputs\n",
+      "exit_code": 0,
+      "seconds": 202.785
+    },
+    {
+      "name": "human_run",
+      "commands": "mkdir -p output\ntarget/release/nju-seq plan \\\n  --samples tests/data/human/samples.tsv --from raw \\\n  --index references/human_rebuilt --exons references/human_rebuilt/exon.info \\\n  --out output/human_test --threads 2 --jobs 1\n\ntarget/release/nju-seq run \\\n  --samples tests/data/human/samples.tsv --from raw \\\n  --index references/human_rebuilt --exons references/human_rebuilt/exon.info \\\n  --out output/human_test --threads 2 --jobs 1\n",
+      "exit_code": 0,
+      "seconds": 10.045
+    }
+  ],
+  "core_tool_versions": {
+    "gzip": "1.14",
+    "perl": "5.44.0",
+    "python": "3.11.17",
+    "rust": "1.88.0",
+    "bowtie2": "2.5.5",
+    "samtools": "1.24",
+    "cutadapt": "5.2"
+  },
+  "full_test_tool_versions": {
+    "perl-scalar-util-numeric": "0.40",
+    "umi_tools": "1.1.6",
+    "perl-perlio-gzip": "0.20",
+    "perl": "5.32.1",
+    "rust": "1.88.0",
+    "cutadapt": "5.2",
+    "samtools": "1.24",
+    "bowtie2": "2.5.5",
+    "python": "3.11.17",
+    "gzip": "1.14",
+    "AlignDB::IntSpan": "1.1.1"
+  },
+  "core_environment_lock": "config/conda-linux-64.lock",
+  "core_environment_lock_sha256": "663221a4d256abd251308ac634bc854ccf6b06ca16efb4400c0e58b4f3a26306",
+  "reference": {
+    "transcripts": 84068,
+    "exon_rows": 762910,
+    "sequence_mismatches": 0,
+    "input_storage": "copy",
+    "input_sha256": {
+      "hsa_protein_coding.fa": "923c00de4bf1616e9abafce948ef1a8df34cc961047be56deaca05eeba95b6de",
+      "hsa_exon.info": "5b131cee9cfa15c6e3c8d5818d508f83eea44e072f160d288e43c3b0b926628d",
+      "GRCh38.primary_assembly.genome.fa": "e49b92b3e4f321bf254c042f25b726d9931c4d74c7523e8b6bb530e63b0cfd4b"
+    }
+  },
+  "checks": {
+    "rust_tests": 59,
+    "python_tests": 94,
+    "fmt": "passed",
+    "clippy": "passed",
+    "synthetic_reference_relocation_and_pipeline": "passed",
+    "human_4x1000_pipeline": "passed",
+    "extended_environment_human_counts_equal": true,
+    "umi_reads": 5000,
+    "umi_molecules": 1976,
+    "umi_tables_byte_equal": true,
+    "original_subset_fastqs_regenerated_byte_equal": 8,
+    "unchanged_original_data_files": 29,
+    "original_reference_links_valid": 8,
+    "old_runtime_paths": 0,
+    "documentation_local_links": "passed"
+  },
+  "scope": {
+    "full_sequencing_dataset_rerun": false,
+    "R_plotting_tested": false,
+    "different_OS_tested": false
+  }
+}

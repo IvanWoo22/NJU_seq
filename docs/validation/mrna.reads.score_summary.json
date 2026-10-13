@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "engine_version": "0.5.0",
+  "mode": "mrna",
+  "format": "unified",
+  "rows": "candidates",
+  "reference_id": null,
+  "normalization": "nc_on_each_tr_observed_sites",
+  "site_support": "all_tr_positive",
+  "nc_zero_score_numerator": 1,
+  "edge_mask_nt": 0,
+  "score_threshold_per_tr": 30,
+  "fold_threshold_per_tr": 3,
+  "replicate_rule": "sum, not individual pass",
+  "count_meaning": "signal end count; adjacent_count is the raw local-ratio denominator",
+  "position_meaning": "candidate one nucleotide upstream of physical read end along transcript direction; mRNA is genome-mapped",
+  "joint_evaluation": "normalization_unavailable",
+  "considered_sites": 0,
+  "emitted_rows": 0,
+  "candidate_sites": 0,
+  "inputs": [
+    "output/human_test/score_inputs/reads/NJU6096/mrna.filter.tsv",
+    "output/human_test/score_inputs/reads/NJU6097/mrna.filter.tsv",
+    "output/human_test/score_inputs/reads/NJU6098/mrna.filter.tsv",
+    "output/human_test/score_inputs/reads/NJU6099/mrna.filter.tsv"
+  ],
+  "samples": [
+    {
+      "sample": "NJU6097",
+      "NC_TOTAL": 2,
+      "TR_TOTAL": 13,
+      "normalization_factor": 0.15384615384615385,
+      "status": "available"
+    },
+    {
+      "sample": "NJU6098",
+      "NC_TOTAL": 0,
+      "TR_TOTAL": 5,
+      "normalization_factor": null,
+      "status": "zero_nc_total"
+    },
+    {
+      "sample": "NJU6099",
+      "NC_TOTAL": 0,
+      "TR_TOTAL": 2,
+      "normalization_factor": null,
+      "status": "zero_nc_total"
+    }
+  ]
+}

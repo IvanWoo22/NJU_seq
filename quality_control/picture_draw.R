@@ -5,7 +5,7 @@ library(ggpubr)
 
 args <- commandArgs(T)
 
-mydata1 <- read.table(args[1], header = T)
+mydata1 <- read.table(args[1], header = T, sep = "\t", check.names = FALSE)
 
 p1 <- ggtexttable(
   mydata1,
@@ -36,7 +36,7 @@ p1 <- ggtexttable(
 p1 <-
   annotate_figure(p1, fig.lab = "  All Base Contain", fig.lab.face = "bold")
 
-mydata2 <- read.table(args[2], header = T)
+mydata2 <- read.table(args[2], header = T, sep = "\t", check.names = FALSE)
 
 p2 <- ggtexttable(
   mydata2,
@@ -67,7 +67,7 @@ p2 <- ggtexttable(
 p2 <-
   annotate_figure(p2, fig.lab = "  5' Base Contain", fig.lab.face = "bold")
 
-mydata3 <- read.table(args[3], header = T)
+mydata3 <- read.table(args[3], header = T, sep = "\t", check.names = FALSE)
 
 p3 <- ggtexttable(
   mydata3,
@@ -98,7 +98,7 @@ p3 <- ggtexttable(
 p3 <-
   annotate_figure(p3, fig.lab = "  3' Base Contain", fig.lab.face = "bold")
 
-mydata4 <- read.table(args[4], header = F)
+mydata4 <- read.table(args[4], header = F, sep = "\t")
 
 p4 <- ggplot(mydata4, aes(V2, V3, group = V1, color = V1)) +
   theme_bw() +
@@ -113,12 +113,12 @@ p4 <- ggplot(mydata4, aes(V2, V3, group = V1, color = V1)) +
   scale_colour_hue("Sample") +
   labs(x = '', y = '') +
   geom_point(size = 0) +
-  scale_x_continuous(limits = c(10, 50), breaks = seq(10, 50, 5))
+  scale_x_continuous(breaks = pretty(range(mydata4$V2)))
 
 p4 <-
   annotate_figure(p4, fig.lab = "  Length Distribution", fig.lab.face = "bold")
 
-mydata5 <- read.table(args[5], sep = "\t", header = T)
+mydata5 <- read.table(args[5], sep = "\t", header = T, check.names = FALSE)
 
 p5 <-
   ggtexttable(
@@ -169,3 +169,4 @@ wid <- 12 + colnum * 1
 
 pdf(args[6], width = wid, height = 15)
 print(p)
+dev.off()

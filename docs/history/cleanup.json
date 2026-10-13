@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-13",
+  "authorization": "User requested all large results removed; only small summaries and validation records kept",
+  "roots": {
+    "test_0924": {
+      "files": 1280,
+      "symlinks": 18,
+      "logical_bytes": 9731322591,
+      "allocated_bytes": 9734991872
+    },
+    "test_1001": {
+      "files": 9280,
+      "symlinks": 182,
+      "logical_bytes": 62210707819,
+      "allocated_bytes": 62235508736
+    },
+    "test_rust_0926": {
+      "files": 7857,
+      "symlinks": 177,
+      "logical_bytes": 2645360866,
+      "allocated_bytes": 2665402368
+    }
+  },
+  "original_data_checksums": "original_data.sha256.json",
+  "references_relocated": true,
+  "source_archive": "dated_workflows_source.tar.gz",
+  "raw_link_targets_never_deleted": true,
+  "status": "complete",
+  "deleted_logical_bytes": 74587391276
+}

@@ -60,7 +60,7 @@ p1 <- ggplot() +
       label = "Start",
       vjust = 0
     ),
-    family = "ArialMT",
+    family = "sans",
     size = 5 / 3,
     show.legend = F,
     colour = "#751C2E"
@@ -104,7 +104,7 @@ p1 <- ggplot() +
     panel.background = element_blank(),
     plot.background = element_blank(),
     panel.grid.minor = element_blank(),
-    text = element_text(family = "ArialMT")
+    text = element_text(family = "sans")
   )
 
 p2 <- ggplot() +
@@ -151,7 +151,7 @@ p2 <- ggplot() +
       label = "Stop",
       vjust = 0
     ),
-    family = "ArialMT",
+    family = "sans",
     size = 5 / 3,
     show.legend = F,
     colour = "#751C2E"
@@ -195,7 +195,7 @@ p2 <- ggplot() +
     panel.background = element_blank(),
     plot.background = element_blank(),
     panel.grid.minor = element_blank(),
-    text = element_text(family = "ArialMT")
+    text = element_text(family = "sans")
   )
 
 p <- grid.arrange(p1, p2, ncol = 1)

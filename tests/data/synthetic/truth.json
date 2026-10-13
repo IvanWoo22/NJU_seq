@@ -1,0 +1,52 @@
+{
+  "kind": "synthetic; not biological human data",
+  "samples": {
+    "NC": {
+      "raw_pairs": 56,
+      "bac_removed": 2,
+      "host_removed": 3,
+      "accepted": 51,
+      "genome_end_counts": {
+        "219": 1,
+        "218": 10,
+        "349": 40
+      }
+    },
+    "TR1": {
+      "raw_pairs": 76,
+      "bac_removed": 2,
+      "host_removed": 3,
+      "accepted": 71,
+      "genome_end_counts": {
+        "219": 60,
+        "218": 1,
+        "349": 10
+      }
+    },
+    "TR2": {
+      "raw_pairs": 76,
+      "bac_removed": 2,
+      "host_removed": 3,
+      "accepted": 71,
+      "genome_end_counts": {
+        "219": 60,
+        "218": 1,
+        "349": 10
+      }
+    },
+    "TR3": {
+      "raw_pairs": 76,
+      "bac_removed": 2,
+      "host_removed": 3,
+      "accepted": 71,
+      "genome_end_counts": {
+        "219": 60,
+        "218": 1,
+        "349": 10
+      }
+    }
+  },
+  "candidate_positions": [
+    219
+  ]
+}

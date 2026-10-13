@@ -40,7 +40,9 @@ while (<STDIN>) {
     chomp;
     my ( $chr, undef, $type, $start, $end, undef, $dir, undef, $info ) =
       split /\t/;
+    next if !defined($info) || $type !~ /^(?:CDS|five_prime_UTR|three_prime_UTR)$/;
     my $name = GET_ID( $transid, $info );
+    next unless defined $name;
     if ( exists( $rep_trans{$name} ) ) {
         $chr{$name} = $chr unless exists( $chr{$name} );
         $dir{$name} = $dir unless exists( $dir{$name} );
@@ -74,7 +76,8 @@ while (<STDIN>) {
     }
 }
 
-foreach my $trans ( keys(%rep_trans) ) {
+foreach my $trans ( sort keys(%rep_trans) ) {
+    unless (exists $chr{$trans}) { warn "No CDS/UTR features for $trans; skipped\n"; next; }
     my ( $trans_five_utr_string, $trans_cds_string, $trans_three_utr_string );
     if ( exists( $utr5{$trans} ) ) {
         $trans_five_utr_string = $utr5{$trans}->AlignDB::IntSpan::as_string;

@@ -1,3 +1,38 @@
-.idea
-*/.DS_Store
+.idea/
 .DS_Store
+__pycache__/
+*.pyc
+
+# Generated analysis/build artifacts and local full-size inputs/references.
+/target/
+/output/
+/inputs/
+/references/*
+!/references/README.md
+*.partial
+*.partial/
+
+# Sequencing inputs and alignment/index outputs; only small test fixtures belong in Git.
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.sam
+*.sam.gz
+*.bam
+*.bai
+*.cram
+*.crai
+*.bt2
+*.bt2l
+!/tests/data/**/*.fastq
+!/tests/data/**/*.fastq.gz
+!/tests/data/**/*.fq
+!/tests/data/**/*.fq.gz
+
+# Detailed historical archives stay local; retain only the cleanup summary in Git.
+/docs/history/*
+!/docs/history/README.md
+!/docs/history/cleanup.json
+!/docs/history/original_data.sha256.json
+/log/2026-09-24_Ath-31_test_run.md

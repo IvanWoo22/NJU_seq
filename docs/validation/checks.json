@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-13",
+  "version": "0.5.0",
+  "rust_tests": 59,
+  "python_tests": 94,
+  "fmt": "passed",
+  "clippy": "passed",
+  "synthetic_reference_relocation_and_pipeline": "passed",
+  "human_4x1000_pipeline": "passed",
+  "extended_environment_human_counts_equal": true,
+  "umi_reads": 5000,
+  "umi_molecules": 1976,
+  "umi_tables_byte_equal": true,
+  "original_subset_fastqs_regenerated_byte_equal": 8,
+  "unchanged_original_data_files": 29,
+  "original_reference_links_valid": 8,
+  "old_runtime_paths": 0,
+  "documentation_local_links": "passed",
+  "human_counts": [
+    18,
+    13,
+    5,
+    2
+  ],
+  "full_dataset_rerun": false,
+  "details": "reproduction.json"
+}

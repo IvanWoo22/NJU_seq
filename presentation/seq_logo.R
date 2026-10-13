@@ -1,11 +1,13 @@
 #!/usr/bin/env Rscript
-require("ggplot2")
-require("ggseqlogo")
+library(ggplot2)
+library(ggseqlogo)
 
 args <- commandArgs(T)
 data <- read.table(args[1], header = F)
 
-p <- ggseqlogo(data, method = 'p') +
+seqs <- toupper(chartr("T", "U", data[[1]]))
+stopifnot(length(seqs) > 0, length(unique(nchar(seqs))) == 1, all(grepl("^[ACGUN]+$", seqs)))
+p <- ggseqlogo(seqs, method = 'p') +
   theme(
     axis.text.x = element_text(face = "plain",
                                colour = "#000000"),
@@ -13,7 +15,7 @@ p <- ggseqlogo(data, method = 'p') +
                                colour = "#000000"),
     axis.title = element_text(face = "plain",
                               colour = "#000000"),
-    text = element_text(family = "ArialMT")
+    text = element_text(family = "sans")
   )
 
 result_save_path <- args[2]

@@ -5,9 +5,10 @@ use autodie;
 
 foreach my $filename (@ARGV) {
     open( my $IN, "<", $filename );
-    my ($name) = split /\./, $filename;
+    my $name = $filename;
+    $name =~ s/\.bowtie2\.log$//;
     my ( $total_reads, $aligned_reads ) = ( 0, 0 );
-    my ( $time, $rate );
+    my ( $time, $rate ) = ("NA", "NA");
     while (<$IN>) {
         chomp;
         my $in = $_;
@@ -33,9 +34,8 @@ foreach my $filename (@ARGV) {
             $time = $1;
         }
     }
-    $rate = $aligned_reads / $total_reads * 100;
-    $rate = sprintf( "%.2f", $rate );
-    $rate .= "%";
+    if ($total_reads > 0) { $rate = sprintf("%.2f%%", $aligned_reads / $total_reads * 100); }
+    else { warn "No reads reported in $filename\n"; }
     print "$name\t$total_reads\t$aligned_reads\t$rate\t$time\n";
     close($IN);
 }

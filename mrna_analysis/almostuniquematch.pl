@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use autodie;
+@ARGV == 3 or die "Usage: almostuniquematch.pl R1.fq.gz input.tsv output.tsv\n";
 use PerlIO::gzip;
 
 open( my $in_fq, "<:gzip", $ARGV[0] );
@@ -21,7 +23,7 @@ my %list;
 while (<$in_sam1>) {
     chomp;
     my ( $id, undef, undef, undef, $seq ) = split /\t/;
-    if ( $fq{$id} eq $seq ) {
+    if ( exists($fq{$id}) && $fq{$id} eq $seq ) {
         if ( exists( $list{$id} ) ) {
             $list{$id}++;
         }

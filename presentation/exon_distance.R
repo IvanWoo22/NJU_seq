@@ -20,8 +20,8 @@ p <- ggplot() +
     size = 0.04669,
     show.legend = F
   ) +
-  scale_fill_manual(values = c("#4D7373", "#D67272")) +
-  scale_color_manual(values = c("#94ABAB", "#8B5457")) +
+  scale_fill_manual(values = c(boundary = "#777777", near3 = "#4D7373", near5 = "#D67272")) +
+  scale_color_manual(values = c(boundary = "#777777", near3 = "#94ABAB", near5 = "#8B5457")) +
   geom_line(aes(x = -porta$V1, y = porta$V2),
             size = 0.4669,
             colour = "#BFB057") +
@@ -65,7 +65,7 @@ p <- ggplot() +
     panel.background = element_blank(),
     plot.background = element_blank(),
     panel.grid.minor = element_blank(),
-    text = element_text(family = "ArialMT")
+    text = element_text(family = "sans")
   )
 
 result_save_path <- args[3]

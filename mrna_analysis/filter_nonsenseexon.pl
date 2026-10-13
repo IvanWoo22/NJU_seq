@@ -12,26 +12,23 @@ Getopt::Long::GetOptions(
     'exonid=s'       => \my $exon_id,
 ) or Getopt::Long::HelpMessage(1);
 
-my $trans;
-while (<STDIN>) {
-    chomp;
-    my $line = $_;
-    my ( undef, undef, $type, undef, undef, undef, undef, undef, $info ) =
-      split( /\t/, $line );
-    if ( $type eq "gene" ) {
-        print "$line\n";
-    }
-    elsif ( $type eq $mRNA ) {
-        print "$line\n";
-        $info =~ /$trans_id(\w+\.*[0-9]+);/;
-        $trans = $1;
-    }
-    elsif ( $type eq "exon" ) {
-        $info =~ /$exon_id(\w+\.*[0-9]+);/;
-        if ( ( defined($trans) ) and ( $trans eq $1 ) ) {
-            print "$line\n";
-        }
+# Collect selected transcript IDs first; GFF child order need not be adjacent.
+my @lines = <STDIN>;
+my %transcripts;
+for my $line (@lines) {
+    next if $line =~ /^#/;
+    my @f = split /\t/, $line;
+    next unless @f == 9 && $f[2] eq $mRNA;
+    $f[8] =~ /$trans_id([^;\s]+)/ or die "Missing transcript ID: $line";
+    $transcripts{$1} = 1;
+}
+for my $line (@lines) {
+    next if $line =~ /^#/;
+    my @f = split /\t/, $line;
+    next unless @f == 9;
+    if ($f[2] eq "gene" || $f[2] eq $mRNA) { print $line; }
+    elsif ($f[2] eq "exon") {
+        $f[8] =~ /$exon_id([^;\s]+)/ or die "Missing exon parent: $line";
+        print $line if grep { exists $transcripts{$_} } split /,/, $1;
     }
 }
-
-__END__

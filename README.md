@@ -1,474 +1,148 @@
-![](.README_images/NJU-seq_logo_beta1.png)
+![NJU-seq logo](.README_images/NJU-seq_logo_beta1.png)
 
 # NJU-seq
 
-----
+**N**m-site **J**udged **U**niversally **seq**uencing：比较 NC 对照与 TR 处理样本的 RNA read 末端计数，筛选 2′-*O*-甲基化（Nm）候选位点。
 
-**N**m-site **J**udged **U**niversally **seq**uencing. From clean data to positions with 2′-*O*-methylation.
+本项目的分析程序为 Rust 实现的 `nju-seq`，当前版本 0.5.0。下面以 **GRCh38 / HEK293T 人源 NJU6096–6099** 为例，介绍从安装、准备参考到比对、计数和评分的用法。原 [data](data) 和 [样本说明](sample_list.csv) 继续使用。
 
-![](.README_images/flow.png)
-
-## 1. Preparation
-
-#### Install packages and software.
-
-Software managed by [brew](https://brew.sh/).
-
-```shell script
-# generic tools
-brew install parallel pigz
-
-# bioinformatics tools
-brew install bowtie2 picard-tools samtools
+```mermaid
+flowchart LR
+  A[NC / 多个 TR 双端 FASTQ] --> B[去接头 / 可选 UMI 提取]
+  B --> C[排除细菌 rRNA]
+  C --> D[排除人 rRNA]
+  D --> E[mRNA 比对与筛选]
+  E --> F[read / 可选 UMI 计数]
+  F --> G[合并到基因组坐标]
+  G --> H[NC 与全部 TR 联合评分]
 ```
 
-Perl packages:
+## 1. 安装与构建
 
-```shell script
-cpanm YAML::Syck AlignDB::IntSpan PerlIO::gzip Algorithm::Combinatorics
+以下命令在仓库根目录运行。使用 Linux 和 Conda，按 [environment.yml](environment.yml) 安装：
+
+```bash
+conda env create -f environment.yml
+conda activate nju-seq
+cargo build --release --offline
+target/release/nju-seq --help
+python3 tests/smoke.py
 ```
 
-*To install PerlIO::gzip on [WSL2](https://devblogs.microsoft.com/commandline/announcing-wsl-2/), you might need to
-install [`zlib.h`](http://www.zlib.net/) manually.*
+环境文件包含 Rust 1.88、Python 3.11、Cutadapt 5.2、Bowtie2 2.5.5、samtools 1.24、gzip 和 Perl。Rust 代码不依赖第三方 crate，安装编译器后可离线构建。最后一条命令用自带的合成数据检查完整流程，临时参考和结果会自动清理。
 
-R packages needed:
-`ggplot2` `ggpubr` `gridExtra` `forcats` `dplyr` `VennDiagram` `splines` `RColorBrewer` `extrafont` `reshape2`
+| 工具 | 用途 |
+|---|---|
+| Rust / Cargo ≥1.88 | 编译 `nju-seq` |
+| Cutadapt、gzip | 去接头、读写压缩 FASTQ |
+| Bowtie2、bowtie2-build | 比对、建立索引；其启动脚本还需要 Python 和 Perl |
+| Python ≥3.11、samtools | 抽取小样本、准备参考；samtools 用于建立 FASTA 索引 |
+| UMI-tools | 仅 `umi=r1_3p8` 的文库需要，示例人源样本不需要 |
 
-Make new folders for analysis.
+其他安装方式、UMI 文库和旧 Perl/R 脚本所需的软件见 [依赖说明](docs/dependencies.md)。完整测试命令见 [测试说明](docs/validation.md)。
 
-```shell script
-# NJU_seq_analysis is the main directory of the following analysis. It can be renamed as you like.
-mkdir "NJU_seq_analysis"
-cd "NJU_seq_analysis" || exit
-git clone https://github.com/IvanWoo22/NJU_seq.git
-mkdir "data" "index" "temp" "output"
+## 2. 准备人源参考
+
+完整参考和索引不随 Git 分发。新环境需要从原工作区复制下列文件，并保留目录结构；也可以自行提供相互匹配的人源参考。文件格式见 [参考说明](references/README.md)。
+
+| 路径 | 内容 |
+|---|---|
+| `references/human_source/hsa_protein_coding.fa` | 84,068 条 protein_coding 转录本 |
+| `references/human_source/hsa_exon.info` | 与转录本匹配的五列 exon 表 |
+| `references/human_source/GRCh38.primary_assembly.genome.fa` | GRCh38 基因组 FASTA |
+| `references/bacterial/bac_rna.*.bt2` | 原细菌 rRNA 索引的六个文件 |
+| `data/hsa_rrna/{18s,28s,5-8s}.fa` | 仓库自带的三条人 rRNA 参考 |
+
+保留参考的确切发布号和细菌索引来源尚未确认。若要重现本文小样本结果，应使用这些原文件；改用其他版本可能改变比对与计数。
+
+从源文件重建一个新参考目录：
+
+```bash
+python3 scripts/prepare_human_reference.py \
+  --mrna references/human_source/hsa_protein_coding.fa \
+  --exons references/human_source/hsa_exon.info \
+  --genome references/human_source/GRCh38.primary_assembly.genome.fa \
+  --bac-index references/bacterial/bac_rna \
+  --out references/human_rebuilt --threads 4 \
+  --label 'retained GRCh38 reference; release unspecified' \
+  --copy-inputs
 ```
 
-## 2. Reference and index.
+脚本逐条核对转录本与基因组 exon 重建序列，生成 `mrna`、`rrna`、`bac` 索引及 `exon.info`。`--copy-inputs` 使生成的目录可独立复制到其他机器；省略它会用相对链接引用基因组和细菌索引，需要连同源目录一起移动。输出目录必须尚不存在。
 
-#### Download reference.
+已有的 `references/human/` 也可以直接使用，此时将下面命令中的 `references/human_rebuilt` 统一换为 `references/human`。
 
-Get reference sequence of species from [GENCODE](https://www.gencodegenes.org/)
-and [Ensembl](http://plants.ensembl.org/Arabidopsis_thaliana/Info/Index?db=core).
+## 3. 选择数据
 
-```shell script
-# GENCODE release 34 for human
-wget -N ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.annotation.gff3.gz -O data/hsa.gff3.gz
-wget -N ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.transcripts.fa.gz -O data/hsa_transcript.fa.gz
+[sample_list.csv](sample_list.csv) 中，NJU6096 是未经过 MgR 处理的 NC，NJU6097–6099 是经过 MgR 处理的三个 TR；均为 HEK293T rRNA-free RNA，无 UMI。
 
-# GENCODE release M25 for mouse
-wget -N ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.annotation.gff3.gz -O data/mmu.gff3.gz
-wget -N ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.transcripts.fa.gz -O data/mmu_transcript.fa.gz
+仓库已附 [人源小样本](tests/data/human/README.md)：每个样本取原 FASTQ 的前 **1,000 对 reads**，共八个 gzip 文件，约 0.6 MiB。这些文件可直接运行下一节命令，不需要完整 FASTQ。它们是连续截取的流程测试数据，不能用于估计整库候选数。
 
-# Ensembl release 46 for Arabidopsis thaliana
-wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz -O data/ath_dna.fa.gz
-wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/gff3/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gff3.gz -O data/ath.gff3.gz
-wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz -O data/ath_transcript.fa.gz
-wget -N ftp://ftp.ensemblgenomes.org/pub/plants/release-46/fasta/arabidopsis_thaliana/ncrna/Arabidopsis_thaliana.TAIR10.ncrna.fa.gz -O data/ath_ncrna.fa.gz
+使用完整数据时，在 `inputs/human/<sample>/R1.fq.gz`、`R2.fq.gz` 放入原 FASTQ 或建立链接，使用 [config/samples.human.tsv](config/samples.human.tsv)。也可直接修改清单中的路径。另取一份小样本：
 
-# miRBase latest release for miRNA
-wget -N ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz -O data/mirna.fa.gz
+```bash
+python3 scripts/subset_fastq.py --samples config/samples.human.tsv \
+  --pairs 1000 --skip 0 --out output/my_subset
 ```
 
-#### Build index
+样本清单为六列 TSV：`sample role r1 r2 alignment umi`，列之间使用实际制表符。需要一个 NC、至少一个 TR；样本名唯一，相对路径以清单所在目录为基准。原始 FASTQ 的 `alignment` 填 `-`，`umi` 填 `none` 或 `r1_3p8`。UMI 类型由建库设计决定。
 
-Create index by `bowtie2-build` for mapping.
+## 4. 比对、计数与评分
 
-```shell script
-# rRNA index
-# 5.8s,18s and 28s rRNA.
-cat NJU_seq/data/hsa_rrna/* >data/hsa_rrna.fa
-bowtie2-build data/hsa_rrna.fa index/hsa_rrna
-rm data/hsa_rrna.fa
+先查看将要执行的命令，再运行分析。`plan` 不创建输出；`run` 的输出目录必须尚不存在。
 
-# mRNA index
-# Only protein_coding transcripts will be extract to build index.
-pigz -dc data/hsa_transcript.fa.gz \
-	| perl NJU_seq/tool/fetch_fasta.pl \
-		--stdin -s 'protein_coding' \
-		>data/hsa_protein_coding.fa
-bowtie2-build data/hsa_protein_coding.fa index/hsa_protein_coding
-rm data/hsa_protein_coding.fa
+```bash
+mkdir -p output
+target/release/nju-seq plan \
+  --samples tests/data/human/samples.tsv --from raw \
+  --index references/human_rebuilt --exons references/human_rebuilt/exon.info \
+  --out output/human_test --threads 2 --jobs 1
+
+target/release/nju-seq run \
+  --samples tests/data/human/samples.tsv --from raw \
+  --index references/human_rebuilt --exons references/human_rebuilt/exon.info \
+  --out output/human_test --threads 2 --jobs 1
 ```
 
-## 3. Data Selection and quality overview.
+使用原参考和上述软件版本，小样本应完成全部步骤，生成 `output/human_test/SUCCESS`。四个样本通过 mRNA 筛选的 read 数依次为 **18、13、5、2**。小样本共同覆盖不足，评分摘要为 `normalization_unavailable`，候选为 0；这不表示完整数据没有 Nm 位点。各步计数见 [测试结果](docs/validation.md)。
 
-#### Select data for analysing.
+完整分析改用 `--samples config/samples.human.tsv` 并指定另一个新输出目录。`--threads` 是每个比对任务的线程数，`--jobs` 是同时分析的样本数。mRNA 使用 `-a` 保留全部定位，全量任务的内存、磁盘和耗时不能由这个小测试直接推算。
 
-Get the sequencing clean data from `NJU_data`.  
-*The representation of `ID` can be found in [`sample_list.csv`](/sample_list.csv).*
+| 主要输出 | 内容 |
+|---|---|
+| `<sample>/mrna.almostuniquematch.filter.tmp` | 每个通过筛选的 read 一条定位 |
+| `<sample>/reads/mrna.filter.tsv` | 九列基因组末端计数 |
+| `mrna.reads.scored.tsv`、`mrna.reads.score_summary.json` | 候选表及评分状态 |
+| `qc.html`、各样本 QC TSV | 可离线查看的质量报告与指标 |
+| `plan.json`、`logs/`、`stages.tsv` | 命令、日志、各步骤耗时及退出状态 |
+| `SUCCESS` / `FAILED` | 分析完成或失败的标记 |
 
-```shell script
-ID='NJU6148'
-PREFIX='HeLa_RF_NC'
+默认 `--storage compact` 在成功后删除中间 FASTQ；排查问题可用 `--storage all` 保留中间文件。显式指定 UMI 的样本还会生成 UMI 计数与 family 表；只有全部样本都有 UMI 时才联合进行 UMI 评分。
 
-mkdir -p "data/${PREFIX}" "temp/${PREFIX}" "output/${PREFIX}"
-# Link the NJU-seq data, or you can directly download to the folder.
-ln -sf /home/wyf/NJU_data/"${ID}"/R1.fq.gz data/"${PREFIX}"/R1.fq.gz
-ln -sf /home/wyf/NJU_data/"${ID}"/R2.fq.gz data/"${PREFIX}"/R2.fq.gz
-```
+### 输入与参数
 
-*Better to process the other samples in the same group according to the above code box. Here NJU6148-6151 are in one
-group as `HeLa_RF_NC` `HeLa_RF_1` `HeLa_RF_2` `HeLa_RF_3`.*
+`--index DIR` 查找 `bac`、`rrna`、`mrna` 三个索引前缀。使用其他名称时分别指定 `--bac-index`、`--rrna-index`、`--mrna-index`。
 
-#### Quality control for clean data.
+默认接头为 `AGATCGGAAGAGCACA / GATCGTCGGACTGTAG`，可用 `--adapter-r1`、`--adapter-r2` 修改。未匹配接头的 pairs 会被丢弃；无 UMI 的最短读长为 `10:10`。`r1_3p8` 文库先裁去 R2 起始 8 nt，以 `18:10` 为最短读长裁剪，再提取 R1 末端 8 nt 的 UMI。已裁剪的数据应选 `prepared`。
 
-Input a `FastQ` file or a `GZ` file of `FastQ`, and then get some quality information.
+| `--from` | 所需输入 | 接着执行 |
+|---|---|---|
+| `raw` | 原始双端 FASTQ | 去接头、可选 UMI 提取及后续步骤 |
+| `prepared` | 已去接头并完成可选 UMI 提取的 FASTQ | 排除 rRNA 及后续步骤 |
+| `sam` | 去 rRNA 后的 FASTQ、mRNA SAM | SAM 筛选及后续步骤 |
+| `filtered` | 对应 FASTQ、五列比对表 | 合并定位、核对 R1 序列及后续步骤 |
+| `unique` | 原 R1、已筛选且每个 read 一行的五列比对表；R2 可填 `-` | 计数、合并和评分 |
 
-```shell script
-PREFIX='HeLa_RF_NC'
+rRNA 使用 `-k 5`，mRNA 使用 `-a`，均保留 `--reorder --seed 0`。处理 SAM 时，同一 read 的全部比对必须连续。`--rrna-filter both|bac|host|none` 选择排除对象，默认 `both`。
 
-# For pair-end sequence data, we firstly turn them to single-end file.
-perl NJU_seq/quality_control/pe_consistency.pl \
-	data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R2.fq.gz \
-	temp/"${PREFIX}".fq.gz
-# Total:  12627217
-# Consistency:  12450207
-# Proportion: 98.60%
+分批 mRNA 比对、断点继续和 Linux 资源限制的用法见 [辅助脚本](docs/migration.md)。`run` 本身不支持整条流程断点恢复。
 
-# PREFIX do as HeLa_RF_NC HeLa_RF_1 HeLa_RF_2 HeLa_RF_3.
+## 5. rRNA 与后续分析
 
-# Quality control
-time perl NJU_seq/quality_control/fastq_qc.pl \
-	temp/HeLa_RF_NC.fq.gz \
-	temp/HeLa_RF_1.fq.gz \
-	temp/HeLa_RF_2.fq.gz \
-	temp/HeLa_RF_3.fq.gz \
-	output \
-	HeLa_RF
-# real  3m28.250s
-# user  3m26.499s
-# sys   0m0.495s
+`run` 输出 mRNA 结果。需要 rRNA 位点结果时，按 [rRNA 计数与评分](docs/rrna.md) 单独运行，继续使用原 `data/hsa_rrna` 参考。
 
-# $ARGV[-2] should be the directory of output files.
-# $ARGV[-1] should be the prefix of the output files.
-```
+`nju-seq score --mode mrna|rrna` 将一个 NC 与全部 TR 联合评分。输出中的 `Candidate`、`EvaluationStatus` 和坐标类型用于解释结果；公式和旧表兼容方式见 [评分说明](docs/scoring.md)。筛选阈值不等同于 FDR 或实验确认。
 
-*The quality report created in `./output/HeLa_RF.pdf`.*
+`presentation/` 等目录保留 motif、区域、codon、剪接分析及绘图脚本。使用前需核对其输入表格式与注释版本，所需 R/Perl 包见 [依赖说明](docs/dependencies.md)。旧 HPCC 和 Nextflow 脚本仅供查阅，替换关系见 [迁移说明](docs/migration.md)。
 
-## 4. Alignment, Count and Score
-
-#### rRNA workflow
-
-Use `bowtie2` to align the data file.
-
-```shell script
-THREAD=16
-PREFIX='HeLa_RF_NC'
-
-time bowtie2 -p "${THREAD}" -a -t \
-	--end-to-end -D 20 -R 3 \
-	-N 0 -L 10 -i S,1,0.50 --np 0 \
-	--xeq -x index/hsa_rrna \
-	-1 data/"${PREFIX}"/R1.fq.gz -2 data/"${PREFIX}"/R2.fq.gz \
-	-S output/"${PREFIX}"/rrna.raw.sam \
-	2>&1 \
-	| tee output/"${PREFIX}"/rrna.bowtie2.log
-# real  1m53.474s
-# user  25m41.846s
-# sys   4m15.462s
-
-perl NJU_seq/tool/stat_alignment.pl \
-	output/"${PREFIX}"/rrna.bowtie2.log \
-	| Rscript NJU_seq/tool/draw_table.R \
-		output/"${PREFIX}"/rrna.bowtie2.pdf
-
-time pigz -p "${THREAD}" output/"${PREFIX}"/rrna.raw.sam
-# real  0m57.962s
-# user  3m54.868s
-# sys   0m7.795s
-```
-
-Filter and count alignment result.
-
-```shell script
-THREAD=16
-PREFIX='HeLa_RF_NC'
-
-time pigz -dcf output/"${PREFIX}"/rrna.raw.sam.gz \
-	| parallel --pipe --block 10M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
-    # shellcheck disable=SC2016
-    awk '\''$6!="*"&&$7=="="{print $1 "\t" $3 "\t" $4 "\t" $6 "\t" $10}'\'' |
-    perl NJU_seq/rrna_analysis/matchquality_judge.pl |
-    perl NJU_seq/rrna_analysis/multimatch_judge.pl
-  ' \
-		>temp/"${PREFIX}"/rrna.out.tmp
-# real  1m59.185s
-# user  20m44.643s
-# sys   1m24.060s
-
-time parallel -j 3 "
-  perl NJU_seq/rrna_analysis/readend_count.pl \\
-    NJU_seq/data/hsa_rrna/{}.fa temp/${PREFIX}/rrna.out.tmp {} \\
-    >output/${PREFIX}/rrna_{}.tsv
-  " ::: 28s 18s 5-8s
-# real  0m27.994s
-# user  0m59.369s
-# sys   0m0.809s
-```
-
-Score all sites one by one.
-
-```shell script
-time parallel -j 3 "
-  perl NJU_seq/rrna_analysis/score.pl \\
-    output/HeLa_RF_NC/rrna_{}.tsv \\
-    output/HeLa_RF_1/rrna_{}.tsv \\
-    output/HeLa_RF_2/rrna_{}.tsv \\
-    output/HeLa_RF_3/rrna_{}.tsv \\
-      >output/HeLa_RF_rrna_{}_scored.tsv
-  " ::: 28s 18s 5-8s
-# real  0m0.459s
-# user  0m0.661s
-# sys   0m0.048s
-```
-
-#### Prepare for mRNA.
-
-Extract reads can't be mapped to rRNA.
-
-```shell script
-PREFIX='HeLa_RF_NC'
-
-time bash NJU_seq/tool/extract_fastq.sh \
-	temp/"${PREFIX}"/rrna.out.tmp \
-	data/"${PREFIX}"/R1.fq.gz data/"${PREFIX}"/R1.mrna.fq.gz \
-	data/"${PREFIX}"/R2.fq.gz data/"${PREFIX}"/R2.mrna.fq.gz
-# real  1m10.382s
-# user  1m45.610s
-# sys   0m3.268s
-```
-
-#### mRNA workflow
-
-Alignment with protein_coding transcript.
-
-```shell script
-THREAD=16
-PREFIX='HeLa_RF_NC'
-
-time bowtie2 -p "${THREAD}" -a -t \
-	--end-to-end -D 20 -R 3 \
-	-N 0 -L 10 --score-min C,0,0 \
-	--xeq -x index/hsa_protein_coding \
-	-1 data/"${PREFIX}"/R1.mrna.fq.gz -2 data/"${PREFIX}"/R2.mrna.fq.gz \
-	-S output/"${PREFIX}"/mrna.raw.sam \
-	2>&1 \
-	| tee output/"${PREFIX}"/mrna.bowtie2.log
-# real  6m43.243s
-# user  119m34.749s
-# sys   8m1.470s
-
-time pigz -p "${THREAD}" output/"${PREFIX}"/mrna.raw.sam
-# real  0m22.663s
-# user  5m38.943s
-# sys   0m9.316s
-
-```
-
-Filter，re-locate and count alignment result.
-
-```shell script
-THREAD=16
-PREFIX='HeLa_RF_NC'
-
-time gzip -dcf output/"${PREFIX}"/mrna.raw.sam.gz \
-	| parallel --pipe --block 100M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
-    awk '\''$6!="*"&&$7=="="{print $1 "\t" $3 "\t" $4 "\t" $6 "\t" $10}'\'' |
-    perl NJU_seq/mrna_analysis/multimatch_judge.pl
-  ' | perl NJU_seq/mrna_analysis/multimatch_judge.pl \
-	>temp/"${PREFIX}"/mrna.out.tmp
-# real  2m31.558s
-# user  18m38.617s
-# sys   2m8.716s
-
-gzip -dcf data/hsa.gff3.gz \
-	| awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' \
-		>data/hsa_exon.info
-
-parallel --pipe --block 100M --no-run-if-empty --linebuffer --keep-order -j "${THREAD}" '
-    perl NJU_seq/mrna_analysis/dedup.pl --refstr "Parent=transcript:" --transid "ENST" --info data/hsa_exon.info
-  ' <temp/"${PREFIX}"/mrna.out.tmp | perl NJU_seq/mrna_analysis/dedup.pl \
-	--refstr "Parent=transcript:" \
-	--transid "ENST" \
-	--info data/hsa_exon.info \
-	>temp/"${PREFIX}"/mrna.dedup.tmp
-# real  14m32.692s
-# user  14m22.635s
-# sys   0m10.268s
-
-time bash NJU_seq/mrna_analysis/almostunique.sh \
-	temp/"${PREFIX}"/mrna.dedup.tmp \
-	data/"${PREFIX}"/R1.mrna.fq.gz \
-	temp/"${PREFIX}" \
-	temp/"${PREFIX}"/mrna.almostunique.tmp
-# real  2m52.775s
-# user  2m41.319s
-# sys   0m4.881s
-
-time perl NJU_seq/mrna_analysis/count.pl \
-	temp/"${PREFIX}"/mrna.almostunique.tmp \
-	>temp/"${PREFIX}"/mrna.count.tmp
-# real  0m3.072s
-# user  0m3.036s
-# sys   0m0.036s
-
-time gzip -dcf data/hsa.gff3.gz \
-	| awk '$3=="exon" {print $1 "\t" $4 "\t" $5 "\t" $7 "\t" $9}' \
-	| perl NJU_seq/mrna_analysis/merge.pl \
-		--refstr "Parent=transcript:" \
-		--geneid "ENSG" \
-		--transid "ENST" \
-		-i temp/"${PREFIX}"/mrna.count.tmp \
-		-o output/"${PREFIX}"/mrna.tsv
-# real  0m6.802s
-# user  0m9.653s
-# sys   0m0.227s
-```
-
-Calculate valid sequencing depth (average coverage).
-
-```shell script
-parallel --keep-order -j 4 '
-  echo {} >>output/{}/mrna.cov
-  bash NJU_seq/presentation/seq_depth.sh temp/{}/mrna.almostunique.tmp output/{}/mrna.tsv >>output/{}/mrna.cov
-  ' ::: HeLa_RF_NC HeLa_RF_1 HeLa_RF_2 HeLa_RF_3
-# All stop times: 319414
-# All positions:  18550
-# Coverage:       17.21
-
-# All stop times: 338093
-# All positions:  20686
-# Coverage:       16.34
-
-# All stop times: 319682
-# All positions:  37777
-# Coverage:       8.46
-
-# All stop times: 356951
-# All positions:  19098
-# Coverage:       18.69
-
-```
-
-Score each covered site.
-
-```shell script
-perl NJU_seq/mrna_analysis/score.pl \
-	output/HeLa_RF_NC/mrna.tsv \
-	output/HeLa_RF_1/mrna.tsv \
-	output/HeLa_RF_2/mrna.tsv \
-	output/HeLa_RF_3/mrna.tsv \
-	>output/HeLa_RF_mrna_Nm_score.tsv
-
-#pigz -dc data/hsa.gff3.gz |
-#  awk '$3=="gene"' |
-#  perl NJU_seq/tool/add_gene_name.pl \
-#    --id "gene_id=" \
-#    --name "gene_name=" \
-#    --col "8" \
-#    --file "output/${PREFIX}_mrna_scored_500p.tsv" \
-#    >output/${PREFIX}_mrna_scored_500p_name.tsv
-```
-
-## 5. Statistics and Presentation.
-
-See the signature of Nm sites.
-
-```shell script
-perl NJU_seq/presentation/signature_count.pl \
-	output/HeLa_RF_mrna_Nm_score.tsv \
-	output/HeLa_RF_mrna_signature.pdf
-```
-
-GO(Gene Ontology) analysis for the top common 1000 Nm sites.
-
-After submit and analysis using [DAVID](https://david.ncifcrf.gov/tools.jsp), commands below could turn the chart into
-barplot.
-
-```shell script
-Rscript NJU_seq/presentation/gene_ontology.R \
-	output/HeLa_RF_GO.tsv \
-	output/HeLa_RF_GO.pdf
-```
-
-Divide annotations into two categories.
-
-```shell script
-pigz -dc data/hsa.gff3.gz \
-	| awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' \
-	| perl NJU_seq/mrna_analysis/representative_transcript.pl \
-		--geneid "gene_id=" \
-		--transid "transcript_id=" \
-		>data/hsa_represent_transcript.txt
-
-pigz -dc data/hsa.gff3.gz \
-	| awk '(($3=="transcript")&&($9~/transcript_type=protein_coding/))' \
-	| perl NJU_seq/mrna_analysis/main_transcript_1.pl \
-		--geneid "gene_id=" \
-		--transid "transcript_id=" \
-		>data/hsa_main_transcript.txt
-
-pigz -dc data/hsa.gff3.gz \
-	| awk '(($3=="five_prime_UTR") || ($3=="three_prime_UTR") || ($3=="CDS"))' \
-	| perl NJU_seq/mrna_analysis/main_transcript_2.pl \
-		--transid "Parent=" \
-		--rep_trans "data/hsa_main_transcript.txt" \
-		>data/hsa_transcript_region.tsv
-
-```
-
-Analyse mRNA Nm sites.
-
-```shell script
-PREFIX='HeLa_RF'
-
-pigz -dc data/hsa.gff3.gz \
-	| awk '$3=="gene"' \
-	| perl NJU_seq/tool/add_gene_name.pl \
-		--id "gene_id=" --name "gene_name=" \
-		--col "8" --file "output/${PREFIX}_mrna_Nm_tmp1.tsv" \
-		>output/${PREFIX}_mrna_Nm_tmp1.tsv
-
-pigz -dc data/hsa_ens.gff3.gz \
-	| awk '$3=="gene"' | perl NJU_seq/tool/add_gene_name.pl \
-	--id "gene_id=" --name "description=" \
-	--col "9" --file "output/${PREFIX}_mrna_Nm_tmp2.tsv" \
-	>output/${PREFIX}_mrna_Nm_tmp2.tsv
-
-perl NJU_seq/mrna_analysis/motif_nm.pl \
-	data/GRCh38.primary_assembly.genome.fa \
-	output/${PREFIX}_mrna_Nm_tmp2.tsv \
-	10 10 >output/${PREFIX}_mrna_Nm_tmp3.tsv
-
-perl NJU_seq/mrna_analysis/motif_nm.pl \
-	data/GRCh38.primary_assembly.genome.fa \
-	output/${PREFIX}_mrna_Nm_tmp3.tsv \
-	20 20 >output/${PREFIX}_mrna_Nm_tmp4.tsv
-
-perl NJU_seq/mrna_analysis/motif_nm.pl \
-	data/GRCh38.primary_assembly.genome.fa \
-	output/${PREFIX}_mrna_Nm_tmp4.tsv \
-	50 50 >output/${PREFIX}_mrna_Nm_tmp5.tsv
-
-perl NJU_seq/mrna_analysis/main_transcript_3.pl \
-	data/hsa_transcript_region.tsv \
-	output/${PREFIX}_mrna_Nm_tmp5.tsv \
-	output/${PREFIX}_mrna_Nm_list.tsv \
-	>output/${PREFIX}_mrna_Nm_distribution.tsv
-
-rm output/${PREFIX}_mrna_Nm_tmp{1..5}.tsv
-```
-
-Here, we get `HeLa_RF_mrna_Nm_list.tsv` as the Nm list.
-
-## License
-
-Copyright ©IvanWoo. All Rights Reserved.
-
-Licensed GPLv3 for open source use or contact wuyifanwd@hotmail.com for commercial use.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+原始数据和参考继续保留；历史大体积结果的清理范围见 [历史记录](docs/history/README.md)。许可见 [LICENSE](LICENSE)。

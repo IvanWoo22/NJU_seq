@@ -8,14 +8,11 @@ cse_number <- readLines(input, n = 1)
 ase_total <- readLines(input, n = 1)
 cse_total <- readLines(input, n = 1)
 
-ase_cse <-
-  matrix(c(
-    as.numeric(cse_total),
-    as.numeric(ase_total),
-    as.numeric(cse_number),
-    as.numeric(ase_number)
-  ), nrow = 2)
-test <- chisq.test(ase_cse)
+values <- as.numeric(c(ase_number, cse_number, ase_total, cse_total))
+stopifnot(length(values) == 4, all(is.finite(values)), all(values >= 0))
+# Upstream supplies weighted site counts and genomic lengths, not the four
+# integer cells of a contingency table. Report descriptive values only.
+test <- list(p.value = NA_real_)
 
 args <- commandArgs(T)
 df <- data.frame(group = c("ASE", "CSE"),
@@ -25,21 +22,21 @@ labs <-
          "\n",
          df$value,
          "(",
-         paste(round(df$value / sum(df$value), 4) * 100, "%", sep = ''),
+         paste(round(df$value / max(1, sum(df$value)), 4) * 100, "%", sep = ''),
          ")")
-p <-
+p <- if (sum(df$value) == 0) { ggplot() + theme_void() + annotate("text", x=0, y=0, label="No sites") } else
   ggpie(
     df,
     "value",
     label = labs,
     lab.font = c("bold", "#000000"),
     fill = "group",
-    font.family = "ArialMT",
+    font.family = "sans",
     palette = c("#7FA8EA", "#CC6666"),
     ggtheme = theme_transparent(base_size = 5),
     color = "#000000",
     size = 0.11672,
-    legend = "NA"
+    legend = "none"
   )
 
 result_save_path <- args[1]
@@ -65,12 +62,12 @@ d <- prettyNum(as.numeric(ase_number),
                big.mark = ",",
                scientific = F)
 ase_densi <- format(
-  as.numeric(ase_number) / as.numeric(ase_total),
+  if (as.numeric(ase_total) > 0) as.numeric(ase_number) / as.numeric(ase_total) else NA_real_,
   digits = 2,
   scientific = T
 )
 cse_densi <- format(
-  as.numeric(cse_number) / as.numeric(cse_total),
+  if (as.numeric(cse_total) > 0) as.numeric(cse_number) / as.numeric(cse_total) else NA_real_,
   digits = 2,
   scientific = T
 )
@@ -135,3 +132,4 @@ lines(x = c(6.8 * 5 / 127, 6.8 * 5 / 127),
       y = c(19.5 * 5 / 127, 10.5 * 5 / 127))
 lines(x = c(2 * 5 / 127, 23 * 5 / 127),
       y = c(16.657 * 5 / 127, 16.657 * 5 / 127))
+dev.off()

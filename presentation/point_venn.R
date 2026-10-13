@@ -1,18 +1,16 @@
 #!/usr/bin/env Rscript
 library(VennDiagram)
-library(extrafont)
 
 args <- commandArgs(T)
+stopifnot(length(args) == 7)
+read_set <- function(path) { if(file.info(path)$size == 0) character() else unique(read.table(path, header=FALSE, sep="\t")[[1]]) }
 
-data1 <- read.table(args[2], header = F, sep = "\t")
-data2 <- read.table(args[4], header = F, sep = "\t")
-data3 <- read.table(args[6], header = F, sep = "\t")
-
-datalist <- list(data1$V1, data2$V1, data3$V1)
+datalist <- lapply(args[c(2,4,6)], read_set)
 names(datalist) <- c(args[1], args[3], args[5])
 
 venn.plot <- venn.diagram(
   x = datalist,
+  disable.logging = TRUE,
   filename = args[7],
   imagetype = "png",
   lwd = 3,

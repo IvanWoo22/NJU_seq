@@ -259,7 +259,7 @@ step7_gene_expression() {
     for tissue in Ath_leaf Ath_root Ath_stem Ath_flower; do
         log_info "Analyzing gene expression for ${tissue}..."
 
-        perl "${NJU_SEQ_DIR}"/mrna_analysis/add_gene_name.pl \
+        perl "${NJU_SEQ_DIR}"/tool/add_gene_name.pl \
             --id "gene_id=" \
             --name "gene_name=" \
             --file "${INDEX_DIR}"/ath/ath_gene_info.tsv \

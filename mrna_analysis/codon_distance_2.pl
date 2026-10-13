@@ -9,7 +9,7 @@ use AlignDB::IntSpan;
 sub GET_ID {
     my ( $FEATURE, $INFO ) = @_;
     my $ID;
-    if ( $INFO =~ m/$FEATURE(\w+\.?[0-9]*)/ ) {
+    if ( $INFO =~ m/(?:transcript_id=|(?:Parent|ID)=transcript:)([^;\s,]+)/ ) {
         $ID = $1;
     }
     else {
@@ -39,9 +39,10 @@ while (<STDIN>) {
     chomp;
     my ( undef, undef, $type, $start, $end, undef, undef, undef, $info ) =
       split /\t/;
+    next unless defined($type) && $type =~ /^(?:transcript|mRNA|exon)$/;
     my $trans_id = GET_ID( "transcript_id=", $info );
-    if ( exists( $trans{$trans_id} ) ) {
-        if ( $type eq "transcript" ) {
+    if ( defined($trans_id) && exists( $trans{$trans_id} ) ) {
+        if ( $type eq "transcript" || $type eq "mRNA" ) {
             $mrna{$trans_id} = AlignDB::IntSpan->new;
             $mrna{$trans_id}->AlignDB::IntSpan::add_range( $start, $end );
         }
@@ -58,6 +59,7 @@ while (<STDIN>) {
 }
 
 foreach my $trans ( keys(%trans) ) {
+    exists($mrna{$trans}) && exists($exon{$trans}) or die "Missing transcript/exon model for $trans\n";
     $intron{$trans} = $mrna{$trans}->AlignDB::IntSpan::diff( $exon{$trans} );
     print
 "$trans\t$gene{$trans}\t$no{$trans}\t$mrna{$trans}\t$exon{$trans}\t$intron{$trans}\t$codon{$trans}\n";

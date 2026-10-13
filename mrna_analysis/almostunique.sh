@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
 
-set -e
+# Legacy policy: singly aligned reads bypass R1 sequence verification.
+set -euo pipefail
+[[ $# == 4 ]] || { echo 'Usage: almostunique.sh alignments.tsv R1.fq.gz scratch_dir output.tsv' >&2; exit 2; }
+TEMP_DIR="$(mktemp -d "$3/almostunique.XXXXXX")"
+trap 'rm -rf -- "$TEMP_DIR"' EXIT
 
 filepath=$(
 	cd "$(dirname "${0}")" || exit
 	pwd -P
 )
-perl "${filepath}"/uniquematch.pl "$1" \
-	"$3"/unique.tmp \
-	"$3"/multi.tmp
-perl "${filepath}"/almostuniquematch.pl "$2" \
-	"$3"/multi.tmp \
-	"$3"/almost.tmp
-cat "$3"/almost.tmp \
-	"$3"/unique.tmp \
+"${NJU_PERL:-perl}" "${filepath}"/uniquematch.pl "$1" \
+	"$TEMP_DIR"/unique.tmp \
+	"$TEMP_DIR"/multi.tmp
+"${NJU_PERL:-perl}" "${filepath}"/almostuniquematch.pl "$2" \
+	"$TEMP_DIR"/multi.tmp \
+	"$TEMP_DIR"/almost.tmp
+cat "$TEMP_DIR"/almost.tmp \
+	"$TEMP_DIR"/unique.tmp \
 	>"$4"
-rm "$3"/multi.tmp
-rm "$3"/almost.tmp
-rm "$3"/unique.tmp
+rm "$TEMP_DIR"/multi.tmp
+rm "$TEMP_DIR"/almost.tmp
+rm "$TEMP_DIR"/unique.tmp

@@ -4,18 +4,20 @@ use warnings;
 use autodie;
 
 use AlignDB::IntSpan;
+use Getopt::Long;
+my $legacy_shift = 0;
+GetOptions("legacy-shift" => \$legacy_shift) or die "Invalid options\n";
 
 my %point_set;
 while (<STDIN>) {
     chomp;
     my ( $chr, $point, $dir ) = split /\t/;
     my $chr_dir = $chr . "\t" . $dir;
-    if ( $dir eq "+" ) {
-        $point--;
-    }
-    else {
-        $point++;
-    }
+    next if /^#/ || /^(?:Chromosome|Position)\t/;
+    $point =~ /^[1-9][0-9]*$/ && $dir =~ /^[+-]$/ or die "Invalid site row at line $.\n";
+    $chr =~ s/^chr//;
+    $chr_dir = "$chr\t$dir";
+    $point += $dir eq "+" ? -1 : 1 if $legacy_shift;
     if ( exists( $point_set{$chr_dir} ) ) {
         $point_set{$chr_dir}->AlignDB::IntSpan::add($point);
     }

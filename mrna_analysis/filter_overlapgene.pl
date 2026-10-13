@@ -23,18 +23,18 @@ while (<>) {
     $i++;
 }
 
-$mark[0] = 0;
-foreach ( 1 .. $#gene ) {
-    $mark[$_] = 0;
-    if (
-            ( $gene_position[ $_ - 1 ] eq $gene_position[$_] )
-        and
-        ( $gene_range[ $_ - 1 ]->AlignDB::IntSpan::overlap( $gene_range[$_] )
-            > 0 )
-      )
-    {
-        $mark[ $_ - 1 ] = 1;
-        $mark[$_] = 1;
+# Compare all same-strand intervals, including nested and nonadjacent genes.
+my %groups;
+push @{$groups{$gene_position[$_]}}, $_ for 0 .. $#gene;
+@mark = (0) x scalar(@gene);
+for my $group (values %groups) {
+    my ($max_end, $max_id);
+    for my $id (sort { $gene_range[$a]->min <=> $gene_range[$b]->min } @$group) {
+        my ($start, $end) = ($gene_range[$id]->min, $gene_range[$id]->max);
+        if (defined($max_end) && $start <= $max_end) {
+            $mark[$id] = $mark[$max_id] = 1;
+        }
+        if (!defined($max_end) || $end > $max_end) { ($max_end, $max_id) = ($end, $id); }
     }
 }
 

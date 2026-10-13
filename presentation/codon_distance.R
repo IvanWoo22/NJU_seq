@@ -2,7 +2,6 @@
 library(ggplot2)
 library(splines)
 library(gridExtra)
-library(tidyquant)
 
 args <- commandArgs(T)
 
@@ -11,7 +10,7 @@ stop <- read.table(args[2], header = F)
 ymax <- max(start$V2, stop$V2)
 
 p1 <- ggplot() +
-  geom_ma(aes(x = start$V1, y = start$V2), ma_fun = SMA, n = 3) +
+  geom_line(aes(x = start$V1, y = as.numeric(stats::filter(start$V2, rep(1/3, 3), sides=1))), na.rm=TRUE) +
   xlab("Distance to Start Codon (nt)") +
   ylab("Nmuber of Nm Sites") +
   geom_line(
@@ -32,7 +31,7 @@ p1 <- ggplot() +
       label = "Start",
       vjust = 0
     ),
-    family = "ArialMT",
+    family = "sans",
     size = 5 / 3,
     show.legend = F,
     colour = "#751C2E"
@@ -76,11 +75,11 @@ p1 <- ggplot() +
     panel.background = element_blank(),
     plot.background = element_blank(),
     panel.grid.minor = element_blank(),
-    text = element_text(family = "ArialMT")
+    text = element_text(family = "sans")
   )
 
 p2 <- ggplot() +
-  geom_ma(aes(x = stop$V1, y = stop$V2), ma_fun = SMA, n = 3) +
+  geom_line(aes(x = stop$V1, y = as.numeric(stats::filter(stop$V2, rep(1/3, 3), sides=1))), na.rm=TRUE) +
   xlab("Distance to Stop Codon (nt)") +
   ylab("Nmuber of Nm Sites") +
   geom_line(
@@ -101,7 +100,7 @@ p2 <- ggplot() +
       label = "Stop",
       vjust = 0
     ),
-    family = "ArialMT",
+    family = "sans",
     size = 5 / 3,
     show.legend = F,
     colour = "#751C2E"
@@ -145,7 +144,7 @@ p2 <- ggplot() +
     panel.background = element_blank(),
     plot.background = element_blank(),
     panel.grid.minor = element_blank(),
-    text = element_text(family = "ArialMT")
+    text = element_text(family = "sans")
   )
 
 p <- grid.arrange(p1, p2, nrow = 1, widths = c(0.5, 0.5))

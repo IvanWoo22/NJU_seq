@@ -38,28 +38,35 @@ if ( ( $out_fq && $stdout ) || ( !$out_fq && !$stdout ) ) {
     die "ERROR: You must specify exactly one of --out|-o or --stdout\n";
 }
 
+$transid //= "";
+defined($refstr) && defined($geneid) && defined($in_fq) or die "Require --refstr, --geneid and --in\n";
 my %trans_range;
 my %trans_chr;
 my %trans_dir;
 while (<>) {
     chomp;
     my ( $chr, $start, $end, $dir, $info ) = split /\t/;
-    $chr  =~ s/chr//;
-    $info =~ /$refstr($transid\w+\.[0-9]+)/;
-    if ( exists( $trans_chr{$1} ) ) {
-        $trans_range{$1}->AlignDB::IntSpan::add_range( $start, $end );
+    $chr  =~ s/^chr//;
+    # An unmatched annotation must not reuse the previous regex capture.
+    next unless $info =~ /$refstr($transid\w+\.[0-9]+)/;
+    my $transcript_id = $1;
+    if ( exists( $trans_chr{$transcript_id} ) ) {
+        $trans_range{$transcript_id}->AlignDB::IntSpan::add_range( $start, $end );
     }
     else {
-        $trans_chr{$1}   = $chr;
-        $trans_dir{$1}   = $dir;
-        $trans_range{$1} = AlignDB::IntSpan->new();
-        $trans_range{$1}->AlignDB::IntSpan::add_range( $start, $end );
+        $trans_chr{$transcript_id}   = $chr;
+        $trans_dir{$transcript_id}   = $dir;
+        $trans_range{$transcript_id} = AlignDB::IntSpan->new();
+        $trans_range{$transcript_id}->AlignDB::IntSpan::add_range( $start, $end );
     }
 }
 
 sub COORDINATE_POS {
     my $INDEX = $_[0];
     my $SITE  = $_[1];
+    exists $trans_range{$INDEX} or die "Transcript absent from annotation: $INDEX\n";
+    $SITE =~ /^[1-9][0-9]*$/ && $SITE <= $trans_range{$INDEX}->size
+        or die "Coordinate outside transcript $INDEX: $SITE\n";
     my $ISLAND;
     if ( $trans_dir{$INDEX} eq "+" ) {
         $ISLAND = $trans_range{$INDEX}->AlignDB::IntSpan::at($SITE);
@@ -77,14 +84,14 @@ my ( %gene_id, %base, %t5, %t3 );
 while (<$IN_FH>) {
     chomp;
     my ( $info, $site, $base1, $base2, $base3, $t5, $t3 ) = split /\t/;
-    $info =~ /($transid\w+\.[0-9]+)/;
+    $info =~ /($transid\w+\.[0-9]+)/ or die "Invalid transcript: $info\n";
     my $trans_id = $1;
-    $info =~ /($geneid\w+)/;
+    $info =~ /($geneid\w+)/ or die "Invalid gene: $info\n";
     my $gene_id  = $1;
     my $abs_site = COORDINATE_POS( $trans_id, $site );
 
     if ( exists( $gene_id{$abs_site} ) ) {
-        unless ( $gene_id{$abs_site} =~ /$gene_id/ ) {
+        unless ( grep { $_ eq $gene_id } split /\//, $gene_id{$abs_site} ) {
             $gene_id{$abs_site} .= "/" . $gene_id;
         }
         $t5{$abs_site} += $t5;

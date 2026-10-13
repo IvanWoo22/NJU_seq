@@ -9,6 +9,8 @@ data <- read.table(args[1],
                    header = F,
                    sep = "\t",
                    quote = "")
+stopifnot(nrow(data) == 64, ncol(data) == 2, all(is.finite(data$V2)), all(data$V2 >= 0))
+total <- sum(data$V2)
 data$V3 <-
   c(
     rep(x = "A", times = 16),
@@ -19,19 +21,19 @@ data$V3 <-
 data$V4 <- c(1:64)
 color_scale <- c("#109648", "#255c99", "#f7b32b", "#d62839")
 sumA <- sum(data[data$V3 == "A",]$V2)
-propA <- sum(data[data$V3 == "A",]$V2) / sum(data$V2)
+propA <- sum(data[data$V3 == "A",]$V2) / max(1, total)
 propA <- round(propA, digits = 4)
 propA <- paste(propA * 100, "%", sep = '')
 sumG <- sum(data[data$V3 == "G",]$V2)
-propG <- sum(data[data$V3 == "G",]$V2) / sum(data$V2)
+propG <- sum(data[data$V3 == "G",]$V2) / max(1, total)
 propG <- round(propG, digits = 4)
 propG <- paste(propG * 100, "%", sep = '')
 sumC <- sum(data[data$V3 == "C",]$V2)
-propC <- sum(data[data$V3 == "C",]$V2) / sum(data$V2)
+propC <- sum(data[data$V3 == "C",]$V2) / max(1, total)
 propC <- round(propC, digits = 4)
 propC <- paste(propC * 100, "%", sep = '')
 sumU <- sum(data[data$V3 == "U",]$V2)
-propU <- sum(data[data$V3 == "U",]$V2) / sum(data$V2)
+propU <- sum(data[data$V3 == "U",]$V2) / max(1, total)
 propU <- round(propU, digits = 4)
 propU <- paste(propU * 100, "%", sep = '')
 
@@ -67,7 +69,7 @@ p +
     colour = 'black',
     size = 0.04669
   ) +
-  ggplot2:::limits(data$V1, "x") +
+  scale_x_discrete(limits = unique(data$V1)) +
   scale_y_continuous(expand = c(0, 1)) +
   scale_fill_manual(values = color_scale) +
   theme_bw(base_line_size = 0.11672, base_rect_size = 0.11672) +
@@ -81,7 +83,7 @@ p +
     ),
     vjust = 0,
     size = 1,
-    family = "ArialMT"
+    family = "sans"
   ) +
   geom_line(
     data = line_to_plot1,
@@ -121,7 +123,7 @@ p +
       vjust = 0.5
     ),
     size = 5 / 3,
-    family = "ArialMT",
+    family = "sans",
     show.legend = F
   ) +
   theme(
@@ -145,7 +147,7 @@ p +
     panel.background = element_blank(),
     plot.background = element_blank(),
     panel.grid.minor = element_blank(),
-    text = element_text(family = "ArialMT")
+    text = element_text(family = "sans")
   )
 
 ggsave(
@@ -155,4 +157,3 @@ ggsave(
   height = 1.1,
   dpi = "retina"
 )
-dev.off()

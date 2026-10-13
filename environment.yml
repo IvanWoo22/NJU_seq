@@ -1,0 +1,13 @@
+name: nju-seq
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - rust=1.88
+  - python=3.11
+  - cutadapt=5.2
+  - bowtie2=2.5.5
+  - samtools=1.24
+  - gzip
+  - perl

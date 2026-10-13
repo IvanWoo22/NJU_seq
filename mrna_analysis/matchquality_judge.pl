@@ -5,6 +5,8 @@ use autodie;
 
 sub COUNT_CIGAR {
     my $CIGAR   = shift;
+    defined($CIGAR) && $CIGAR =~ /^(?:[1-9][0-9]*[=XID])+$/
+        or die "Expected end-to-end --xeq CIGAR (= X I D), got: " . ($CIGAR // "missing") . "\n";
     my $LENGTH  = 0;
     my $MATCHED = 0;
     my $INSERT  = 0;

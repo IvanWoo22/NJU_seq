@@ -5,6 +5,8 @@ use autodie;
 
 sub COUNT_CIGAR {
     my $CIGAR   = shift;
+    defined($CIGAR) && $CIGAR =~ /^(?:[1-9][0-9]*[=XID])+$/
+        or die "Invalid --xeq CIGAR\n";
     my $LENGTH  = 0;
     my $MATCHED = 0;
     my $INSERT  = 0;
@@ -38,14 +40,16 @@ sub COUNT_CIGAR {
 }
 
 my @info;
-chomp( my $first_read = <> );
+my $first_read = <>;
+exit 0 unless defined $first_read;
+chomp $first_read;
 my ( $first_qname, $first_rname, $first_site, $first_cigar ) =
   split( /\t/, $first_read );
 $info[0] = $first_read;
 
 while (<>) {
     chomp( my $read = $_ );
-    if ( $read =~ /^$first_qname\t/ ) {
+    if ( (split /\t/, $read, 2)[0] eq $first_qname ) {
         push( @info, $read );
     }
     else {
@@ -54,39 +58,41 @@ while (<>) {
             my %map;
             my @all_match;
             my @first_align = COUNT_CIGAR($first_cigar);
-            $map{ $first_rname . $first_site }  = $first_align[1];
-            $name{ $first_rname . $first_site } = $info[0];
-            if ( $first_align[0] == $first_align[1] ) {
-                $all_match[0] = $first_rname . $first_site;
+            $map{ "$first_rname\t$first_site" }  = $first_align[1];
+            $name{ "$first_rname\t$first_site" } = $info[0];
+            if ( $first_align[0] == $first_align[1] && $first_align[4] == 0 ) {
+                $all_match[0] = "$first_rname\t$first_site";
             }
 
             foreach ( 1 .. $#info ) {
                 my ( undef, $rname, $site, $cigar ) = split( /\t/, $info[$_] );
                 my @align = COUNT_CIGAR($cigar);
-                if ( exists $map{ $rname . $site } ) {
-                    if ( $align[1] > $map{ $rname . $site } ) {
-                        $map{ $rname . $site }  = $align[1];
-                        $name{ $rname . $site } = $info[$_];
-                        if ( $align[0] == $align[1] ) {
-                            push( @all_match, $rname . $site );
+                if ( exists $map{ "$rname\t$site" } ) {
+                    if ( $align[1] > $map{ "$rname\t$site" } ) {
+                        $map{ "$rname\t$site" }  = $align[1];
+                        $name{ "$rname\t$site" } = $info[$_];
+                        if ( $align[0] == $align[1] && $align[4] == 0 ) {
+                            push( @all_match, "$rname\t$site" );
                         }
                     }
                 }
                 else {
-                    $map{ $rname . $site }  = $align[1];
-                    $name{ $rname . $site } = $info[$_];
-                    if ( $align[0] == $align[1] ) {
-                        push( @all_match, $rname . $site );
+                    $map{ "$rname\t$site" }  = $align[1];
+                    $name{ "$rname\t$site" } = $info[$_];
+                    if ( $align[0] == $align[1] && $align[4] == 0 ) {
+                        push( @all_match, "$rname\t$site" );
                     }
                 }
             }
             if ( $#all_match > -1 ) {
+                my %printed;
                 foreach ( 0 .. $#all_match ) {
+                    next if $printed{$all_match[$_]}++;
                     print "$name{$all_match[$_]}\n";
                 }
             }
             elsif ( $#all_match == -1 ) {
-                my @key = sort { $map{$a} <=> $map{$b} } keys %map;
+                my @key = sort { $map{$a} <=> $map{$b} || $a cmp $b } keys %map;
                 print "$name{$key[-1]}\n";
             }
         }
@@ -105,39 +111,41 @@ if ( $#info > 0 ) {
     my %map;
     my @all_match;
     my @first_align = COUNT_CIGAR($first_cigar);
-    $map{ $first_rname . $first_site }  = $first_align[1];
-    $name{ $first_rname . $first_site } = $info[0];
-    if ( $first_align[0] == $first_align[1] ) {
-        $all_match[0] = $first_rname . $first_site;
+    $map{ "$first_rname\t$first_site" }  = $first_align[1];
+    $name{ "$first_rname\t$first_site" } = $info[0];
+    if ( $first_align[0] == $first_align[1] && $first_align[4] == 0 ) {
+        $all_match[0] = "$first_rname\t$first_site";
     }
 
     foreach ( 1 .. $#info ) {
         my ( undef, $rname, $site, $cigar ) = split( /\t/, $info[$_] );
         my @align = COUNT_CIGAR($cigar);
-        if ( exists $map{ $rname . $site } ) {
-            if ( $align[1] > $map{ $rname . $site } ) {
-                $map{ $rname . $site }  = $align[1];
-                $name{ $rname . $site } = $info[$_];
-                if ( $align[0] == $align[1] ) {
-                    push( @all_match, $rname . $site );
+        if ( exists $map{ "$rname\t$site" } ) {
+            if ( $align[1] > $map{ "$rname\t$site" } ) {
+                $map{ "$rname\t$site" }  = $align[1];
+                $name{ "$rname\t$site" } = $info[$_];
+                if ( $align[0] == $align[1] && $align[4] == 0 ) {
+                    push( @all_match, "$rname\t$site" );
                 }
             }
         }
         else {
-            $map{ $rname . $site }  = $align[1];
-            $name{ $rname . $site } = $info[$_];
-            if ( $align[0] == $align[1] ) {
-                push( @all_match, $rname . $site );
+            $map{ "$rname\t$site" }  = $align[1];
+            $name{ "$rname\t$site" } = $info[$_];
+            if ( $align[0] == $align[1] && $align[4] == 0 ) {
+                push( @all_match, "$rname\t$site" );
             }
         }
     }
     if ( $#all_match > -1 ) {
+        my %printed;
         foreach ( 0 .. $#all_match ) {
+            next if $printed{$all_match[$_]}++;
             print "$name{$all_match[$_]}\n";
         }
     }
     elsif ( $#all_match == -1 ) {
-        my @key = sort { $map{$a} <=> $map{$b} } keys %map;
+        my @key = sort { $map{$a} <=> $map{$b} || $a cmp $b } keys %map;
         print "$name{$key[-1]}\n";
     }
 }

@@ -5,6 +5,16 @@ use autodie;
 use POSIX;
 use File::Basename;
 
+@ARGV >= 2 or die "Usage: score.pl NC.tsv TR.tsv [TR2.tsv ...]\n";
+sub CHECK_ROW {
+    my ($file, $row, $seen) = @_;
+    @$row == 9 && $row->[1] =~ /^[1-9][0-9]*$/ && $row->[2] =~ /^[+-]$/
+        && $row->[8] =~ /^[1-9][0-9]*$/
+        or die "Invalid nine-column count row in $file (no header; positive EndCount required)\n";
+    my $id = join "\t", @$row[0,2,1];
+    die "Duplicate genomic position in $file: $id\n" if $seen->{$id}++;
+}
+
 sub SCORE {
     my ( $TR_END_COUNT, $NC_END_COUNT, $TR_TOTAL, $NC_TOTAL ) = @_;
 
@@ -53,12 +63,15 @@ for my $i ( 0 .. $#ARGV ) {
 
 my ( @end_count, @score, @end_count_cor, @total, %info, %all_site_id,
     %score_all );
+my $normalization_ok = 1;
 
 open( my $IN_NC, "<", $ARGV[0] );
+my %seen_nc;
 
 while ( my $line = <$IN_NC> ) {
     chomp $line;
     my @tmp = split /\t/, $line;
+    CHECK_ROW($ARGV[0], \@tmp, \%seen_nc);
     my $id  = $tmp[0] . "\t" . $tmp[2] . "\t" . $tmp[1];
     $end_count[0]{$id} = $tmp[8];
 }
@@ -69,10 +82,14 @@ for my $sample ( 1 .. $#ARGV ) {
     $total[0] = 0;
 
     open( my $IN_TR, "<", $ARGV[$sample] );
+    my %seen_tr;
+    $end_count[$sample] = {};
+    $total[$sample] = 0;
 
     while ( my $line = <$IN_TR> ) {
         chomp $line;
         my @tmp = split /\t/, $line;
+        CHECK_ROW($ARGV[$sample], \@tmp, \%seen_tr);
         my $id  = $tmp[0] . "\t" . $tmp[2] . "\t" . $tmp[1];
 
         if ( exists $all_site_id{$id} ) {
@@ -93,6 +110,13 @@ for my $sample ( 1 .. $#ARGV ) {
 
     close($IN_TR);
 
+    if ($total[$sample] == 0 || $total[0] == 0) {
+        warn "Normalization unavailable for $sample_names[$sample]: NC_TOTAL=$total[0], TR_TOTAL=$total[$sample]; joint candidates suppressed\n";
+        $normalization_ok = 0;
+        ($score[$sample], $end_count_cor[$sample]) = ({}, {});
+        next;
+    }
+
     my ( $score_ref, $end_count_cor_ref ) = SCORE(
         \%{ $end_count[$sample] },
         \%{ $end_count[0] },
@@ -102,7 +126,7 @@ for my $sample ( 1 .. $#ARGV ) {
     $end_count_cor[$sample] = $end_count_cor_ref;
 }
 
-print "Position\tBase\tDirection\tInfo\t${sample_names[0]}_count(NC)";
+print "Chromosome\tPosition\tDirection\tLeftBase\tBase\tRightBase\tGeneID\t${sample_names[0]}_count(NC)";
 foreach my $s ( 1 .. $#ARGV ) {
     print
 "\t${sample_names[$s]}_count\t${sample_names[$s]}_count_corr\t${sample_names[$s]}_score";
@@ -110,7 +134,7 @@ foreach my $s ( 1 .. $#ARGV ) {
 print "\tTotalFoldChange\tAveFC\tTotalScore\tAveScore\n";
 
 for my $id ( keys %all_site_id ) {
-    if ( $all_site_id{$id} == $#ARGV ) {
+    if ( $normalization_ok && $all_site_id{$id} == $#ARGV ) {
         my ( $chr, $dir, $pos ) = split( /\t/, $id );
         my $NC_END_COUNT = exists $end_count[0]{$id} ? $end_count[0]{$id} : 0;
         my ( $SoaS, $SoaC ) = ( 0, 0 );
@@ -122,7 +146,7 @@ for my $id ( keys %all_site_id ) {
             $SoaS += $score[$sample]{$id};
         }
 
-        if ( $SoaS >= $SoaStv && $SoaC >= $SoaCtv * $NC_END_COUNT ) {
+        if ( $SoaS >= $SoaStv && $SoaC > 0 && $SoaC >= $SoaCtv * $NC_END_COUNT ) {
             my $key = "$chr\t$pos\t$dir\t$info{$id}\t$NC_END_COUNT";
             $NC_END_COUNT = 1 if $NC_END_COUNT == 0;
             my $fc  = $SoaC / $NC_END_COUNT;
@@ -137,7 +161,7 @@ for my $id ( keys %all_site_id ) {
     }
 }
 
-foreach my $key ( sort { $score_all{$b} <=> $score_all{$a} } keys %score_all ) {
+foreach my $key ( sort { $score_all{$b} <=> $score_all{$a} || $a cmp $b } keys %score_all ) {
     my $ScoreAve = $score_all{$key} / $#ARGV;
     print("$key\t$score_all{$key}\t$ScoreAve\n");
 }

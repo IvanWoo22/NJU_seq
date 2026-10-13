@@ -36,10 +36,11 @@ close($IN_FH1);
 
 while (<STDIN>) {
     chomp;
-    my ( undef, undef, undef, $start, $end, undef, undef, undef, $info ) =
+    my ( undef, undef, $type, $start, $end, undef, undef, undef, $info ) =
       split /\t/;
+    next unless defined($type) && $type eq "exon";
     my $trans_id = GET_ID( $transid, $info );
-    if ( exists( $gene{$trans_id} ) ) {
+    if ( defined($trans_id) && exists( $gene{$trans_id} ) ) {
         if ( exists( $exon{$trans_id} ) ) {
             $exon{$trans_id}->AlignDB::IntSpan::add_range( $start, $end );
             $exon_site{$trans_id}->AlignDB::IntSpan::add( $start, $end );
@@ -54,7 +55,8 @@ while (<STDIN>) {
 
 }
 
-foreach my $trans ( keys(%gene) ) {
+foreach my $trans ( sort keys(%gene) ) {
+    unless (exists $exon{$trans}) { warn "No exons for $trans; skipped\n"; next; }
     print
       "$trans\t$gene{$trans}\t$no{$trans}\t$exon{$trans}\t$exon_site{$trans}\n";
 }

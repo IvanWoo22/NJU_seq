@@ -35,13 +35,16 @@ while (<$POINT>) {
     chomp;
     my $line = $_;
     my %type;
-    my ( undef, $site, $dir, undef, undef, undef, $gene_list, undef ) =
+    next if /^#/ || /^(?:Chromosome|Position)\t/;
+    my ( $site_chr, $site, $dir, undef, undef, undef, $gene_list, undef ) =
       split "\t";
+    $site_chr =~ s/^chr//;
     my @gene   = split /\//, $gene_list;
     my $weight = 1 / @gene;
     if ( $dir eq "+" ) {
         foreach my $gene (@gene) {
-            foreach my $trans ( @{ $trans{$gene} } ) {
+            foreach my $trans ( @{ $trans{$gene} // [] } ) {
+                next unless defined $trans && $chr_dir{$trans} eq "$site_chr\t$dir";
                 if (
                     $five_utr_set{$trans}->AlignDB::IntSpan::contains_all($site)
                   )
@@ -84,14 +87,15 @@ while (<$POINT>) {
     }
     else {
         foreach my $gene (@gene) {
-            foreach my $trans ( @{ $trans{$gene} } ) {
+            foreach my $trans ( @{ $trans{$gene} // [] } ) {
+                next unless defined $trans && $chr_dir{$trans} eq "$site_chr\t$dir";
                 if (
                     $five_utr_set{$trans}->AlignDB::IntSpan::contains_all($site)
                   )
                 {
                     my $index =
                       $five_utr_set{$trans}->AlignDB::IntSpan::index($site);
-                    my $distribution = 1 - $index / $five_utr_length{$trans};
+                    my $distribution = 1 - ($index - 1) / $five_utr_length{$trans};
                     print(
 "$chr_dir{$trans}\t$site\tfive_utr\t$distribution\t$five_utr_length{$trans}\t$cds_length{$trans}\t$three_utr_length{$trans}\t$index\t$weight\n"
                     );
@@ -103,7 +107,7 @@ while (<$POINT>) {
                 {
                     my $index =
                       $cds_set{$trans}->AlignDB::IntSpan::index($site);
-                    my $distribution = 1 - $index / $cds_length{$trans};
+                    my $distribution = 1 - ($index - 1) / $cds_length{$trans};
                     print(
 "$chr_dir{$trans}\t$site\tcds\t$distribution\t$five_utr_length{$trans}\t$cds_length{$trans}\t$three_utr_length{$trans}\t$index\t$weight\n"
                     );
@@ -115,7 +119,7 @@ while (<$POINT>) {
                 {
                     my $index =
                       $three_utr_set{$trans}->AlignDB::IntSpan::index($site);
-                    my $distribution = 1 - $index / $three_utr_length{$trans};
+                    my $distribution = 1 - ($index - 1) / $three_utr_length{$trans};
                     print(
 "$chr_dir{$trans}\t$site\tthree_utr\t$distribution\t$five_utr_length{$trans}\t$cds_length{$trans}\t$three_utr_length{$trans}\t$index\t$weight\n"
                     );

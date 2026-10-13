@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use autodie;
 use File::Basename;
+use File::Temp qw(tempfile);
+@ARGV == 2 or die "Usage: signature_count.pl sites.tsv output.pdf\n";
 
 sub BASE_CHANGE {
     my $BASE = shift;
@@ -23,12 +25,15 @@ my $filedir = dirname(__FILE__);
 my $envdir = $ENV{'PWD'};
 
 open(my $IN, "<", $ARGV[0]);
-open(my $OUT, ">", $envdir . "/" . $ARGV[0] . ".tmp");
+my ($OUT, $temp_path) = tempfile(UNLINK => 1);
 
 my %sig;
 while (<$IN>) {
     chomp;
+    next if /^#/ || /^(?:Chromosome|Position)\t/;
     my (undef, undef, undef, $lef, $nm, $rgt, undef) = split;
+    ($lef, $nm, $rgt) = map { my $b = uc($_ // ""); $b =~ tr/U/T/; $b } ($lef, $nm, $rgt);
+    next unless "$lef$nm$rgt" =~ /^[ACGT]{3}$/;
     if (exists($sig{ $lef . $nm . $rgt })) {
         $sig{ $lef . $nm . $rgt }++;
     }
@@ -60,9 +65,7 @@ foreach my $nm (qw(A G C T)) {
 
 print $OUT ("$data_table");
 
-system(
-    "Rscript $filedir/signature_count.R $envdir/$ARGV[0].tmp $envdir/$ARGV[1]");
-
-system("rm $envdir/$ARGV[0].tmp");
-
-__END__
+close($OUT);
+close($IN);
+system('Rscript', "$filedir/signature_count.R", $temp_path, $ARGV[1]) == 0
+    or die "Signature plot failed (R exit status $?)\n";

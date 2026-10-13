@@ -25,6 +25,7 @@ sub GET_ID {
     return $ID;
 }
 
+my %trans_gene;
 my ( %trans, %gene_info, %chr, %dir, %exon, %intron, %mrna );
 
 open( my $IN_FH, "<", $IN_TRANS );
@@ -32,6 +33,7 @@ while (<$IN_FH>) {
     chomp;
     my ( $trans, $gene ) = split "\t";
     $trans{$trans} = 1;
+    $trans_gene{$trans} = $gene;
     $gene_info{$gene}{$trans} = 1;
 }
 close($IN_FH);
@@ -49,12 +51,15 @@ while (<STDIN>) {
     chomp;
     my ( $chr, undef, $type, $start, $end, undef, $dir, undef, $info ) =
       split /\t/;
-    my $trans_name = GET_ID( $transid, $info );
-    my $gene_name  = GET_ID( $gene_id, $info );
+    next unless defined($type) && $type =~ /^(?:transcript|mRNA|exon)$/;
+    my $trans_name;
+    if ($info =~ /$transid([^;\s,]+)/ || $info =~ /(?:ID|Parent)=transcript:([^;\s,]+)/) { $trans_name = $1; }
+    next unless defined($trans_name) && exists($trans{$trans_name});
+    my $gene_name = $trans_gene{$trans_name};
     if ( exists( $trans{$trans_name} ) ) {
         $chr{$gene_name} = $chr unless exists( $chr{$gene_name} );
         $dir{$gene_name} = $dir unless exists( $dir{$gene_name} );
-        if ( $type eq "transcript" ) {
+        if ( $type eq "transcript" || $type eq "mRNA" ) {
             $mrna{$trans_name} = AlignDB::IntSpan->new;
             $mrna{$trans_name}->AlignDB::IntSpan::add_range( $start, $end );
         }
@@ -76,6 +81,7 @@ foreach my $gene ( sort( keys(%gene_info) ) ) {
     my $all_intron   = AlignDB::IntSpan->new;
     my $alter_splice = AlignDB::IntSpan->new;
     foreach my $trans ( sort( keys( %{ $gene_info{$gene} } ) ) ) {
+        exists($mrna{$trans}) && exists($exon{$trans}) or die "Incomplete transcript model: $trans\n";
         $gene_range->AlignDB::IntSpan::add( $mrna{$trans} );
         $intron{$trans} =
           $mrna{$trans}->AlignDB::IntSpan::diff( $exon{$trans} );

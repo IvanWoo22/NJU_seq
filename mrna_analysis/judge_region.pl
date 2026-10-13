@@ -4,6 +4,8 @@ use warnings;
 use autodie;
 use AlignDB::IntSpan;
 
+@ARGV == 2 or die "Usage: judge_region.pl splice6.tsv region7.tsv < sites.tsv\n";
+
 my ( %cse, %csi, %ase );
 open( my $ALTERSPLICE_GENE, "<", $ARGV[0] );
 while (<$ALTERSPLICE_GENE>) {
@@ -63,7 +65,10 @@ close($TRANSCRIPT_REGION_GENE);
 
 while (<STDIN>) {
     chomp;
+    next if /^#/ || /^(?:Chromosome|Position)\t/;
     my ( $chr, $point, $dir ) = split /\t/;
+    $point =~ /^[1-9][0-9]*$/ && $dir =~ /^[+-]$/ or die "Invalid site row\n";
+    $chr =~ s/^chr//;
     my $chr_dir = $chr . "\t" . $dir;
     my $set     = AlignDB::IntSpan->new($point);
     my $reg1    = 0;

@@ -3,22 +3,25 @@ use strict;
 use warnings;
 use autodie;
 
-sub COUNT_ALIGNMENT_LENGTH {
-    my $CIGAR  = shift;
-    my $LENGTH = 0;
-    while ( $CIGAR =~ /([0-9]+)=/g )
-    {    # Alignment column containing two identical letters.
-        $LENGTH += $1;
+# Return the observed bases at the final three reference positions, not
+# the final three query positions (which differ when an indel is present).
+sub ALIGNMENT_TAIL {
+    my ($cigar, $seq) = @_;
+    $cigar =~ /^(?:[1-9][0-9]*[=XID])+$/ or die "Invalid --xeq CIGAR: $cigar\n";
+    my ($query, $length, $tail) = (0, 0, "");
+    while ($cigar =~ /([0-9]+)([=XID])/g) {
+        my ($n, $op) = ($1, $2);
+        if ($op eq "I") { $query += $n; next; }
+        $length += $n;
+        $tail .= $op eq "D" ? "N" x $n : substr($seq, $query, $n);
+        $query += $n unless $op eq "D";
+        $tail = substr($tail, -3) if length($tail) > 3;
     }
-    while ( $CIGAR =~ /([0-9]+)X/g )
-    {    # Alignment column containing a mismatch, i.e. two different letters.
-        $LENGTH += $1;
-    }
-    while ( $CIGAR =~ /([0-9]+)D/g ) {  # Deletion (gap in the target sequence).
-        $LENGTH += $1;
-    }
-    return $LENGTH;
+    $query == length($seq) && $length >= 3 or die "CIGAR/sequence length mismatch or fragment too short\n";
+    return ($length, join "\t", split //, $tail);
 }
+
+@ARGV == 1 or die "Usage: count.pl five_column_alignments.tsv\n";
 
 open( my $IN_SAM, "<", $ARGV[0] );
 
@@ -29,10 +32,10 @@ my %site_base;
 while (<$IN_SAM>) {
     chomp;
     my ( undef, $rname, $site, $cigar, $seq ) = split /\t/;
-    my $length  = COUNT_ALIGNMENT_LENGTH($cigar);
+    defined($seq) && $site =~ /^[1-9][0-9]*$/ or die "Invalid five-column alignment at line $.\n";
+    my ($length, $tail) = ALIGNMENT_TAIL($cigar, $seq);
     my $end_pos = $site + $length - 2;
     my $end     = $rname . "\t" . $end_pos;
-    my @string  = split( //, $seq );
 
     if ( exists $site_end{$end} ) {
         $site_end{$end}++;
@@ -40,7 +43,7 @@ while (<$IN_SAM>) {
     else {
         $site_end{$end} = 1;
         $site_base{$end} =
-          $string[-3] . "\t" . $string[-2] . "\t" . $string[-1];
+          $tail;
     }
 
     my $start = $rname . "\t" . $site;

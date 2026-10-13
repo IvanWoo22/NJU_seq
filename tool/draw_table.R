@@ -4,7 +4,8 @@ library(ggpubr)
 
 args <- commandArgs(T)
 
-mydata <- read.table(file('stdin'), row.names = 1, header = F)
+mydata <- read.table(file('stdin'), row.names = 1, header = F, sep = "\t", quote = "")
+stopifnot(ncol(mydata) == 4, nrow(mydata) > 0)
 mydata[, 1] <- gsub(" ", "", prettyNum(mydata[, 1], big.mark = ","))
 mydata[, 2] <- gsub(" ", "", prettyNum(mydata[, 2], big.mark = ","))
 colnames(mydata)[1:4] <-

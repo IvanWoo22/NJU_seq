@@ -2,86 +2,32 @@
 use strict;
 use warnings;
 use autodie;
-use Algorithm::Combinatorics qw(combinations);
-
-my ( %point, %point_info1, %point_info2, @all_set, %combine, %all_point );
-foreach my $sample (@ARGV) {
-    open( my $FH, "<", $sample );
-    while (<$FH>) {
-        chomp;
-        my @tmp = split( "\t", $_ );
-        push( @{ $point{$sample} }, $tmp[0] . $tmp[2] . $tmp[1] );
-        $point_info1{ $tmp[0] . $tmp[2] . $tmp[1] } =
-          join( "\t", @tmp[ 0 .. 8 ] );
-        $point_info2{ $tmp[0] . $tmp[2] . $tmp[1] } =
-          join( "\t", @tmp[ 20 .. 25 ] );
-        @{ ${ $combine{$sample} }{ $tmp[0] . $tmp[2] . $tmp[1] } } =
-          @tmp[ 9 .. 19 ];
-    }
-    push( @all_set, @{ $point{$sample} } );
-}
-
-foreach my $ELEMENT (@all_set) {
-    $all_point{$ELEMENT}++;
-}
-my @all_point = keys %all_point;
-
-foreach my $number ( 1 .. $#ARGV + 1 ) {
-    my $iter = combinations( \@ARGV, $number );
-    while ( my $choose = $iter->next ) {
-        my ( @in, @out, %choose, @in_point, @out_point, %in_point, %out_point );
-        foreach my $element ( @{$choose} ) {
-            $choose{$element} = 1;
-        }
-        foreach my $sample ( 0 .. $#ARGV ) {
-            my $file_name = $ARGV[$sample];
-            if ( exists( $choose{$file_name} ) ) {
-                push( @in, @{ $point{$file_name} } );
-            }
-            else {
-                push( @out, @{ $point{$file_name} } );
-            }
-        }
-        foreach my $ELEMENT (@in) {
-            $in_point{$ELEMENT}++;
-        }
-        @in_point = grep { $in_point{$_} == $number; } ( keys %in_point );
-        foreach my $ELEMENT (@out) {
-            $out_point{$ELEMENT}++;
-        }
-        @out_point = keys %out_point;
-        my @point =
-          grep {
-                  ( exists( $in_point{$_} ) )
-              and ( $in_point{$_} == $number )
-              and ( not( exists( $out_point{$_} ) ) )
-          } @all_point;
-        if ( @point > 0 ) {
-            print "#" . join( ";", @$choose ) . "\n";
-            my %output;
-            foreach my $point (@point) {
-                my @out_col = @{ ${ $combine{ ${$choose}[0] } }{$point} };
-                my $score   = ${ ${ $combine{ ${$choose}[0] } }{$point} }[-1];
-                foreach my $sample_id ( 1 .. $#{$choose} ) {
-                    foreach my $col ( 0 .. 10 ) {
-                        $out_col[$col] .=
-";${${$combine{${$choose}[$sample_id]}}{ $point }}[$col]";
-                    }
-                    $score +=
-                      ${ ${ $combine{ ${$choose}[$sample_id] } }{$point} }[-1];
-                }
-                $output{ "$point_info1{$point}\t$point_info2{$point}" . "\t"
-                      . join( "\t", @out_col ) } = $score;
-            }
-            foreach my $point_info (
-                sort { $output{$b} <=> $output{$a} }
-                keys %output
-              )
-            {
-                print("$point_info\t$output{$point_info}\n");
-            }
-        }
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use NJUSeq::SiteTable qw(read_sites);
+# Historical 26-column annotated score tables only; not current score.pl output.
+my ($rows, $members, $by_file) = read_sites(@ARGV);
+for my $table (@$by_file) {
+    for my $row (values %$table) {
+        scalar(split /\t/, $row, -1) == 26 or die "specific_point_withsocre.pl requires legacy 26-column input; use specific_point_matrix.pl for current score tables\n";
     }
 }
-
-__END__
+my %groups;
+for my $key (keys %$rows) {
+    my @selected = sort { $a <=> $b } keys %{$members->{$key}};
+    my @info = split /\t/, $rows->{$key}, -1;
+    my (@combined, $score);
+    $score = 0;
+    for my $i (@selected) {
+        my @f = split /\t/, $by_file->[$i]{$key}, -1;
+        $f[19] =~ /^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/ or die "Invalid legacy score\n";
+        $score += $f[19];
+        for my $j (0 .. 10) { push @{$combined[$j]}, $f[$j+9]; }
+    }
+    my $line = join "\t", @info[0..8,20..25], (map { join ";", @$_ } @combined), $score;
+    push @{$groups{join ",", @selected}}, [$score, $line];
+}
+for my $mask (sort keys %groups) {
+    print "#", join(";", @ARGV[split /,/, $mask]), "\n";
+    print "$_->[1]\n" for sort { $b->[0] <=> $a->[0] || $a->[1] cmp $b->[1] } @{$groups{$mask}};
+}

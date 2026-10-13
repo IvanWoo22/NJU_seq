@@ -16,6 +16,7 @@ while (<>) {
     $i++;
 }
 
+exit 0 unless @gene;
 foreach ( 0 .. $#gene - 1 ) {
     if ( $gene[ $_ + 1 ] - $gene[$_] > 1 ) {
         foreach my $t ( $gene[$_] .. $gene[ $_ + 1 ] - 1 ) {

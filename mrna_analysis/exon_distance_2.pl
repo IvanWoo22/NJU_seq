@@ -38,11 +38,12 @@ sub PORTA {
     my $LENGTH = shift;
     $LENGTH = POSIX::ceil( $LENGTH / 2 );
     my $PORTA = shift;
+    my $WEIGHT = shift;
     my $CELL  = POSIX::floor( $LENGTH / 10 );
     foreach my $K ( 0 .. $CELL - 1 ) {
-        ${$PORTA}[$K] += 5 / $LENGTH;
+        ${$PORTA}[$K] += $WEIGHT * 5 / $LENGTH;
     }
-    ${$PORTA}[$CELL] += ( $LENGTH % 10 ) / ( 2 * $LENGTH );
+    ${$PORTA}[$CELL] += $WEIGHT * ( $LENGTH % 10 ) / ( 2 * $LENGTH );
     return @{$PORTA};
 }
 
@@ -70,12 +71,14 @@ close($IN1);
 open( my $IN2, "<", $ARGV[1] );
 while (<$IN2>) {
     chomp;
+    next if /^#/ || /^(?:Chromosome|Position)\t/;
     my ( undef, $site, $strand, undef, undef, undef, $gene_list, undef ) =
       split "\t";
     my @gene   = split /\//, $gene_list;
     my $weight = 1 / @gene;
     foreach my $gene (@gene) {
-        foreach my $no ( 0 .. $#{ $gene{$gene} } ) {
+        foreach my $no ( 0 .. $#{ $gene{$gene} // [] } ) {
+            next unless defined $gene{$gene}[$no];
             if ( $exon{ $gene{$gene}[$no] }
                 ->AlignDB::IntSpan::contains_all($site) )
             {
@@ -98,7 +101,7 @@ while (<$IN2>) {
                 }
                 print
 "$site\t$gene\t$gene{$gene}[$no]\t$exon{$gene{$gene}[$no]}\t$strand\t$exon_site{$gene{$gene}[$no]}\t$distance\t$size\t$weight\n";
-                @porta = PORTA( $size, \@porta );
+                @porta = PORTA( $size, \@porta, $weight );
                 last;
             }
         }
@@ -107,6 +110,7 @@ while (<$IN2>) {
 close($IN2);
 
 open( my $BAR, ">", $ARGV[2] );
+print $BAR "boundary\t0\t$near5[0]\n";
 foreach ( 1 .. 30 ) {
     my $x = -$_ * 10 + 5;
     print $BAR "near3\t$x\t$near3[$_]\n";

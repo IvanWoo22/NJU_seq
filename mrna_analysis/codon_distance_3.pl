@@ -10,7 +10,7 @@ sub DISTANCE {
     $SET->add($SET_STRING);
     my ( $ISLAND, $DIS, $DIR );
     if ( $SET->find_islands($SITE) eq "-" ) {
-        $ISLAND = $SET->nearest_island($SITE);
+        $ISLAND = $SET->nearest_island($SITE)->as_string;
         if ( $ISLAND =~ /,/ ) {
             ( $ISLAND, undef ) = split( ",", $ISLAND );
         }
@@ -26,7 +26,7 @@ sub DISTANCE {
             }
         }
         else {
-            if ( $SITE > $ISLAND->as_string ) {
+            if ( $SITE > $ISLAND ) {
                 $DIS = "$ISLAND-$SITE";
                 $DIR = 1;
             }
@@ -43,6 +43,7 @@ sub DISTANCE {
     return ( $DIS, $DIR );
 }
 
+@ARGV == 5 && $ARGV[3] =~ /^\d+$/ && $ARGV[4] =~ /^\d+$/ or die "Usage: codon_distance_3.pl model.tsv sites.tsv histogram.tsv min_left min_right\n";
 my @window;
 foreach ( 0 .. 20 ) {
     $window[$_] = 0;
@@ -68,12 +69,13 @@ close($IN1);
 open( my $IN2, "<", $ARGV[1] );
 while (<$IN2>) {
     chomp;
+    next if /^#/ || /^(?:Chromosome|Position)\t/;
     my ( undef, $site, $strand, undef, undef, undef, $gene_list, undef ) =
       split "\t";
     my @gene   = split /\//, $gene_list;
     my $weight = 1 / @gene;
     foreach my $gene (@gene) {
-        foreach my $no ( 0 .. $#{ $gene{$gene} } ) {
+        foreach my $no ( 0 .. $#{ $gene{$gene} // [] } ) {
             if (
                 ( defined( $gene{$gene}[$no] ) )
                 and ( $exon{ $gene{$gene}[$no] }
@@ -143,22 +145,6 @@ while (<$IN2>) {
                 }
                 else {
                     $right_length = 0;
-                }
-
-                if ( $distance_neo ne "0" ) {
-                    my $set1 = AlignDB::IntSpan->new;
-                    $set1->add($distance_neo);
-                    my $set2 = $set1->diff( $intron{ $gene{$gene}[$no] } );
-                    if ( $strand eq "+" ) {
-                        $distance = ( $set2->cardinality - 1 ) * $direction * 1;
-                    }
-                    else {
-                        $distance =
-                          ( $set2->cardinality - 1 ) * $direction * (-1);
-                    }
-                }
-                else {
-                    $distance = 0;
                 }
 
                 if (    ( $distance < 500 )

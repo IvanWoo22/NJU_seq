@@ -1,0 +1,5 @@
+sample	role	r1	r2	alignment	umi
+NJU6096	NC	../inputs/human/NJU6096/R1.fq.gz	../inputs/human/NJU6096/R2.fq.gz	-	none
+NJU6097	TR	../inputs/human/NJU6097/R1.fq.gz	../inputs/human/NJU6097/R2.fq.gz	-	none
+NJU6098	TR	../inputs/human/NJU6098/R1.fq.gz	../inputs/human/NJU6098/R2.fq.gz	-	none
+NJU6099	TR	../inputs/human/NJU6099/R1.fq.gz	../inputs/human/NJU6099/R2.fq.gz	-	none

@@ -1,0 +1,5 @@
+sample	role	r1	r2	alignment	umi
+NJU6096	NC	NJU6096/R1.fq.gz	NJU6096/R2.fq.gz	-	none
+NJU6097	TR	NJU6097/R1.fq.gz	NJU6097/R2.fq.gz	-	none
+NJU6098	TR	NJU6098/R1.fq.gz	NJU6098/R2.fq.gz	-	none
+NJU6099	TR	NJU6099/R1.fq.gz	NJU6099/R2.fq.gz	-	none

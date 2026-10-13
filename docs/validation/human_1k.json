@@ -1,0 +1,286 @@
+{
+  "date": "2026-10-13",
+  "samples": [
+    {
+      "sample": "NJU6096",
+      "input_pairs": 1000,
+      "accepted": 18,
+      "bac_removed": 6,
+      "host_removed": 14,
+      "stages": [
+        {
+          "stage": "qc_raw",
+          "exit_code": 0
+        },
+        {
+          "stage": "01_cutadapt",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_cut",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_prepared",
+          "exit_code": 0
+        },
+        {
+          "stage": "03_bac_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "05_bac_remove",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_after_bac",
+          "exit_code": 0
+        },
+        {
+          "stage": "06_rrna_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "08_rrna_remove",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_after_host",
+          "exit_code": 0
+        },
+        {
+          "stage": "09_mrna_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_mrna",
+          "exit_code": 0
+        },
+        {
+          "stage": "13_reads_count",
+          "exit_code": 0
+        },
+        {
+          "stage": "14_reads_merge",
+          "exit_code": 0
+        }
+      ],
+      "sha256": {
+        "mrna.almostuniquematch.filter.tmp": "83da8afdfd5f85bfba8a1323a67024ab18dd9c65365d086783dbd4892455763b",
+        "reads/mrna.filter.tsv": "5b6cde2329fa7275457ade4a625600b5a63ebe56ee7dcf6a2f5a3569b83336f9"
+      }
+    },
+    {
+      "sample": "NJU6097",
+      "input_pairs": 1000,
+      "accepted": 13,
+      "bac_removed": 81,
+      "host_removed": 41,
+      "stages": [
+        {
+          "stage": "qc_raw",
+          "exit_code": 0
+        },
+        {
+          "stage": "01_cutadapt",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_cut",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_prepared",
+          "exit_code": 0
+        },
+        {
+          "stage": "03_bac_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "05_bac_remove",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_after_bac",
+          "exit_code": 0
+        },
+        {
+          "stage": "06_rrna_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "08_rrna_remove",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_after_host",
+          "exit_code": 0
+        },
+        {
+          "stage": "09_mrna_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_mrna",
+          "exit_code": 0
+        },
+        {
+          "stage": "13_reads_count",
+          "exit_code": 0
+        },
+        {
+          "stage": "14_reads_merge",
+          "exit_code": 0
+        }
+      ],
+      "sha256": {
+        "mrna.almostuniquematch.filter.tmp": "9848726019f972e24c9cc2a3c6daea6aa4b787c37b0f064251b93d7ea3d28ebb",
+        "reads/mrna.filter.tsv": "88c5c59cb58ba8d53ae0902dc625a4a5c7e524ce82a39d72e07123d7ff637721"
+      }
+    },
+    {
+      "sample": "NJU6098",
+      "input_pairs": 1000,
+      "accepted": 5,
+      "bac_removed": 73,
+      "host_removed": 13,
+      "stages": [
+        {
+          "stage": "qc_raw",
+          "exit_code": 0
+        },
+        {
+          "stage": "01_cutadapt",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_cut",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_prepared",
+          "exit_code": 0
+        },
+        {
+          "stage": "03_bac_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "05_bac_remove",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_after_bac",
+          "exit_code": 0
+        },
+        {
+          "stage": "06_rrna_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "08_rrna_remove",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_after_host",
+          "exit_code": 0
+        },
+        {
+          "stage": "09_mrna_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_mrna",
+          "exit_code": 0
+        },
+        {
+          "stage": "13_reads_count",
+          "exit_code": 0
+        },
+        {
+          "stage": "14_reads_merge",
+          "exit_code": 0
+        }
+      ],
+      "sha256": {
+        "mrna.almostuniquematch.filter.tmp": "2180dd7936c5a1087eb62c5abeebf04e6a43ece12df5836ab2fbf39442d1ff20",
+        "reads/mrna.filter.tsv": "5106967b1517390899af3527edf20affb08a4e2026c4dde34410f6cef9e2ac88"
+      }
+    },
+    {
+      "sample": "NJU6099",
+      "input_pairs": 1000,
+      "accepted": 2,
+      "bac_removed": 78,
+      "host_removed": 29,
+      "stages": [
+        {
+          "stage": "qc_raw",
+          "exit_code": 0
+        },
+        {
+          "stage": "01_cutadapt",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_cut",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_prepared",
+          "exit_code": 0
+        },
+        {
+          "stage": "03_bac_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "05_bac_remove",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_after_bac",
+          "exit_code": 0
+        },
+        {
+          "stage": "06_rrna_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "08_rrna_remove",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_after_host",
+          "exit_code": 0
+        },
+        {
+          "stage": "09_mrna_stream",
+          "exit_code": 0
+        },
+        {
+          "stage": "qc_mrna",
+          "exit_code": 0
+        },
+        {
+          "stage": "13_reads_count",
+          "exit_code": 0
+        },
+        {
+          "stage": "14_reads_merge",
+          "exit_code": 0
+        }
+      ],
+      "sha256": {
+        "mrna.almostuniquematch.filter.tmp": "2e6c7c3588f54bdeb8d38b939dbd305b760d769da3e9f71be7982b6c604be7a1",
+        "reads/mrna.filter.tsv": "72639c597b3c9c8473081f075d68e8c48af4a426d7b653038be2883e4185d13c"
+      }
+    }
+  ],
+  "joint_evaluation": "normalization_unavailable",
+  "candidate_sites": 0,
+  "success": true,
+  "qc_html": true,
+  "core_and_extended_environments_equal": true
+}

@@ -1,0 +1,5 @@
+sample	role	r1	r2	alignment	umi
+NC	NC	NC.R1.fq	NC.R2.fq	-	none
+TR1	TR	TR1.R1.fq	TR1.R2.fq	-	none
+TR2	TR	TR2.R1.fq	TR2.R2.fq	-	none
+TR3	TR	TR3.R1.fq	TR3.R2.fq	-	none

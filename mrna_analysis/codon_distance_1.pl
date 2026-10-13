@@ -6,7 +6,7 @@ use autodie;
 sub GET_ID {
     my ( $FEATURE, $INFO ) = @_;
     my $ID;
-    if ( $INFO =~ m/$FEATURE(\w+\.?[0-9]*)/ ) {
+    if ( $INFO =~ m/(?:transcript_id=|(?:Parent|ID)=transcript:)([^;\s,]+)/ ) {
         $ID = $1;
     }
     else {
@@ -27,9 +27,11 @@ close($IN_FH);
 while (<STDIN>) {
     chomp;
     my ( $chr, $start, $end, $strand, $info ) = split /\t/;
+    defined($info) && $start =~ /^[1-9][0-9]*$/ && $end >= $start && $strand =~ /^[+-]$/
+        or die "Expected five-column codon regions: chr,start,end,strand,attributes\n";
     $chr =~ s/chr//;
     my $trans = GET_ID( "transcript_id=", $info );
-    if ( exists( $trans{$trans} ) ) {
+    if ( defined($trans) && exists( $trans{$trans} ) ) {
         print "$trans\t$trans{$trans}\t$chr\t$strand\t$start\t$end\n";
     }
 }

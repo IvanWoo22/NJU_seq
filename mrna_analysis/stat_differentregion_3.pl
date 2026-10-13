@@ -4,18 +4,20 @@ use warnings;
 use autodie;
 
 use AlignDB::IntSpan;
+use Getopt::Long;
+my $legacy_shift = 0;
+GetOptions("legacy-shift" => \$legacy_shift) or die "Invalid options\n";
 
 my %point_set;
 while (<STDIN>) {
     chomp;
     my ( $chr, $point, $dir ) = split /\t/;
     my $chr_dir = $chr . "\t" . $dir;
-    if ( $dir eq "+" ) {
-        $point--;
-    }
-    else {
-        $point++;
-    }
+    next if /^#/ || /^(?:Chromosome|Position)\t/;
+    $point =~ /^[1-9][0-9]*$/ && $dir =~ /^[+-]$/ or die "Invalid site row at line $.\n";
+    $chr =~ s/^chr//;
+    $chr_dir = "$chr\t$dir";
+    $point += $dir eq "+" ? -1 : 1 if $legacy_shift;
     if ( exists( $point_set{$chr_dir} ) ) {
         $point_set{$chr_dir}->AlignDB::IntSpan::add($point);
     }
@@ -74,17 +76,17 @@ while (<$GENE>) {
     else {
         foreach (@five_utr_point) {
             my $index        = $five_utr_set->index($_);
-            my $distribution = 1 - $index / $five_utr_length;
+            my $distribution = 1 - ($index - 1) / $five_utr_length;
             print("$chr_dir\t$_\tfive_utr\t$distribution\n");
         }
         foreach (@cds_point) {
             my $index        = $cds_set->index($_);
-            my $distribution = 1 - $index / $cds_length;
+            my $distribution = 1 - ($index - 1) / $cds_length;
             print("$chr_dir\t$_\tcds\t$distribution\n");
         }
         foreach (@three_utr_point) {
             my $index        = $three_utr_set->index($_);
-            my $distribution = 1 - $index / $three_utr_length;
+            my $distribution = 1 - ($index - 1) / $three_utr_length;
             print("$chr_dir\t$_\tthree_utr\t$distribution\n");
         }
     }

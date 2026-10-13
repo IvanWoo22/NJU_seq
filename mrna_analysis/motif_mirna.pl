@@ -16,6 +16,9 @@ while (<>) {
 }
 
 foreach ( keys(%fasta) ) {
+    if (length($fasta{$_}) < 8) { warn "Skipping sequence shorter than 8 nt: $_\n"; next; }
+    $fasta{$_} = uc $fasta{$_};
+    $fasta{$_} =~ tr/T/U/;
     my @seq   = split( //, $fasta{$_} );
     my $motif = join( "", @seq[ -8 .. -1 ] );
     print "$_\t$motif\n";

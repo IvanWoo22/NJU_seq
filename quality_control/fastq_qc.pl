@@ -6,8 +6,18 @@ use autodie;
 use File::Basename;
 use Getopt::Long;
 use PerlIO::gzip;
+use File::Temp qw(tempdir);
+use Cwd qw(abs_path);
+use File::Spec;
+@ARGV >= 3 or die "Usage: fastq_qc.pl reads.fq.gz [...] output_dir name\n";
+-d $ARGV[-2] or die "Output directory does not exist\n";
+$ARGV[-1] =~ /^[A-Za-z0-9_.-]+$/ or die "Use a simple output name\n";
+$ARGV[-2] = abs_path($ARGV[-2]);
+for my $i (0 .. $#ARGV-2) { $ARGV[$i] = abs_path($ARGV[$i]) // die "Missing FASTQ\n"; }
+my $temp_dir = tempdir(CLEANUP => 1);
 
-my $dirname = dirname(__FILE__);
+my $dirname = abs_path(dirname(__FILE__));
+chdir $temp_dir;
 
 sub TAIL_BASE_COUNT {
     my %SEQ = @_;
@@ -65,21 +75,18 @@ sub BODY_BASE_COUNT {
         chomp( my $SEQ_STRING = $_ );
         my @SEQ = split( //, $SEQ_STRING );
         foreach my $BASE (@SEQ) {
+            $TOTAL_COUNT += $SEQ{$_};
             if ( $BASE eq "A" ) {
                 $A_COUNT     += $SEQ{$_};
-                $TOTAL_COUNT += $SEQ{$_};
             }
             elsif ( $BASE eq "G" ) {
                 $G_COUNT     += $SEQ{$_};
-                $TOTAL_COUNT += $SEQ{$_};
             }
             elsif ( $BASE eq "C" ) {
                 $C_COUNT     += $SEQ{$_};
-                $TOTAL_COUNT += $SEQ{$_};
             }
             elsif ( $BASE eq "T" ) {
                 $T_COUNT     += $SEQ{$_};
-                $TOTAL_COUNT += $SEQ{$_};
             }
         }
     }
@@ -100,9 +107,14 @@ foreach my $sample ( 0 .. $#ARGV - 2 ) {
     $reads_count[$sample] = 0;
     while (<$in_fh>) {
         $reads_count[$sample]++;
-        chomp( my $seq_string = <$in_fh> );
-        readline($in_fh);
-        readline($in_fh);
+        my $header = $_;
+        my $seq_string = <$in_fh>;
+        my $plus = <$in_fh>;
+        my $qual = <$in_fh>;
+        defined($qual) && $header =~ /^@/ && $plus =~ /^\+/ or die "Truncated/malformed FASTQ\n";
+        chomp($seq_string, $qual);
+        length($seq_string) == length($qual) && length($seq_string) > 0 or die "Invalid FASTQ sequence/quality lengths\n";
+        $seq_string = uc $seq_string;
         if ( exists( $seq{$seq_string} ) ) {
             $seq{$seq_string}++;
         }
@@ -124,7 +136,9 @@ foreach my $sample ( 0 .. $#ARGV - 2 ) {
         $tail_t[$sample], $tail_sum[$sample]
     ) = TAIL_BASE_COUNT(%seq);
 
-    my $short = 200;
+    $reads_count[$sample] > 0 or die "Empty FASTQ: $ARGV[$sample]\n";
+    close $in_fh;
+    my $short;
     my $long  = 1;
     foreach my $seq_string ( keys(%seq) ) {
         my $length = length($seq_string);
@@ -137,7 +151,7 @@ foreach my $sample ( 0 .. $#ARGV - 2 ) {
             $length_distribution{ $ARGV[$sample] . "\t" . $length } =
               $seq{$seq_string};
         }
-        $short = $length if ( $short > $length );
+        $short = $length if ( !defined($short) || $short > $length );
         $long  = $length if ( $long < $length );
     }
     $length_range[$sample] = $short . " - " . $long;
@@ -186,20 +200,10 @@ foreach ( sort { $a cmp $b } keys %length_distribution ) {
     print $length_dist ("$_\t$length_distribution{$_}\n");
 }
 
-system(
-"Rscript $dirname/picture_draw.R $ARGV[-1]_body.tsv $ARGV[-1]_head.tsv $ARGV[-1]_tail.tsv $ARGV[-1]_length.tsv $ARGV[-1]_summary.tsv $ARGV[-1].pdf"
-);
-
-system(
-    "tar zcvf $ARGV[-2]/$ARGV[-1]_fastqc.tar.gz $ARGV[-1]_*.tsv --remove-files"
-);
-
-system("mv $ARGV[-1].pdf $ARGV[-2]/$ARGV[-1].pdf");
-
-close($body);
-close($head);
-close($tail);
-close($summary);
-close($length_dist);
-
-__END__
+close($_) for ($body, $head, $tail, $summary, $length_dist);
+system('Rscript', "$dirname/picture_draw.R", map { "$ARGV[-1]$_" } ('_body.tsv', '_head.tsv', '_tail.tsv', '_length.tsv', '_summary.tsv', '.pdf')) == 0
+    or die "QC plotting failed (R exit status $?)\n";
+my @tables = map { "$ARGV[-1]$_" } ('_body.tsv','_head.tsv','_tail.tsv','_length.tsv','_summary.tsv');
+system('tar', 'zcf', "$ARGV[-2]/$ARGV[-1]_fastqc.tar.gz", @tables) == 0 or die "QC archive failed\n";
+use File::Copy qw(copy);
+copy("$ARGV[-1].pdf", "$ARGV[-2]/$ARGV[-1].pdf") or die "Cannot copy QC PDF: $!\n";

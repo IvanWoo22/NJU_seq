@@ -32,7 +32,7 @@ option_list <- list(
               help="Plot width (mm) [default: %default]", metavar="width"),
   make_option(c("--height", "-H"), type="numeric", default=38,  # 1.5 inches = 38 mm
               help="Plot height (mm) [default: %default]", metavar="height"),
-  make_option(c("--show-legend", "-l"), action="store_true", default=FALSE,
+  make_option(c("--show-legend", "-l"), action="store_true", default=FALSE, dest="show_legend",
               help="Show legend [default: %default]")
 )
 
@@ -59,13 +59,14 @@ process_data <- function(file_path) {
   dist_raw <- read.table(file_path, sep = "\t", header = FALSE)
   
   # Data validation
-  if (ncol(dist_raw) < 3) {
-    stop("Input file format error: at least 3 columns required")
+  if (ncol(dist_raw) != 3) {
+    stop("Input file format error: exactly 3 columns required")
   }
   
   # Ensure correct column names
   colnames(dist_raw) <- c("region", "position", "count")
   
+  if (!is.numeric(dist_raw$position) || !is.numeric(dist_raw$count) || any(!is.finite(dist_raw$position)) || any(!is.finite(dist_raw$count))) stop("Position and count must be finite numbers")
   # Validate region types
   valid_regions <- c("five_utr", "cds", "three_utr")
   if (!all(dist_raw$region %in% valid_regions)) {
@@ -135,7 +136,7 @@ calculate_statistics <- function(data) {
   proportions <- if (total_count > 0) {
     round((sum_counts / total_count) * 100, 2)
   } else {
-    c(0, 0, 0)
+    setNames(c(0, 0, 0), names(sum_counts))
   }
   
   # Calculate global maximum Y value
@@ -179,6 +180,7 @@ prepare_plot_data <- function(data, stats) {
     ),
     region = c("five_utr", "cds", "three_utr")
   )
+  text_positions <- text_positions[stats$x_max[text_positions$region] > 0, ]
   
   return(list(
     five_utr = five_utr_data,
@@ -224,24 +226,21 @@ generate_plot <- function(plot_data, stats, show_legend = FALSE) {
     # 5'UTR curve
     geom_line(
       data = plot_data$five_utr,
-      aes(x = position, y = count),
-      colour = colors["five_utr"],
+      aes(x = position, y = count, colour = "five_utr"),
       linewidth = 0.4,  # 4 pt line
       show.legend = show_legend
     ) +
     # CDS curve
     geom_line(
       data = plot_data$cds,
-      aes(x = position + cds_start, y = count),
-      colour = colors["cds"],
+      aes(x = position + cds_start, y = count, colour = "cds"),
       linewidth = 0.4,  # 4 pt line
       show.legend = show_legend
     ) +
     # 3'UTR curve
     geom_line(
       data = plot_data$three_utr,
-      aes(x = position + three_utr_start, y = count),
-      colour = colors["three_utr"],
+      aes(x = position + three_utr_start, y = count, colour = "three_utr"),
       linewidth = 0.4,  # 4 pt line
       show.legend = show_legend
     ) +
@@ -283,7 +282,7 @@ generate_plot <- function(plot_data, stats, show_legend = FALSE) {
     annotate("text", 
              x = five_utr_end / 2, 
              y = -stats$global_y_max * 0.05-1, 
-             label = "5'UTR", 
+             label = if (stats$x_max["five_utr"] > 0) "5'UTR" else "",
              fontface = "bold", 
              size = 0.833,  # 5 pt font
              color = colors["five_utr"]
@@ -291,7 +290,7 @@ generate_plot <- function(plot_data, stats, show_legend = FALSE) {
     annotate("text", 
              x = cds_start + (stats$x_max["cds"] / 2), 
              y = -stats$global_y_max * 0.05-1, 
-             label = "CDS", 
+             label = if (stats$x_max["cds"] > 0) "CDS" else "",
              fontface = "bold", 
              size = 0.833,  # 5 pt font
              color = colors["cds"]
@@ -299,7 +298,7 @@ generate_plot <- function(plot_data, stats, show_legend = FALSE) {
     annotate("text", 
              x = three_utr_start + (stats$x_max["three_utr"] / 2), 
              y = -stats$global_y_max * 0.05-1, 
-             label = "3'UTR", 
+             label = if (stats$x_max["three_utr"] > 0) "3'UTR" else "",
              fontface = "bold", 
              size = 0.833,  # 5 pt font
              color = colors["three_utr"]
@@ -311,7 +310,7 @@ generate_plot <- function(plot_data, stats, show_legend = FALSE) {
     ) +
     # Y-axis settings
     scale_y_continuous(
-      limits = c(-stats$global_y_max * 0.15, stats$global_y_max * 1.1),
+      limits = c(-1 - stats$global_y_max * 0.15, stats$global_y_max * 1.1),
       breaks = seq(0, stats$global_y_max, by = max(1, floor(stats$global_y_max / 5))),
       expand = c(0, 0)
     ) +
@@ -321,6 +320,8 @@ generate_plot <- function(plot_data, stats, show_legend = FALSE) {
       breaks = NULL,  # Remove x-axis ticks
       expand = c(0, 0)
     ) +
+    scale_color_manual(values = colors, limits = names(colors),
+                       labels = c("5'UTR", "CDS", "3'UTR"), drop = FALSE) +
     # Theme settings
     theme_bw() +
     theme(
@@ -345,22 +346,7 @@ generate_plot <- function(plot_data, stats, show_legend = FALSE) {
   
   # If legend is needed
   if (show_legend) {
-    # Create legend data
-    legend_data <- data.frame(
-      region = c("5'UTR", "CDS", "3'UTR"),
-      color = c(colors["five_utr"], colors["cds"], colors["three_utr"])
-    )
-    
-    # Add legend
     p <- p +
-      geom_point(
-        data = legend_data,
-        aes(x = 0, y = 0, color = region),
-        show.legend = TRUE
-      ) +
-      scale_color_manual(
-        values = c("5'UTR" = colors["five_utr"], "CDS" = colors["cds"], "3'UTR" = colors["three_utr"])
-      ) +
       theme(
         legend.position = "bottom",
         legend.title = element_blank(),
@@ -431,8 +417,6 @@ main <- function() {
     cat("\n[Error]: ", conditionMessage(e), "\n")
     cat("Analysis failed. Please check input file and parameter settings.\n")
     q(status = 1)
-  }, warning = function(w) {
-    cat("\n[Warning]: ", conditionMessage(w), "\n")
   })
 }
 

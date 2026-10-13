@@ -26,6 +26,9 @@ raw_data_2 <-
     sep = "\t"
   )
 
+stopifnot(ncol(raw_data_1) == 4, ncol(raw_data_2) == 4,
+          all(is.finite(raw_data_1[[4]])), all(is.finite(raw_data_2[[4]])),
+          all(raw_data_1[[4]] > 0), all(raw_data_2[[4]] > 0))
 colnames(raw_data_1) <-
   c("name1", "name2", "color_pattern", "score")
 colnames(raw_data_2) <-
@@ -65,7 +68,7 @@ p1 <-
     scale_fill_manual(values = color_scale) +
     expand_limits(y = 0) +
     scale_y_continuous(expand = c(0, 0)) +
-    coord_flip(ylim = c(0, log10(max(raw_data[, 4]) * 1.5))) +
+    coord_flip(ylim = range(c(0, df_plot1$log_score)) + c(-0.05, 0.05)) +
     theme_bw(base_line_size = 0.11672, base_rect_size = 0.11672) +
     theme(
       axis.ticks = element_line(colour = "#000000", size = 0.11672),
@@ -95,7 +98,7 @@ p2 <-
     scale_fill_manual(values = color_scale) +
     expand_limits(y = 0) +
     scale_y_continuous(expand = c(0, 0)) +
-    coord_flip(ylim = c(0, log10(max(raw_data[, 4]) * 1.5))) +
+    coord_flip(ylim = range(c(0, df_plot2$log_score)) + c(-0.05, 0.05)) +
     theme_bw(base_line_size = 0.11672, base_rect_size = 0.11672) +
     theme(
       axis.ticks = element_line(colour = "#000000", size = 0.11672),

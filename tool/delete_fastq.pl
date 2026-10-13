@@ -34,8 +34,11 @@ while (<$name>) {
     $target_name{$_} = 0;
 }
 
+defined($name_list) && defined($in_fq) && defined($out_fq) or die "Require -n, -i and -o\n";
+if (-e $out_fq) { my @i = stat($in_fq); my @o = stat($out_fq);
+    die "Input and output must differ\n" if @i && $i[0] == $o[0] && $i[1] == $o[1]; }
 my $in_fh;
-if ( $in_fq =~ /.gz$/ ) {
+if ( $in_fq =~ /\.gz$/ ) {
     open $in_fh, "<:gzip", $in_fq;
 }
 else {
@@ -43,7 +46,7 @@ else {
 }
 
 my $out_fh;
-if ( $out_fq =~ /.gz$/ ) {
+if ( $out_fq =~ /\.gz$/ ) {
     open $out_fh, ">:gzip", $out_fq;
 }
 else {
@@ -55,8 +58,13 @@ while (<$in_fh>) {
     my $sequence = <$in_fh>;
     my $t        = <$in_fh>;
     my $quality  = <$in_fh>;
-    $qname =~ /^@(\S+)/;
-    unless ( exists $target_name{$1} ) {
+    my ($read_id) = $qname =~ /^@(\S+)/;
+    defined($quality) && defined($read_id) && $t =~ /^\+/
+        or die "Malformed or truncated FASTQ record at line $.\n";
+    (my $seq_check = $sequence) =~ s/\r?\n$//;
+    (my $qual_check = $quality) =~ s/\r?\n$//;
+    length($seq_check) == length($qual_check) or die "FASTQ sequence/quality length mismatch for $read_id\n";
+    unless ( exists $target_name{$read_id} ) {
         print $out_fh "$qname$sequence$t$quality";
     }
 }

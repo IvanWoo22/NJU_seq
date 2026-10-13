@@ -18,26 +18,31 @@ while (<STDIN>) {
     push( @weight, $tmp[9] );
 }
 
+exit 0 unless @line;
+# Keep the legacy relative-length binning; when 5UTR is absent, anchor
+# five bins to the first nonempty region instead of dividing by zero.
+my $anchor = $fu || $cds || $tu;
+$anchor > 0 or die "All region lengths are zero\n";
 my ( @dis_fu, @dis_cds, @dis_tu );
-@dis_fu  = (0) x 6;
-@dis_cds = (0) x ( POSIX::ceil( 5 * $cds / $fu ) + 1 );
-@dis_tu  = (0) x ( POSIX::ceil( 5 * $tu / $fu ) + 1 );
+@dis_fu  = (0) x ($fu > 0 ? 6 : 1);
+@dis_cds = (0) x ( POSIX::ceil( 5 * $cds / $anchor ) + 1 );
+@dis_tu  = (0) x ( POSIX::ceil( 5 * $tu / $anchor ) + 1 );
 foreach ( 0 .. $#line ) {
     if ( $type[$_] eq "five_utr" ) {
         $dis_fu[ POSIX::ceil( $dis[$_] * 5 ) ] += $weight[$_];
     }
     elsif ( $type[$_] eq "cds" ) {
-        $dis_cds[ POSIX::ceil( POSIX::ceil( 5 * $cds / $fu ) * $dis[$_] ) ] +=
+        $dis_cds[ POSIX::ceil( POSIX::ceil( 5 * $cds / $anchor ) * $dis[$_] ) ] +=
           $weight[$_];
     }
     else {
-        $dis_tu[ POSIX::ceil( POSIX::ceil( 5 * $tu / $fu ) * $dis[$_] ) ] +=
+        $dis_tu[ POSIX::ceil( POSIX::ceil( 5 * $tu / $anchor ) * $dis[$_] ) ] +=
           $weight[$_];
     }
 }
-$dis_fu[1]  += $dis_fu[0];
-$dis_cds[1] += $dis_cds[0];
-$dis_tu[1]  += $dis_tu[0];
+$dis_fu[1]  += $dis_fu[0] if $fu > 0;
+$dis_cds[1] += $dis_cds[0] if $cds > 0;
+$dis_tu[1]  += $dis_tu[0] if $tu > 0;
 
 foreach my $bin ( 1 .. $#dis_fu ) {
     my $x = $bin - 0.5;

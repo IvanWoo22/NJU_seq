@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
-
-set -e
-
-filepath=$(
-	cd "$(dirname "${0}")" || exit
-	pwd -P
-)
-
-sort -t $'\t' -nrk "$3","$3" "$2" | head -n "${11}" | awk -F $'\t' '{print $1 $3 $2}' >templist1.tmp
-sort -t $'\t' -nrk "$6","$6" "$5" | head -n "${11}" | awk -F $'\t' '{print $1 $3 $2}' >templist2.tmp
-sort -t $'\t' -nrk "$9","$9" "$8" | head -n "${11}" | awk -F $'\t' '{print $1 $3 $2}' >templist3.tmp
-
-Rscript "${filepath}"/point_venn.R "$1" templist1.tmp "$4" templist2.tmp "$7" templist3.tmp "${10}"
-rm templist1.tmp templist2.tmp templist3.tmp "${10}"*.log
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+[[ $# == 11 && "${11}" =~ ^[1-9][0-9]*$ ]] || { echo 'Require three label/file/score-column triples, output path and positive top N' >&2; exit 2; }
+TEMP_DIR="$(mktemp -d)"
+trap 'rm -rf -- "$TEMP_DIR"' EXIT
+for I in 1 2 3; do
+    case "$I" in
+      1) INPUT=$2; COL=$3;;
+      2) INPUT=$5; COL=$6;;
+      3) INPUT=$8; COL=$9;;
+    esac
+    [[ "$COL" =~ ^[1-9][0-9]*$ ]] || exit 2
+    # awk reads all sorted input: no SIGPIPE from head under pipefail.
+    awk -F '\t' '$0 !~ /^#/ && $2 ~ /^[0-9]+$/ {print}' "$INPUT" \
+        | LC_ALL=C sort -t $'\t' -nrk "$COL,$COL" \
+        | awk -F '\t' -v n="${11}" 'NR<=n {print $1 ":" $3 ":" $2}' >"$TEMP_DIR/$I"
+done
+Rscript "$SCRIPT_DIR/point_venn.R" "$1" "$TEMP_DIR/1" "$4" "$TEMP_DIR/2" "$7" "$TEMP_DIR/3" "${10}"

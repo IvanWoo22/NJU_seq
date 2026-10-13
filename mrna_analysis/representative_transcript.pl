@@ -9,6 +9,8 @@ Getopt::Long::GetOptions(
     'geneid=s'  => \my $geneid,
     'transid=s' => \my $transid,
 ) or Getopt::Long::HelpMessage(1);
+defined($geneid) && length($geneid) && defined($transid) && length($transid)
+    or die "Both --geneid and --transid attribute prefixes are required\n";
 
 sub TAGS {
     my $INFO = shift;
@@ -20,7 +22,7 @@ sub TAGS {
         $TSL = 6;
     }
     my @TMP  = ( $INFO =~ m/tag=([A-Z,a-z,0-9,_,\,]*)/ );
-    my @TAG  = split( /,/, $TMP[0] );
+    my @TAG  = split( /,/, $TMP[0] // "" );
     my $MANE = 0;
     $MANE = grep /^MANE_Select$/i, @TAG;
     my $AP;
@@ -50,10 +52,12 @@ sub GET_ID {
 my %gene_info;
 while (<STDIN>) {
     chomp;
-    my ( undef, undef, undef, $start, $end, undef, undef, undef, $info ) =
+    my ( undef, undef, $type, $start, $end, undef, undef, undef, $info ) =
       split /\t/;
+    next unless defined($info) && $type =~ /^(?:mRNA|transcript)$/;
     my $trans_name = GET_ID( $transid, $info );
     my $gene_name  = GET_ID( $geneid,  $info );
+    next unless defined($trans_name) && defined($gene_name);
     @{ $gene_info{$gene_name}{$trans_name} } = TAGS($info);
     my $length = $end - $start;
     push( @{ $gene_info{$gene_name}{$trans_name} }, $length );
@@ -75,7 +79,7 @@ foreach my $gene ( sort( keys(%gene_info) ) ) {
         }
     }
     else {
-        if ( $mane > 2 ) {
+        if ( $mane > 1 ) {
             foreach my $trans ( sort( keys( %{ $gene_info{$gene} } ) ) ) {
                 if ( ${ $gene_info{$gene}{$trans} }[0] == 0 ) {
                     delete( $gene_info{$gene}{$trans} );
@@ -111,7 +115,7 @@ foreach my $gene ( sort( keys(%gene_info) ) ) {
                 }
             }
             else {
-                if ( $basic > 2 ) {
+                if ( $basic > 1 ) {
                     foreach my $trans ( sort( keys( %{ $gene_info{$gene} } ) ) )
                     {
                         if ( $basic{$trans} == 0 ) {
@@ -141,11 +145,10 @@ foreach my $gene ( sort( keys(%gene_info) ) ) {
                         }
                     }
                     my @length_sort =
-                      sort { $length{$a} <=> $length{$b} } keys %length;
+                      sort { $length{$a} <=> $length{$b} || $a cmp $b } keys %length;
                     print("$length_sort[0]\t$gene\n");
                 }
             }
         }
     }
 }
-

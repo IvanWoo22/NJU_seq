@@ -1,149 +1,55 @@
 #!/usr/bin/env perl
-use warnings;
 use strict;
+use warnings;
 use autodie;
 use AlignDB::IntSpan;
+use Getopt::Long;
 
-open(my $IN1, "<", $ARGV[0]);
-
-my (%ase_s, %ase_e, %ase_id, %ase_gene);
-while (<$IN1>) {
-    chomp;
-    my @tmp = split "\t";
-    $tmp[0] =~ s/chr//;
-    push(@{$ase_s{ $tmp[0] . $tmp[5] }}, $tmp[1]);
-    push(@{$ase_e{ $tmp[0] . $tmp[5] }}, $tmp[2]);
-    push(@{$ase_id{ $tmp[0] . $tmp[5] }}, $tmp[4]);
-    if (exists($ase_gene{ $tmp[0] . $tmp[5] . $tmp[4] })) {
-        $ase_gene{ $tmp[0] . $tmp[5] . $tmp[4] } += $tmp[2] - $tmp[1] + 1;
+# Six-column regions: chr,start,end,unused,gene,strand. Default is 1-based
+# inclusive; --bed converts zero-based half-open coordinates explicitly.
+my $bed = 0;
+GetOptions('bed' => \$bed) or die "Invalid options\n";
+@ARGV == 3 or die "Usage: judge_splice_exon.pl [--bed] ASE.tsv CSE.tsv sites.tsv\n";
+my (%regions, %by_chr);
+for my $kind (0, 1) {
+    open my $fh, '<', $ARGV[$kind];
+    while (<$fh>) {
+        chomp;
+        next if /^#/ || /^\s*$/;
+        my ($chr,$a,$b,undef,$gene,$strand) = split /\t/;
+        defined($strand) && $a =~ /^\d+$/ && $b =~ /^[1-9][0-9]*$/ && $strand =~ /^[+-]$/
+            or die "Invalid six-column region in $ARGV[$kind]\n";
+        $a++ if $bed;
+        $a >= 1 && $b >= $a or die "Invalid region coordinates (use --bed for BED)\n";
+        $chr =~ s/^chr//;
+        my $group = "$chr\t$strand";
+        my $key = "$group\t$gene";
+        $regions{$key} //= [AlignDB::IntSpan->new, AlignDB::IntSpan->new];
+        $regions{$key}[$kind]->add_range($a,$b);
+        $by_chr{$group}{$key} = 1;
     }
-    else {
-        $ase_gene{ $tmp[0] . $tmp[5] . $tmp[4] } = $tmp[2] - $tmp[1] + 1;
-    }
+    close $fh;
 }
-close($IN1);
-
-my (%cse_s, %cse_e, %cse_id, %cse_gene);
-open(my $IN2, "<", $ARGV[1]);
-while (<$IN2>) {
+my (@count, @length);
+@count = @length = (0,0);
+my (%seen_site, %seen_gene);
+open my $sites, '<', $ARGV[2];
+while (<$sites>) {
     chomp;
-    my @tmp = split "\t";
-    $tmp[0] =~ s/chr//;
-    push(@{$cse_s{ $tmp[0] . $tmp[5] }}, $tmp[1]);
-    push(@{$cse_e{ $tmp[0] . $tmp[5] }}, $tmp[2]);
-    push(@{$cse_id{ $tmp[0] . $tmp[5] }}, $tmp[4]);
-    if (exists($cse_gene{ $tmp[0] . $tmp[5] . $tmp[4] })) {
-        $cse_gene{ $tmp[0] . $tmp[5] . $tmp[4] } += $tmp[2] - $tmp[1] + 1;
-    }
-    else {
-        $cse_gene{ $tmp[0] . $tmp[5] . $tmp[4] } = $tmp[2] - $tmp[1] + 1;
-    }
-}
-close($IN2);
-
-my ($ase_times, $cse_times, $ase_ranges, $cse_ranges) = (0, 0, 0, 0);
-my %gene;
-open(my $IN3, "<", $ARGV[2]);
-while (<$IN3>) {
-    chomp;
-    my @tmp = split "\t";
-    my ($ase, $cse) = (0, 0);
-    foreach my $no (0 .. $#{$ase_s{ $tmp[0] . $tmp[2] }}) {
-        if (($tmp[1] >= ${$ase_s{ $tmp[0] . $tmp[2] }}[$no])
-            and ($tmp[1] <= ${$ase_e{ $tmp[0] . $tmp[2] }}[$no])) {
-            $ase++;
-            unless (
-                exists(
-                    $gene{
-                        $tmp[0]
-                            . $tmp[2]
-                            . ${$ase_id{ $tmp[0] . $tmp[2] }}[$no]
-                    }
-                )
-            ) {
-                $ase_ranges +=
-                    $ase_gene{ $tmp[0]
-                        . $tmp[2]
-                        . ${$ase_id{ $tmp[0] . $tmp[2] }}[$no] }
-                    if (
-                        exists(
-                            $ase_gene{
-                                $tmp[0]
-                                    . $tmp[2]
-                                    . ${$ase_id{ $tmp[0] . $tmp[2] }}[$no]
-                            }
-                        )
-                    );
-                $cse_ranges +=
-                    $cse_gene{ $tmp[0]
-                        . $tmp[2]
-                        . ${$ase_id{ $tmp[0] . $tmp[2] }}[$no] }
-                    if (
-                        exists(
-                            $cse_gene{
-                                $tmp[0]
-                                    . $tmp[2]
-                                    . ${$ase_id{ $tmp[0] . $tmp[2] }}[$no]
-                            }
-                        )
-                    );
-                $gene{  $tmp[0]
-                    . $tmp[2]
-                    . ${$ase_id{ $tmp[0] . $tmp[2] }}[$no] } = 1;
-            }
+    next if /^#/ || /^(?:Chromosome|Position)\t/ || /^\s*$/;
+    my ($chr,$pos,$strand) = split /\t/;
+    $pos =~ /^[1-9][0-9]*$/ && $strand =~ /^[+-]$/ or die "Invalid site row\n";
+    $chr =~ s/^chr//;
+    next if $seen_site{"$chr\t$pos\t$strand"}++;
+    my @hits = (0,0);
+    for my $key (keys %{$by_chr{"$chr\t$strand"} // {}}) {
+        my @in = map { $regions{$key}[$_]->contains_all($pos) ? 1 : 0 } (0,1);
+        next unless $in[0] || $in[1];
+        $hits[$_] += $in[$_] for 0,1;
+        unless ($seen_gene{$key}++) {
+            $length[$_] += $regions{$key}[$_]->size for 0,1;
         }
     }
-    foreach my $no (0 .. $#{$cse_s{ $tmp[0] . $tmp[2] }}) {
-        if (($tmp[1] >= ${$cse_s{ $tmp[0] . $tmp[2] }}[$no])
-            and ($tmp[1] <= ${$cse_e{ $tmp[0] . $tmp[2] }}[$no])) {
-            $cse++;
-            unless (
-                exists(
-                    $gene{
-                        $tmp[0]
-                            . $tmp[2]
-                            . ${$cse_id{ $tmp[0] . $tmp[2] }}[$no]
-                    }
-                )
-            ) {
-                $ase_ranges +=
-                    $ase_gene{ $tmp[0]
-                        . $tmp[2]
-                        . ${$cse_id{ $tmp[0] . $tmp[2] }}[$no] }
-                    if (
-                        exists(
-                            $ase_gene{
-                                $tmp[0]
-                                    . $tmp[2]
-                                    . ${$cse_id{ $tmp[0] . $tmp[2] }}[$no]
-                            }
-                        )
-                    );
-                $cse_ranges +=
-                    $cse_gene{ $tmp[0]
-                        . $tmp[2]
-                        . ${$cse_id{ $tmp[0] . $tmp[2] }}[$no] }
-                    if (
-                        exists(
-                            $cse_gene{
-                                $tmp[0]
-                                    . $tmp[2]
-                                    . ${$cse_id{ $tmp[0] . $tmp[2] }}[$no]
-                            }
-                        )
-                    );
-                $gene{  $tmp[0]
-                    . $tmp[2]
-                    . ${$cse_id{ $tmp[0] . $tmp[2] }}[$no] } = 1;
-            }
-        }
-    }
-    if ($ase + $cse > 0) {
-        $ase_times += $ase / ($ase + $cse);
-        $cse_times += $cse / ($ase + $cse);
-    }
+    if ($hits[0]+$hits[1]) { $count[$_] += $hits[$_]/($hits[0]+$hits[1]) for 0,1; }
 }
-
-print "$ase_times\n$cse_times\n$ase_ranges\n$cse_ranges\n";
-
-__END__
+print join("\n", @count, @length), "\n";

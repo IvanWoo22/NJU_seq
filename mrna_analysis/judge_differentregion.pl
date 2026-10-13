@@ -41,12 +41,14 @@ while (<STDIN>) {
     $i++;
 }
 
+push @gene, scalar @line; # end boundary for the final gene
 open( my $GENE, "<", $IN_FH );
 while (<$GENE>) {
     chomp;
     my ( $chr, $name, $dir, $exon, $intron, undef ) =
       split /\t/;
-    my $transcript;
+    exists $gene_info{$name} or die "Gene absent from GFF: $name\n";
+    my $transcript = "-";
     my $trans_cds       = AlignDB::IntSpan->new;
     my $trans_five_utr  = AlignDB::IntSpan->new;
     my $trans_three_utr = AlignDB::IntSpan->new;

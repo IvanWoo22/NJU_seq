@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use autodie;
 use Getopt::Long;
 
 =head1 NAME
@@ -28,6 +29,7 @@ sub SEQ_TR_TU {
     return ( $SEQ =~ tr/Uu/Tt/r );
 }
 
+defined($char) or die "Require --string (regular expression)\n";
 my @info;
 if ( defined($in_fa) ) {
     open FA, "<", $in_fa;
@@ -43,7 +45,7 @@ else {
 
 my $i = 0;
 while ( $i <= $#info ) {
-    if ( $info[$i] =~ /$char/ ) {
+    if ( $info[$i] =~ /^>/ && $info[$i] =~ /$char/ ) {
         print( $info[$i] );
         my $j = 1;
         until ( ( $i + $j > $#info ) or ( $info[ $i + $j ] =~ /^>/ ) ) {

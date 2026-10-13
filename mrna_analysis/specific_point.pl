@@ -2,62 +2,18 @@
 use strict;
 use warnings;
 use autodie;
-use Algorithm::Combinatorics qw(combinations);
-
-my ( %point, %point_info, @all_set );
-foreach my $file_name (@ARGV) {
-    open( my $FH, "<", $file_name );
-    while (<$FH>) {
-        chomp;
-        my ( $chr, $pos, $dir ) = split( "\t", $_ );
-        push( @{ $point{$file_name} }, $chr . $dir . $pos );
-        $point_info{ $chr . $dir . $pos } = $_;
-    }
-    push( @all_set, @{ $point{$file_name} } );
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use NJUSeq::SiteTable qw(read_sites);
+my ($rows, $members) = read_sites(@ARGV);
+my %groups;
+for my $key (sort keys %$rows) {
+    my $mask = join ",", sort { $a <=> $b } keys %{$members->{$key}};
+    push @{$groups{$mask}}, $key;
 }
-
-my %all_point;
-foreach my $ELEMENT (@all_set) {
-    $all_point{$ELEMENT}++;
+for my $mask (sort keys %groups) {
+    my @selected = split /,/, $mask;
+    print "#", join(" ", @ARGV[@selected]), "\n";
+    print "$rows->{$_}\n" for @{$groups{$mask}};
+    print "\n";
 }
-my @all_point = keys %all_point;
-
-foreach my $number ( 1 .. $#ARGV + 1 ) {
-    my $iter = combinations( \@ARGV, $number );
-    while ( my $choose = $iter->next ) {
-        my ( @in, @out );
-        my %choose;
-        foreach my $element ( @{$choose} ) {
-            $choose{$element} = 1;
-        }
-        foreach my $element (@ARGV) {
-            push( @in,  @{ $point{$element} } ) if exists( $choose{$element} );
-            push( @out, @{ $point{$element} } )
-              unless exists( $choose{$element} );
-        }
-        my ( @in_point, @out_point, %in_point, %out_point );
-        foreach my $ELEMENT (@in) {
-            $in_point{$ELEMENT}++;
-        }
-        @in_point = grep { $in_point{$_} == $number; } ( keys %in_point );
-        foreach my $ELEMENT (@out) {
-            $out_point{$ELEMENT}++;
-        }
-        @out_point = keys %out_point;
-        my @point =
-          grep {
-                  ( exists( $in_point{$_} ) )
-              and ( $in_point{$_} == $number )
-              and ( not( exists( $out_point{$_} ) ) )
-          } @all_point;
-        if ( @point > 0 ) {
-            print "#" . join( " ", @$choose ) . "\n";
-            foreach my $point (@point) {
-                print "$point_info{$point}\n";
-            }
-            print "\n";
-        }
-    }
-}
-
-__END__

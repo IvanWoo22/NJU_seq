@@ -44,11 +44,8 @@ open( my $ALTER,  ">", $ALTER_FH );
 open( my $UNIQUE, ">", $UNIQUE_FH );
 
 my ( @temp_exon, @temp_transcript, $temp_gene, $temp_gene_info );
-while (<STDIN>) {
-    chomp;
-    my ( $chr, undef, $type, $start, $end, undef, $dir, undef, $info ) =
-      split /\t/;
-    if ( $type eq "gene" ) {
+my %transcript_index;
+sub FLUSH_GENE {
         if ( @temp_transcript > 1 ) {
             my ( $exon, $intron, $alter ) =
               ALTER_SPLICE( $temp_gene, \@temp_transcript, \@temp_exon );
@@ -59,8 +56,17 @@ while (<STDIN>) {
             my $intron = $temp_gene->AlignDB::IntSpan::diff( $temp_exon[0] );
             print $UNIQUE ("$temp_gene_info\t$exon\t$intron\t-\n");
         }
+}
+while (<STDIN>) {
+    next if /^#/ || /^\s*$/;
+    chomp;
+    my ( $chr, undef, $type, $start, $end, undef, $dir, undef, $info ) =
+      split /\t/;
+    if ( $type eq "gene" ) {
+        FLUSH_GENE();
         splice( @temp_transcript, 0 );
         splice( @temp_exon,       0 );
+        %transcript_index = ();
         $temp_gene = AlignDB::IntSpan->new;
         $temp_gene->add_range( $start, $end );
         my $gene_info = GET_INFO($info);
@@ -72,11 +78,23 @@ while (<STDIN>) {
         push( @temp_transcript, $set1 );
         my $set2 = AlignDB::IntSpan->new;
         push( @temp_exon, $set2 );
+        if ($info =~ /(?:ID=transcript:|transcript_id=)([^;\s,]+)/) {
+            $transcript_index{$1} = $#temp_exon;
+        }
     }
     elsif ( $type eq "exon" ) {
-        $temp_exon[-1]->AlignDB::IntSpan::add_range( $start, $end );
+        @temp_exon or die "Exon precedes its transcript in grouped GFF\n";
+        if ($info =~ /(?:Parent=transcript:|transcript_id=)([^;\s]+)/) {
+            for my $parent (split /,/, $1) {
+                $parent =~ s/^transcript://;
+                exists($transcript_index{$parent}) or die "Unknown exon parent $parent in current gene block\n";
+                $temp_exon[$transcript_index{$parent}]->add_range($start, $end);
+            }
+        }
+        else { die "Exon lacks an explicit transcript parent\n"; }
     }
 }
+FLUSH_GENE();
 close($ALTER);
 close($UNIQUE);
 

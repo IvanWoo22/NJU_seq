@@ -4,6 +4,8 @@ use warnings;
 use autodie;
 use List::Util qw/max min/;
 
+@ARGV == 5 && $ARGV[3] =~ /^[1-9][0-9]*$/ && $ARGV[4] =~ /^[1-9][0-9]*$/
+    or die "Usage: extract_point_neo.pl A B C positive_target positive_step (legacy 12 columns)\n";
 open( my $IN1, "<", $ARGV[0] );
 open( my $IN2, "<", $ARGV[1] );
 open( my $IN3, "<", $ARGV[2] );
@@ -12,13 +14,21 @@ sub LIST_INPUT {
     my $IN = shift;
     my ( @ARRAY_LIST, %INFO, %SCORE, %COUNT );
     my $COUNT = 0;
+    my %seen;
+    my $previous;
     while (<$IN>) {
+        next if /^#/ || /^(?:Chromosome|Position)\t/;
+        scalar(split /\t/, $_) == 12 or die "Requires legacy 12-column input, not current score.pl output\n";
         $COUNT++;
         chomp;
         my (
             $CHR,     $POS,   $DIR, $BASE1, $BASE2, $BASE3,
             $GENE_ID, $TR_P1, $TR,  $NC_P1, $NC,    $SCORE
         ) = split /\t/;
+        $SCORE =~ /^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/ or die "Invalid score\n";
+        die "Input must be sorted by descending score\n" if defined($previous) && $SCORE > $previous;
+        $previous = $SCORE;
+        die "Duplicate site\n" if $seen{"$CHR\t$POS\t$DIR"}++;
         push( @ARRAY_LIST, $CHR . "\t" . $POS . "\t" . $DIR );
         $INFO{ $CHR . "\t" . $POS . "\t" . $DIR } =
             $CHR . "\t"
@@ -39,6 +49,7 @@ sub LIST_INPUT {
 my ( $a_array, $info, $a_score, $a_end, $a_count ) = LIST_INPUT($IN1);
 my ( $b_array, undef, $b_score, $b_end, $b_count ) = LIST_INPUT($IN2);
 my ( $c_array, undef, $c_score, $c_end, $c_count ) = LIST_INPUT($IN3);
+exit 0 unless $a_count && $b_count && $c_count;
 my $count_max = List::Util::max( $a_count, $b_count, $c_count );
 
 my ( @common, @a_extract, @b_extract, @c_extract, %a_list, %b_list, %c_list );
@@ -66,7 +77,7 @@ $c_extract = List::Util::min( $extract - 1, $c_count - 1 );
 @common =
   grep( { $a_list{$_} && $b_list{$_} } @c_extract );
 
-while ( ( $#common <= $ARGV[3] ) and ( $extract < $count_max ) ) {
+while ( ( scalar(@common) < $ARGV[3] ) and ( $extract < $count_max ) ) {
     $extract += $step;
     $a_extract = List::Util::min( $extract - 1, $a_count - 1 );
     $b_extract = List::Util::min( $extract - 1, $b_count - 1 );

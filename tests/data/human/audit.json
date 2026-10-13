@@ -1,0 +1,96 @@
+{
+  "method": "consecutive prefix after skip; not random",
+  "pairs_per_sample": 1000,
+  "skipped_pairs": 0,
+  "source_gzip_scope": "consumed prefix only; full CRC not checked",
+  "samples": [
+    {
+      "sample": "NJU6096",
+      "role": "NC",
+      "umi": "none",
+      "pairs": 1000,
+      "sources": [
+        {
+          "path": "/home/ivan/cater_data/NJU6096/NJU6096_L1_A025.R1.fastq.gz",
+          "bytes": 10567252708,
+          "mtime_ns": 1643111004305736630
+        },
+        {
+          "path": "/home/ivan/cater_data/NJU6096/NJU6096_L1_A025.R2.fastq.gz",
+          "bytes": 12121605934,
+          "mtime_ns": 1643111212003731994
+        }
+      ],
+      "sha256": {
+        "R1.fq.gz": "a99e4d848830802934ad60840d5bb4aa9481703fd531d621a7eacf0c9e1db6da",
+        "R2.fq.gz": "64983b940a7acc081eadd550cbe997ccdd63f589886e8624793e796b707f5eaa"
+      }
+    },
+    {
+      "sample": "NJU6097",
+      "role": "TR",
+      "umi": "none",
+      "pairs": 1000,
+      "sources": [
+        {
+          "path": "/home/ivan/cater_data/NJU6097/NJU6097_L1_A026.R1.fastq.gz",
+          "bytes": 10031862939,
+          "mtime_ns": 1643110737350742588
+        },
+        {
+          "path": "/home/ivan/cater_data/NJU6097/NJU6097_L1_A026.R2.fastq.gz",
+          "bytes": 12099540310,
+          "mtime_ns": 1643110917192738574
+        }
+      ],
+      "sha256": {
+        "R1.fq.gz": "86df2bc98eb0db2d6165e722ab11b2764ee67a7a402db02447a81cbaf908d8f3",
+        "R2.fq.gz": "bf9c3154dc2a9bc3774816f035032beefb34b9ddd7f4dae604f826964c4cdc0d"
+      }
+    },
+    {
+      "sample": "NJU6098",
+      "role": "TR",
+      "umi": "none",
+      "pairs": 1000,
+      "sources": [
+        {
+          "path": "/home/ivan/cater_data/NJU6098/NJU6098_L1_A027.R1.fastq.gz",
+          "bytes": 7200095798,
+          "mtime_ns": 1643110293963752484
+        },
+        {
+          "path": "/home/ivan/cater_data/NJU6098/NJU6098_L1_A027.R2.fastq.gz",
+          "bytes": 8770264116,
+          "mtime_ns": 1643110807194741029
+        }
+      ],
+      "sha256": {
+        "R1.fq.gz": "f2de7044652ece64c95019acbb8f53bfb8023ccd904c71f79ef2c77a68caeecb",
+        "R2.fq.gz": "95ab7fd61a74202bf5279cedc38eda7fc08f8aab8a1a931c6c74b843b86fa2c5"
+      }
+    },
+    {
+      "sample": "NJU6099",
+      "role": "TR",
+      "umi": "none",
+      "pairs": 1000,
+      "sources": [
+        {
+          "path": "/home/ivan/cater_data/NJU6099/NJU6099_L1_A028.R1.fastq.gz",
+          "bytes": 8943604416,
+          "mtime_ns": 1643110499629747894
+        },
+        {
+          "path": "/home/ivan/cater_data/NJU6099/NJU6099_L1_A028.R2.fastq.gz",
+          "bytes": 10779725149,
+          "mtime_ns": 1643110622072745161
+        }
+      ],
+      "sha256": {
+        "R1.fq.gz": "eab784380866d1d9a7c220c659c15f9b8f072ec7c21904f5db83138dbb3d6b6f",
+        "R2.fq.gz": "ead06a3c0574b4ac2c2398ffd1d25109994b0bb8d8e38f41c7a62eebd96c734a"
+      }
+    }
+  ]
+}
