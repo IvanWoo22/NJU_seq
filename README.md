@@ -6,6 +6,8 @@
 
 本项目的分析程序为 Rust 实现的 `nju-seq`，当前版本 0.5.0。下面以 **GRCh38 / HEK293T 人源 NJU6096–6099** 为例，介绍从安装、准备参考到比对、计数和评分的用法。原 [data](data) 和 [样本说明](sample_list.csv) 继续使用。
 
+含 8 nt UMI 的拟南芥 Col_NC31 / Col_TR31 用法及已有结果见 [拟南芥 UMI 分析流程](docs/arabidopsis_umi.md)。
+
 ```mermaid
 flowchart LR
   A[NC / 多个 TR 双端 FASTQ] --> B[去接头 / 可选 UMI 提取]
@@ -43,6 +45,14 @@ python3 tests/smoke.py
 
 ## 2. 准备人源参考
 
+人、小鼠、拟南芥的参考来源沿用旧 README，完整文件名和下载链接见 [三物种参考清单](docs/reference_sources.md)：
+
+| 物种 | 来源与发布版本 | 基因组 |
+|---|---|---|
+| 人 | [GENCODE v34](https://www.gencodegenes.org/human/release_34.html) | GRCh38.p13 |
+| 小鼠 | [GENCODE M25](https://www.gencodegenes.org/mouse/release_M25.html) | GRCm38.p6 |
+| 拟南芥 | [Ensembl Plants 46](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/) | TAIR10 |
+
 完整参考和索引不随 Git 分发。新环境需要从原工作区复制下列文件，并保留目录结构；也可以自行提供相互匹配的人源参考。文件格式见 [参考说明](references/README.md)。
 
 | 路径 | 内容 |
@@ -53,7 +63,7 @@ python3 tests/smoke.py
 | `references/bacterial/bac_rna.*.bt2` | 原细菌 rRNA 索引的六个文件 |
 | `data/hsa_rrna/{18s,28s,5-8s}.fa` | 仓库自带的三条人 rRNA 参考 |
 
-保留参考的确切发布号和细菌索引来源尚未确认。若要重现本文小样本结果，应使用这些原文件；改用其他版本可能改变比对与计数。
+本地保留文件尚未确认对应的发布号，细菌索引来源也未确认。若要重现本文小样本结果，应使用这些原文件；另行下载的参考可能改变比对与计数。
 
 从源文件重建一个新参考目录：
 

@@ -1,6 +1,8 @@
-# 人源参考与原 data
+# 参考文件与原 data
 
 `data/` 保存仓库自带的小型参考，`references/` 存放本地完整参考与索引，`inputs/` 存放测序 FASTQ 或其链接。完整参考和 FASTQ 不纳入 Git；新克隆需要另外复制这些文件。
+
+按旧 README 整理的人 GENCODE v34、小鼠 M25、拟南芥 Ensembl Plants 46 下载链接见 [三物种参考来源](../docs/reference_sources.md)。保留的拟南芥索引和含 UMI 样本用法见 [拟南芥分析流程](../docs/arabidopsis_umi.md)。
 
 ## 当前参考
 
@@ -27,7 +29,7 @@
 
 脚本逐条校验转录本与基因组 exon 重建序列。失败时保留 `.partial` 目录供检查，修正输入后改用新输出目录。既有 `human/` 也使用相对链接，应连同 `human_source/` 和 `bacterial/` 一起复制；仅复制 `human/` 时需要解引用链接，例如 `cp -RL references/human /destination/human`。
 
-## 输入格式
+## 人源参考准备脚本的输入格式
 
 转录本 FASTA 使用 GENCODE 风格的 `|` 分隔标题：前两项为带版本号的 ENST、ENSG，第八项为 `protein_coding`，支持 `_PAR_Y`。
 
