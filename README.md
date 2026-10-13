@@ -59,32 +59,23 @@ The reference sources for human, mouse, and Arabidopsis are listed below. Exact 
 | Mouse | [GENCODE M25](https://www.gencodegenes.org/mouse/release_M25.html) | GRCm38.p6 |
 | Arabidopsis | [Ensembl Plants 46](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/) | TAIR10 |
 
-The human example uses the matching reference files below. Prepare the complete references and indices separately, using these paths. File formats are described in [Reference files](references/README.md).
-
-| Path | Contents |
-|---|---|
-| `references/human_source/hsa_protein_coding.fa` | 84,068 protein-coding transcripts |
-| `references/human_source/hsa_exon.info` | Matching five-column exon table |
-| `references/human_source/GRCh38.primary_assembly.genome.fa` | GRCh38 genome FASTA |
-| `references/bacterial/bac_rna.*.bt2` | All six files of the bacterial rRNA index |
-| `data/hsa_rrna/{18s,28s,5-8s}.fa` | Three human rRNA sequences bundled with the repository |
-
-Build a reference directory from the source files:
+Build the references from public source files with the following two commands. The scripts download and verify fixed releases, select sequences, convert GFF3 exons, and create the required indices:
 
 ```bash
-python3 scripts/prepare_human_reference.py \
-  --mrna references/human_source/hsa_protein_coding.fa \
-  --exons references/human_source/hsa_exon.info \
-  --genome references/human_source/GRCh38.primary_assembly.genome.fa \
+python3 scripts/build_references.py bacterial \
+  --download-dir references/downloads \
+  --out references/bacterial --threads 4
+
+python3 scripts/build_references.py human \
+  --download-dir references/downloads \
+  --source-out references/human_source \
   --bac-index references/bacterial/bac_rna \
-  --out references/human_rebuilt --threads 4 \
-  --label 'GRCh38 human mRNA and rRNA' \
-  --copy-inputs
+  --out references/human_rebuilt --threads 4 --copy-inputs
 ```
 
-The script checks every transcript against the sequence reconstructed from its genomic exons, then creates the `mrna`, `rrna`, and `bac` indices and `exon.info`. With `--copy-inputs`, the resulting directory can be copied to another machine on its own. Without it, relative symlinks point to the genome and bacterial index, so the source directories must move with it. The output directory must not already exist.
+The bacterial reference contains 56,117 SILVA 138.2 SSU/LSU sequences from Enterobacteriaceae, Lactobacillaceae, and Streptococcaceae. The human reference contains 84,068 protein-coding transcripts and 762,910 exon rows from GENCODE v34. Host rRNA uses the three sequences in `data/hsa_rrna/{18s,28s,5-8s}.fa`.
 
-If you already have the prepared `references/human/` directory, replace every `references/human_rebuilt` path below with `references/human`.
+The human build checks every transcript against its genomic exons, then creates `mrna`, `rrna`, and `bac` index prefixes and `exon.info` in `references/human_rebuilt`. `--copy-inputs` makes this directory independently portable. Downloaded sources are cached in `references/downloads`; output and source directories must be new. For file layouts, download-only/offline use, custom inputs, and Arabidopsis construction, see [Building reference files](references/README.md).
 
 ## 3. Input data
 

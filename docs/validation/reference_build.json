@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-14",
+  "source_manifest": "config/reference_sources.json",
+  "source_files_verified": 9,
+  "download_urls_http_200": 9,
+  "python_tests": 99,
+  "python_tests_passed": 99,
+  "tools": {
+    "python": "3.11",
+    "bowtie2": "2.5.5",
+    "samtools": "1.24"
+  },
+  "reconstructed_references": {
+    "bacterial": {
+      "reference_count": 56117,
+      "identical": true,
+      "sequence_export_sha256": "850d0766e683fa0510e2aad2bcf6c3eb6cb5aaf4dd17c36f5d87c6b14e2144f6"
+    },
+    "arabidopsis_mrna": {
+      "reference_count": 48321,
+      "identical": true,
+      "sequence_export_sha256": "60c5afd2f1583b50c0df7eea4854948889daac5cfb506dedc7ff646a6dfeafdc"
+    },
+    "arabidopsis_rrna": {
+      "reference_count": 4131,
+      "identical": true,
+      "sequence_export_sha256": "04d9bdf46a68c8d4aa5a4272523a09c2a7e0484975f2e80efa9be2aac2a94fb8"
+    },
+    "human_mrna": {
+      "reference_count": 84068,
+      "identical": true,
+      "sequence_export_sha256": "923c00de4bf1616e9abafce948ef1a8df34cc961047be56deaca05eeba95b6de"
+    },
+    "human_rrna": {
+      "reference_count": 3,
+      "identical": true,
+      "sequence_export_sha256": "4334c163dec4af0836f87b4b237ba5537647d478e37da2cd2d89afd9693c4448"
+    },
+    "human_exons": {
+      "identical": true,
+      "sha256": "bba27189589fc6bf7631afc739a54d570d43300c7355443b965075cc9e0e028c"
+    },
+    "arabidopsis_coding_exons": {
+      "rows": 306005,
+      "identical_coordinates": true
+    }
+  },
+  "sequence_validation": {
+    "human": {
+      "transcripts": 84068,
+      "annotation_gene_ids": 19695,
+      "exon_rows": 762910,
+      "negative_strand_transcripts": 41461,
+      "par_y_transcripts": 67,
+      "genome_sequence_mismatches": [],
+      "input_storage": "copy"
+    },
+    "arabidopsis": {
+      "transcripts": 48321,
+      "annotation_gene_ids": 27628,
+      "exon_rows": 306005,
+      "negative_strand_transcripts": 24044,
+      "par_y_transcripts": 0,
+      "genome_sequence_mismatches": [],
+      "input_storage": "copy"
+    }
+  },
+  "human_example": {
+    "pairs_per_sample": 1000,
+    "accepted_reads": {
+      "NJU6096": 18,
+      "NJU6097": 13,
+      "NJU6098": 5,
+      "NJU6099": 2
+    },
+    "success": true,
+    "joint_evaluation": "normalization_unavailable",
+    "candidate_sites": 0
+  },
+  "documentation": {
+    "pages": 26,
+    "links": 238,
+    "bash_blocks": 50,
+    "errors": 0
+  },
+  "original_data_files_unchanged": 29
+}

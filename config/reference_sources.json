@@ -1,0 +1,69 @@
+{
+  "bacterial": {
+    "release": "SILVA 138.2 SSURef/LSURef NR99 truncated; Enterobacteriaceae, Lactobacillaceae, Streptococcaceae",
+    "sources": {
+      "ssu": {
+        "file": "SILVA_138.2_SSURef_NR99_tax_silva_trunc.fasta.gz",
+        "url": "https://www.arb-silva.de/fileadmin/silva_databases/release_138_2/Exports/SILVA_138.2_SSURef_NR99_tax_silva_trunc.fasta.gz",
+        "sha256": "2e597253f5a78a57b281f8e8365082b9d0f2dac6fa9beed0eb4868878fe2af50"
+      },
+      "lsu": {
+        "file": "SILVA_138.2_LSURef_NR99_tax_silva_trunc.fasta.gz",
+        "url": "https://www.arb-silva.de/fileadmin/silva_databases/release_138_2/Exports/SILVA_138.2_LSURef_NR99_tax_silva_trunc.fasta.gz",
+        "sha256": "dc5d53c1a8023a274dceb942f94a9992b46fc53399c488b97f0687cae04e2e13"
+      }
+    },
+    "expected": {
+      "source_counts": [
+        34982,
+        21135
+      ],
+      "fasta_sha256": "d0c656874eb566aa62fb0ed01ee8d6813d4987616d2002d94696c4820a8019c8"
+    }
+  },
+  "human": {
+    "release": "GENCODE v34 / GRCh38.p13 primary assembly",
+    "sources": {
+      "annotation": {
+        "file": "gencode.v34.annotation.gff3.gz",
+        "url": "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.annotation.gff3.gz",
+        "sha256": "9a87612fe1f61b03a0c61bdd583fbe6e35f07a35b22a9a3d99e7da4a8ddf52a9"
+      },
+      "genome": {
+        "file": "GRCh38.primary_assembly.genome.fa.gz",
+        "url": "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/GRCh38.primary_assembly.genome.fa.gz",
+        "sha256": "c462a765a7a77ddf0f851fcde2e5ab2f00229525515c404023f383f9b37bbe95"
+      },
+      "transcripts": {
+        "file": "gencode.v34.transcripts.fa.gz",
+        "url": "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_34/gencode.v34.transcripts.fa.gz",
+        "sha256": "c4a5b5a05df0a09d53b0789cfd10c2ace461449a1a13dbd950206a5f6ec52919"
+      }
+    }
+  },
+  "arabidopsis": {
+    "release": "Ensembl Plants 46 / TAIR10 mRNA; Col-PEK GWHBFWQ00000000.1 rRNA intervals",
+    "sources": {
+      "annotation": {
+        "file": "Arabidopsis_thaliana.TAIR10.46.gff3.gz",
+        "url": "https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/gff3/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.46.gff3.gz",
+        "sha256": "c13551b5d42008a1254618fc6b9cb0e7d1ca969130680b97cc5c36167b58eb98"
+      },
+      "genome": {
+        "file": "Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz",
+        "url": "https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz",
+        "sha256": "80a13166003333ba4982b57abdb3d2b62037bc831f4da29ea378c1b776fff8e2"
+      },
+      "transcripts": {
+        "file": "Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz",
+        "url": "https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.cdna.all.fa.gz",
+        "sha256": "c3c14f7330ed95fbe0a18cca18ccf35d9fb87d23e399ecf9a98e8efbd9dcab05"
+      },
+      "rrna_genome": {
+        "file": "GWHBFWQ00000000.1.genome.fasta.gz",
+        "url": "https://download.cncb.ac.cn/gwh/Plants/Arabidopsis_thaliana_Col-PEK_GWHBFWQ00000000.1/GWHBFWQ00000000.1.genome.fasta.gz",
+        "sha256": "56c8e1aaca13575f9ce602daaa41c26ee4a82a068f503237a7619daa8d5c05f2"
+      }
+    }
+  }
+}

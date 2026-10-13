@@ -32,18 +32,32 @@ Both manifest rows use `umi=r1_3p8` and `alignment=-`. Relative paths are resolv
 
 ## Arabidopsis references
 
-Prepare the following matching references. Complete references and indices are not included in the Git repository.
+Build the matching references from public downloads:
+
+```bash
+python3 scripts/build_references.py bacterial \
+  --download-dir references/downloads \
+  --out references/bacterial --threads 4
+
+python3 scripts/build_references.py arabidopsis \
+  --download-dir references/downloads \
+  --source-out references/arabidopsis_source \
+  --bac-index references/bacterial/bac_rna \
+  --out references/arabidopsis --threads 4 --copy-inputs
+```
+
+If `references/bacterial/` is already prepared, omit the first command. Output/source directories must be new; select other paths with `--out` and `--source-out` if needed.
 
 | Path or index prefix | Purpose |
 |---|---|
-| `references/bacterial/bac_rna` | Bacterial rRNA index |
-| `references/arabidopsis/ath_rrna_total` | Arabidopsis rRNA index containing 4,131 sequences |
-| `references/arabidopsis/ath_protein_coding` | mRNA index containing 48,321 transcripts |
-| `references/arabidopsis/exon.info` | Five-column exon table matching the mRNA index |
+| `references/bacterial/bac_rna` | SILVA 138.2 bacterial rRNA subset, 56,117 sequences |
+| `references/arabidopsis/ath_rrna_total` | Expanded Arabidopsis rRNA index, 4,131 sequences |
+| `references/arabidopsis/ath_protein_coding` | Ensembl Plants 46 / TAIR10 mRNA index, 48,321 transcripts |
+| `references/arabidopsis/exon.info` | Matching five-column exon table |
 
-Each index prefix has six `.bt2` files; copy all six. `ath.fa`, `ath_main_transcript.txt`, `transcript_region.info`, and `exon_distance.info` support downstream sequence and region annotation and are not read by the main counting command.
+The mRNA build uses the release-46 transcript, GFF3, and TAIR10 genome files. The expanded rRNA reference combines four defined rRNA sequences with 4,127 Col-PEK genomic intervals. The script downloads the Col-PEK genome, extracts the supplied interval list, and verifies the complete rRNA FASTA checksum before building its index. mRNA counts use TAIR10 coordinates.
 
-Download links for Ensembl Plants 46 / TAIR10 are in [Reference sources](reference_sources.md). The commands below use the indices and matching exon table above. `prepare_human_reference.py` accepts human GENCODE data; use prepared indices for Arabidopsis.
+Each index prefix has six `.bt2` files. `--copy-inputs` makes the host reference directory independently portable; its genome is named `genome.fa`. Source URLs, interval definitions, sequence edits, and offline commands are described in [Building reference files](../references/README.md#3-arabidopsis-ensembl-plants-46--tair10) and [Reference sources](reference_sources.md).
 
 ## Run a small subset
 

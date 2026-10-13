@@ -6,6 +6,7 @@
 
 | 用途 | 脚本 | 主要输入与输出 |
 |---|---|---|
+| 下载并生成参考 | `scripts/build_references.py` | 固定版本的公开下载 → 细菌、人源或拟南芥参考，见[生成命令](../references/README.zh-CN.md) |
 | 准备人源参考 | `scripts/prepare_human_reference.py` | 转录本、exon 表、基因组及细菌索引 → 配套参考目录 |
 | 抽取双端小样本 | `scripts/subset_fastq.py` | 六列样本清单 → 配对 FASTQ 和新的样本清单 |
 | 分批 mRNA 比对 | `scripts/align_chunked.py` | 去接头、去 rRNA 后的 FASTQ → 筛选后的五列定位表 |

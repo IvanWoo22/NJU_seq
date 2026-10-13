@@ -32,18 +32,32 @@ inputs/arabidopsis/Col_TR31/R2.fq.gz
 
 ## 使用配套的拟南芥参考
 
-准备以下配套参考，并放入对应目录。完整参考和索引不随 Git 分发：
+从公开下载文件生成配套参考：
+
+```bash
+python3 scripts/build_references.py bacterial \
+  --download-dir references/downloads \
+  --out references/bacterial --threads 4
+
+python3 scripts/build_references.py arabidopsis \
+  --download-dir references/downloads \
+  --source-out references/arabidopsis_source \
+  --bac-index references/bacterial/bac_rna \
+  --out references/arabidopsis --threads 4 --copy-inputs
+```
+
+如果已经生成 `references/bacterial/`，跳过第一个命令。输出目录和源文件目录须为新目录，需要时用 `--out` 和 `--source-out` 指定其他路径。
 
 | 路径或索引前缀 | 用途 |
 |---|---|
-| `references/bacterial/bac_rna` | 细菌 rRNA 索引 |
-| `references/arabidopsis/ath_rrna_total` | 拟南芥 rRNA 索引，4,131 条参考 |
-| `references/arabidopsis/ath_protein_coding` | mRNA 索引，48,321 条转录本 |
-| `references/arabidopsis/exon.info` | 与 mRNA 索引配套的五列 exon 表 |
+| `references/bacterial/bac_rna` | SILVA 138.2 细菌 rRNA 子集，56,117 条序列 |
+| `references/arabidopsis/ath_rrna_total` | 拟南芥扩展 rRNA 索引，4,131 条序列 |
+| `references/arabidopsis/ath_protein_coding` | Ensembl Plants 46 / TAIR10 mRNA 索引，48,321 条转录本 |
+| `references/arabidopsis/exon.info` | 配套的五列外显子表 |
 
-每个索引前缀对应六个 `.bt2` 文件，复制时须齐全。`ath.fa`、`ath_main_transcript.txt`、`transcript_region.info` 和 `exon_distance.info` 供后续序列及区域注释使用，主计数命令不读取它们。
+mRNA 构建使用 release 46 的转录本、GFF3 和 TAIR10 基因组。扩展 rRNA 由四条指定 rRNA 序列及 4,127 个 Col-PEK 基因组区段组成。脚本会下载 Col-PEK 基因组，按随仓库提供的区段清单提取序列，并校验完整 rRNA FASTA 后建立索引。mRNA 计数仍使用 TAIR10 坐标。
 
-Ensembl Plants 46 / TAIR10 的文件下载链接见 [三物种参考来源](reference_sources.zh-CN.md)。运行以下命令时，使用上表的索引及配套 exon 表。`prepare_human_reference.py` 专用于人源 GENCODE 格式；拟南芥使用已准备好的索引。
+每个索引前缀对应六个 `.bt2` 文件。`--copy-inputs` 使宿主参考目录可独立搬迁，其中的基因组文件名为 `genome.fa`。来源 URL、区段清单、序列修订及离线用法见[参考文件生成](../references/README.zh-CN.md#3-拟南芥ensembl-plants-46--tair10)和[参考来源清单](reference_sources.zh-CN.md)。
 
 ## 先跑小样本
 

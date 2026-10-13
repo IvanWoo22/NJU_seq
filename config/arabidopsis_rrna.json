@@ -1,0 +1,139 @@
+{
+  "name": "Col_NC31 / Col_TR31 rRNA",
+  "canonical": {
+    "18s": {
+      "input_sequence_sha256": "469bfc6d15f0508bcb179d871efe44f572134c173b1ef100546b9bea6a2b22e9",
+      "output_sequence_sha256": "87e085c3d12d5d77f9eb17486e22029135ece5f683c96484cfa8bc28d60174eb",
+      "edits": [
+        {
+          "start": 234,
+          "end": 234,
+          "before": "",
+          "after": "CC"
+        },
+        {
+          "start": 841,
+          "end": 841,
+          "before": "",
+          "after": "C"
+        },
+        {
+          "start": 1191,
+          "end": 1192,
+          "before": "T",
+          "after": "C"
+        },
+        {
+          "start": 1222,
+          "end": 1223,
+          "before": "C",
+          "after": "T"
+        },
+        {
+          "start": 1499,
+          "end": 1499,
+          "before": "",
+          "after": "T"
+        }
+      ]
+    },
+    "25s": {
+      "input_sequence_sha256": "6826ba4c60d5835de5b8d97c10e9f9e9f3d800ad0017df12f9f4287a2fa12904",
+      "output_sequence_sha256": "3ec89c39881a0fa3f2b64be788b6df501e21b32696fc7125dbc00a54c4fe3283",
+      "edits": [
+        {
+          "start": 219,
+          "end": 219,
+          "before": "",
+          "after": "C"
+        },
+        {
+          "start": 740,
+          "end": 740,
+          "before": "",
+          "after": "C"
+        },
+        {
+          "start": 1040,
+          "end": 1040,
+          "before": "",
+          "after": "C"
+        },
+        {
+          "start": 1245,
+          "end": 1246,
+          "before": "C",
+          "after": "T"
+        },
+        {
+          "start": 1326,
+          "end": 1326,
+          "before": "",
+          "after": "GC"
+        },
+        {
+          "start": 1412,
+          "end": 1412,
+          "before": "",
+          "after": "GCC"
+        },
+        {
+          "start": 1568,
+          "end": 1568,
+          "before": "",
+          "after": "AG"
+        },
+        {
+          "start": 2042,
+          "end": 2042,
+          "before": "",
+          "after": "G"
+        },
+        {
+          "start": 2526,
+          "end": 2527,
+          "before": "G",
+          "after": ""
+        },
+        {
+          "start": 2762,
+          "end": 2762,
+          "before": "",
+          "after": "C"
+        },
+        {
+          "start": 3182,
+          "end": 3182,
+          "before": "",
+          "after": "T"
+        }
+      ]
+    },
+    "5-8s": {
+      "input_sequence_sha256": "990243a6ee877742f0b3cd8d69feab842b704a746b87bfc63b6fc9b878514080",
+      "output_sequence_sha256": "990243a6ee877742f0b3cd8d69feab842b704a746b87bfc63b6fc9b878514080",
+      "edits": []
+    },
+    "5s": {
+      "input_sequence_sha256": "bf52a4766681bccb75ea195768e125aca58cb88fe36a5be7c5eaf998bc81ad5e",
+      "output_sequence_sha256": "bf52a4766681bccb75ea195768e125aca58cb88fe36a5be7c5eaf998bc81ad5e",
+      "edits": []
+    }
+  },
+  "intervals": {
+    "file": "arabidopsis_rrna.intervals.bed",
+    "sha256": "f1aeedca5bbd2319e885d466390808fc7c58d1d6176dc619dc6f66040f3c12d9",
+    "count": 4127,
+    "assembly": "GWHBFWQ00000000.1",
+    "coordinate_system": "0-based, half-open; genomic forward strand",
+    "columns": [
+      "chromosome",
+      "start",
+      "end",
+      "reference_id"
+    ],
+    "reference_ids": "Stable sequence labels; use BED columns 2 and 3 for assembly coordinates. Chr4 labels retain the 100-base leading gap of the Col-PEK sequence naming scheme."
+  },
+  "sequence_count": 4131,
+  "fasta_sha256": "35186f0333b9b6d3f7f114572f553ee0d0b12ef7b50de045d7cfa89688724f17"
+}

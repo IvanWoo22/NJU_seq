@@ -6,6 +6,7 @@ These scripts prepare inputs, align reads in batches, and limit resource usage. 
 
 | Task | Script | Main inputs and outputs |
 |---|---|---|
+| Download and build references | `scripts/build_references.py` | Pinned public downloads → bacterial, human, or Arabidopsis references; see [construction commands](../references/README.md) |
 | Prepare human references | `scripts/prepare_human_reference.py` | Transcripts, exon table, genome, and bacterial index → matching reference directory |
 | Subset paired reads | `scripts/subset_fastq.py` | Six-column sample manifest → paired FASTQ and a new manifest |
 | Align mRNA in batches | `scripts/align_chunked.py` | FASTQ after trimming and rRNA removal → selected five-column alignment table |

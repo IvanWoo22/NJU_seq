@@ -26,17 +26,17 @@ def fingerprint(path, digest=True):
                 **({'sha256': sha256(path)} if digest else {}))
 
 
-def fasta(path):
+def fasta(path, rna=False):
     """Read DNA reference FASTA; reject malformed headers and duplicate IDs."""
     name, chunks, seen = None, [], set()
-    alphabet = frozenset('ACGTRYSWKMBDHVN')
+    alphabet = frozenset('ACGTRYSWKMBDHVN' + ('U' if rna else ''))
     with (gzip.open(path, 'rt') if path.suffix == '.gz' else path.open()) as f:
         for number, line in enumerate(f, 1):
             if line.startswith('>'):
                 if name is not None:
                     if not chunks:
                         raise ValueError(f'{path}:{number}: empty FASTA record {name}')
-                    yield name, ''.join(chunks).upper()
+                    yield name, ''.join(chunks).upper().replace('U', 'T')
                 name, chunks = line[1:].strip(), []
                 if not name:
                     raise ValueError(f'{path}:{number}: empty FASTA header')
@@ -59,7 +59,7 @@ def fasta(path):
         raise ValueError(f'{path}: empty FASTA file')
     if not chunks:
         raise ValueError(f'{path}: empty FASTA record {name}')
-    yield name, ''.join(chunks).upper()
+    yield name, ''.join(chunks).upper().replace('U', 'T')
 
 
 def start_package(out):
@@ -81,20 +81,16 @@ def include_source(source, destination, copy_inputs):
         destination.symlink_to(os.path.relpath(source, destination.parent))
 
 
-def references(args):
+def references(args, species='human', prefixes=None):
+    prefixes = prefixes or {'mrna': 'mrna', 'rrna': 'rrna', 'bac': 'bac'}
     out, stage = start_package(args.out)
     records = list(fasta(args.mrna))
     sequences = {}
     genes = {}
     for header, seq in records:
-        fields = header.split('|')
-        if len(fields) < 8 or fields[7] != 'protein_coding':
-            raise ValueError(f'Unexpected protein coding header: {header}')
-        tx, gene = fields[:2]
-        if tx in sequences or not re.fullmatch(r'ENST\d+\.\d+(?:_PAR_Y)?', tx):
+        tx, gene = transcript_identity(header, species)
+        if tx in sequences:
             raise ValueError(f'Duplicate or unsupported transcript ID: {tx}')
-        if not re.fullmatch(r'ENSG\d+\.\d+(?:_PAR_Y)?', gene):
-            raise ValueError(f'Unsupported gene ID: {gene}')
         sequences[tx], genes[tx] = seq, gene
     del records
     exons = collections.defaultdict(set)
@@ -104,7 +100,7 @@ def references(args):
         for line in f:
             chrom, a, b, strand, attributes = line.rstrip('\n').split('\t')
             attr = dict(item.split('=', 1) for item in attributes.split(';') if '=' in item)
-            tx = attr.get('Parent')
+            tx = attr.get('Parent', '').removeprefix('transcript:')
             if tx not in sequences:
                 continue
             if attr.get('gene_id') != genes[tx]:
@@ -158,7 +154,8 @@ def references(args):
                                        sum(a != b for a, b in zip(seq, sequences[tx]))])
                 for a, b in blocks:
                     gene = genes[tx].removesuffix('_PAR_Y') if tx in par_gene_aliases else genes[tx]
-                    dst.write(f'{chrom}\t{a}\t{b}\t{strand}\tParent={tx};gene_id={gene}\n')
+                    parent = f'transcript:{tx}' if species == 'arabidopsis' else tx
+                    dst.write(f'{chrom}\t{a}\t{b}\t{strand}\tParent={parent};gene_id={gene}\n')
     audit = dict(transcripts=len(sequences), fasta_gene_ids=len(set(genes.values())),
                  annotation_gene_ids=len({g.removesuffix('_PAR_Y') if tx in par_gene_aliases else g
                                           for tx, g in genes.items()}),
@@ -172,7 +169,8 @@ def references(args):
                  rrna_source=[str(p.resolve()) for p in args.rrna],
                  reference_label=args.label,
                  input_storage='copy' if args.copy_inputs else 'relative_symlink',
-                 annotation_scope_note='Supplied matching GENCODE-style FASTA/exon table; source release is user supplied, not inferred')
+                 species=species,
+                 annotation_scope_note='Matching transcript FASTA, exon table and genome; source release is supplied by the caller')
     (stage/'audit.json').write_text(json.dumps(audit, indent=2)+'\n')
     if mismatches:
         raise ValueError(f'{len(mismatches)} sequence mismatches; see {stage}/audit.json')
@@ -196,16 +194,16 @@ def references(args):
         raise ValueError('Bacterial index requires six matching .bt2 or .bt2l components')
     for part in parts:
         src = Path(f'{args.bac_index}.{part}.{extension}').resolve()
-        include_source(src, stage/f'bac.{part}.{extension}', args.copy_inputs)
+        include_source(src, stage/f'{prefixes["bac"]}.{part}.{extension}', args.copy_inputs)
     for name in ('rrna', 'mrna'):
         cmd = ['bowtie2-build', '--threads', str(args.threads),
-               str(stage/f'{name}.fa'), str(stage/name)]
+               str(stage/f'{name}.fa'), str(stage/prefixes[name])]
         print('Building', name, flush=True)
         with (stage/f'{name}.build.log').open('w') as log:
             subprocess.run(cmd, stdout=log, stderr=log, check=True)
     audit['rrna_references'] = [fingerprint(p) for p in args.rrna]
     audit['rrna_ids'] = sorted(rrna_ids)
-    audit['bacterial_index'] = [fingerprint(p) for p in sorted(stage.glob('bac.*.bt2*'))]
+    audit['bacterial_index'] = [fingerprint(p) for p in sorted(stage.glob(f'{prefixes["bac"]}.*.bt2*'))]
     audit['derived'] = [dict(fingerprint(p), name=p.name, path=str(out/p.name))
                         for p in sorted(stage.iterdir())
                         if p.is_file() and not p.is_symlink() and p.name != 'audit.json']
@@ -213,6 +211,29 @@ def references(args):
     stage.rename(out)
     print(json.dumps({k: audit[k] for k in ('transcripts', 'annotation_gene_ids', 'exon_rows',
                                           'par_y_transcripts', 'genome_sequence_mismatches')}))
+
+
+def transcript_identity(header, species='human'):
+    """Validate a selected protein-coding FASTA header and return transcript/gene IDs."""
+    if species == 'human':
+        fields = header.split('|')
+        if len(fields) < 8 or fields[7] != 'protein_coding':
+            raise ValueError(f'Unexpected protein coding header: {header}')
+        tx, gene = fields[:2]
+        tx_pattern, gene_pattern = r'ENST\d+\.\d+(?:_PAR_Y)?', r'ENSG\d+\.\d+(?:_PAR_Y)?'
+    elif species == 'arabidopsis':
+        fields = dict(item.split(':', 1) for item in header.split() if ':' in item)
+        tx, gene = header.split()[0], fields.get('gene', '')
+        if fields.get('transcript_biotype') != 'protein_coding':
+            raise ValueError(f'Unexpected protein coding header: {header}')
+        tx_pattern, gene_pattern = r'AT[1-5MC]G\d+\.\d+', r'AT[1-5MC]G\d+'
+        if tx.rsplit('.', 1)[0] != gene:
+            raise ValueError(f'Transcript/gene mismatch in FASTA: {header}')
+    else:
+        raise ValueError(f'Unsupported species: {species}')
+    if not re.fullmatch(tx_pattern, tx) or not re.fullmatch(gene_pattern, gene):
+        raise ValueError(f'Unsupported transcript/gene ID: {tx}, {gene}')
+    return tx, gene
 
 
 def main():

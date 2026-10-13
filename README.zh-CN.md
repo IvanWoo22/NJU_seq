@@ -59,32 +59,23 @@ target/release/nju-seq --help
 | 小鼠 | [GENCODE M25](https://www.gencodegenes.org/mouse/release_M25.html) | GRCm38.p6 |
 | 拟南芥 | [Ensembl Plants 46](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/) | TAIR10 |
 
-人源小样本使用下列配套参考，完整文件和索引需另行准备。将文件放在对应目录，具体格式见 [参考说明](references/README.zh-CN.md)。
-
-| 路径 | 内容 |
-|---|---|
-| `references/human_source/hsa_protein_coding.fa` | 84,068 条 protein_coding 转录本 |
-| `references/human_source/hsa_exon.info` | 与转录本匹配的五列 exon 表 |
-| `references/human_source/GRCh38.primary_assembly.genome.fa` | GRCh38 基因组 FASTA |
-| `references/bacterial/bac_rna.*.bt2` | 细菌 rRNA 索引的六个文件 |
-| `data/hsa_rrna/{18s,28s,5-8s}.fa` | 仓库自带的三条人 rRNA 参考 |
-
-从源文件建立参考目录：
+用以下两个命令从公开源文件生成参考。脚本会下载并校验固定版本、筛选序列、转换 GFF3 外显子注释，并建立所需索引：
 
 ```bash
-python3 scripts/prepare_human_reference.py \
-  --mrna references/human_source/hsa_protein_coding.fa \
-  --exons references/human_source/hsa_exon.info \
-  --genome references/human_source/GRCh38.primary_assembly.genome.fa \
+python3 scripts/build_references.py bacterial \
+  --download-dir references/downloads \
+  --out references/bacterial --threads 4
+
+python3 scripts/build_references.py human \
+  --download-dir references/downloads \
+  --source-out references/human_source \
   --bac-index references/bacterial/bac_rna \
-  --out references/human_rebuilt --threads 4 \
-  --label 'GRCh38 human mRNA and rRNA' \
-  --copy-inputs
+  --out references/human_rebuilt --threads 4 --copy-inputs
 ```
 
-脚本逐条核对转录本与基因组 exon 重建序列，生成 `mrna`、`rrna`、`bac` 索引及 `exon.info`。`--copy-inputs` 使生成的目录可独立复制到其他机器；省略它会用相对链接引用基因组和细菌索引，需要连同源目录一起移动。输出目录必须尚不存在。
+细菌参考包含 SILVA 138.2 中 Enterobacteriaceae、Lactobacillaceae 和 Streptococcaceae 三个科的 56,117 条 SSU/LSU 序列。人源参考包含 GENCODE v34 的 84,068 条蛋白编码转录本和 762,910 行 exon；宿主 rRNA 使用 `data/hsa_rrna/{18s,28s,5-8s}.fa` 三条序列。
 
-已有的 `references/human/` 也可以直接使用，此时将下面命令中的 `references/human_rebuilt` 统一换为 `references/human`。
+人源构建会逐条核对转录本与基因组外显子序列，在 `references/human_rebuilt` 生成 `mrna`、`rrna`、`bac` 三个索引前缀及 `exon.info`。`--copy-inputs` 使参考目录可独立搬迁。下载文件缓存在 `references/downloads`，输出目录和源文件目录须为新目录。文件布局、仅下载/离线用法、自定义输入及拟南芥构建方法见[参考文件生成](references/README.zh-CN.md)。
 
 ## 3. 选择数据
 
