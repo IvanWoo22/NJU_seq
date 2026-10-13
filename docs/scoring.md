@@ -35,7 +35,7 @@ rRNA 输入必须具有一致的长度和逐位点碱基；空参考、断号、
 
 建议总是提供 `--summary`：候选表为空时，摘要仍能区分归一化不可用、交集为空和正常评价后没有候选。摘要还记录版本、模式、输出范围、规则、每个 TR 的 NC/TR 总量和归一化因子。`joint_evaluation=available` 表示归一化可用，不代表一定存在可评分的内部位点。
 
-当前 mRNA `run` 保存 reads 及可选 UMI 的评分摘要。rRNA 计数与评分用法见 [rRNA 分支](rrna.md)。
+`nju-seq run` 自动保存 read 及可选 UMI 的评分摘要。rRNA 计数与评分用法见 [rRNA 分支](rrna.md)。
 
 ## 计算公式
 
@@ -57,7 +57,7 @@ Candidate = 可评价且不在屏蔽区
             且 TotalCorrectedCount > 0
 ```
 
-`corrected_j` 保留 Perl 先乘后除、最后向上取整的浮点计算顺序；不能先舍入归一化因子再乘。联合阈值允许一个较强 TR 补偿较弱 TR，不要求每个 TR 的 score 均达到 30。
+`corrected_j` 按先乘、后除、最后向上取整的顺序计算，使用未经舍入的归一化因子。联合阈值按所有 TR 的得分总和判定，单个 TR 的 score 可以低于 30。
 
 **NC 单个位点为 0 不等于 NC 归一化总体为 0。** 当位点为 0 而总体有效时，FC 门槛仍按原始 NC=0 并要求校正和为正；此时 `FC_criteria=meet` 不必等价于 `AveFC>=3`。不能用显示的平均 FC 独自重建候选判定。
 
@@ -76,25 +76,23 @@ mRNA 在外显子连接处仍使用基因组相邻计数，不能将其解释为
 
 每个 TR 均须满足 `NC_TOTAL>0` 且 `TR_TOTAL>0`。任一不可用时，整个联合评分标记为 `normalization_unavailable`，不自动删除该 TR 或减少 n，也不允许其余 TR 的强信号补偿一个完全无计数的文库。
 
-两个 Perl `score.pl` 也采用上述判断，可用于核对数值。
-
 | `EvaluationStatus` | 含义 | 分数、校正计数、总/平均 FC | `Candidate` / 门槛字段 |
 |---|---|---|---|
 | `evaluated` | 归一化可用，且通过位置边界检查 | 实际数值，可为 0 | true/false；meet/unmeet |
 | `normalization_unavailable` | 至少一个 TR 所需总体为 0 | `NA` | false；not_evaluated |
 | `boundary_excluded` | rRNA 首尾屏蔽区 | `NA` | false；not_evaluated |
 
-归一化不可用优先于边界状态。原始 signal/adjacent、总体计数仍保留，便于查明原因；各归一化因子单独显示，只有对应总体无效时才是 `NA`。边界位置不再被绘成有效零分。
+归一化不可用优先于边界状态。输出保留原始 signal/adjacent 和总体计数，便于解释原因；各归一化因子单独显示，只有对应总体无效时才为 `NA`。绘图时应按状态区分不可评价位置与有效零分。
 
 ## 统一输出字段含义
 
-两种模式共用表头；一个 NC、三个 TR 时均为 46 列。前缀保留原 mRNA 的坐标、注释、计数与评分列，再追加状态和可复算信息。
+两种模式共用表头；一个 NC、三个 TR 时均为 46 列，包含坐标、注释、计数、评分、归一化量及评价状态。
 
 | 字段 | 统一定义 |
 |---|---|
 | `Chromosome / Position / Direction` | 候选位置，1-based；mRNA 为基因组坐标，rRNA 为显式 reference-id 内坐标、方向 `+` |
 | `CoordinateSystem` | `genome_1based` 或 `rrna_reference_1based`，防止将 rRNA 坐标当成 hg38 坐标 |
-| `LeftBase / Base / RightBase / GeneID` | mRNA 沿用原注释；rRNA 为参考相邻碱基，GeneID 为 reference-id |
+| `LeftBase / Base / RightBase / GeneID` | mRNA 使用输入注释；rRNA 为参考相邻碱基，GeneID 为 reference-id |
 | `<NC>_count(NC)`、`<TR>_count` | 用于评分的原始 **signal** 计数；均归属于显示的候选位置 |
 | `<sample>_adjacent_count` | 局部比值分母位置的原始计数 |
 | `<NC>_score_numerator` | 实际用于 NC 局部比值的分子，包含该模式对零值的补 1 处理 |
@@ -107,10 +105,10 @@ mRNA 在外显子连接处仍使用基因组相邻计数，不能将其解释为
 | `ScoreMode / EvaluationStatus / Candidate` | 规则模式、评价状态、最终联合候选判断 |
 | `FC_criteria / Score_criteria` | 两个联合阈值各自的结果；无法评价时为 not_evaluated |
 
-候选位置仍是沿转录方向位于物理 read 末端前一位的碱基。rRNA 行 k 的 `*_count` 从旧格式的物理末端 k 改为 **评分分子 k+1**，旧格式行 k 的 count 现在位于 `*_adjacent_count`。例如 18S 候选 99 的 NC/TR signal 为 `21 / 1020 / 841 / 994`，adjacent 为 `1 / 16 / 7 / 8`；可以直接用这些新列复算同一行评分。
+候选位置是沿转录方向位于物理 read 末端前一位的碱基。在 `unified` 格式中，rRNA 行 k 的 `*_count` 为 **位置 k+1 的末端计数**，`*_adjacent_count` 为位置 k 的末端计数。这两个字段分别对应局部比值的分子和分母。
 
-### 旧格式兼容
+### legacy 格式
 
-`--format legacy` 输出原表头和列序。mRNA 保留候选表；rRNA 保留 `#Position`、原 count 含义及两位小数，旧 `FoldChange` 对应新 `TotalFoldChange`。零归一化漏洞不会随兼容选项恢复；无法评价的旧 rRNA 行仍以 0/unmeet 表示，因此需要区分原因时应使用统一格式或摘要。mRNA 的 legacy 格式不允许 `--rows all`，避免把不可评价行混入旧候选表。
+下游脚本需要 Perl `score.pl` 的表头和列序时，可指定 `--format legacy`。mRNA 仅输出候选表，不支持 `--rows all`。rRNA 使用 `#Position` 列，count 表示该行位置 k 的物理末端计数，数值保留两位小数；`FoldChange` 对应 `unified` 格式的 `TotalFoldChange`。
 
-Perl `score.pl` 继续输出旧格式，用于沿用旧表格式的脚本和独立数值对照。旧脚本只接受原列数时，应显式选择 legacy，并验证其坐标与表头接口。
+两种格式使用相同的归一化条件。`legacy` 的 rRNA 表将无法评价的位置表示为 0/unmeet；需要区分归一化不可用和边界屏蔽时，使用 `unified` 格式或 `--summary` 摘要。选择绘图与注释脚本时，应核对其所需的列名和坐标定义。

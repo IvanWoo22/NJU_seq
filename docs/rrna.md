@@ -1,8 +1,8 @@
 # rRNA 独立计数与评分
 
-主 `run` 的人 rRNA 步骤输出删除 ID 供 mRNA 分析；删除 ID 不是 rRNA 计数表。独立 rRNA 分支需保留筛选后的五列比对行，计数与评分均在与比对完全相同的参考坐标上执行。
+`nju-seq run` 排除 rRNA 后进行 mRNA 分析。需要 rRNA 位点结果时，单独保留筛选后的五列比对表，并在比对所用的参考序列上计数和评分。
 
-以下从一个样本已去接头、完成可选 UMI 提取的 FASTQ 开始；若要与主流程的人 rRNA 步骤精确对照，还须先应用相同的细菌 rRNA 排除。根据实际输入替换路径，输出目录先创建。Linux/macOS shell 使用 `pipefail` 检查 Bowtie2 与 Rust 两端状态：
+以下使用已去接头、完成可选 UMI 提取并排除细菌 rRNA 的双端 FASTQ。将示例路径替换为实际输入；`pipefail` 使比对或筛选失败时停止后续计数：
 
 ```bash
 set -euo pipefail
@@ -16,12 +16,12 @@ bowtie2 --end-to-end --reorder --seed 0 -t --no-unal --no-mixed --no-discordant 
   | target/release/nju-seq filter --input /dev/stdin --format sam --mode rrna \
       --output output/rrna_work/NJU6096.selected.tsv
 
-# 默认逐条读取原 data/hsa_rrna/{18s,28s,5-8s}.fa。
+# 默认读取 data/hsa_rrna/{18s,28s,5-8s}.fa。
 python3 scripts/count_rrna.py --input output/rrna_work/NJU6096.selected.tsv \
   --out output/rrna_counts/NJU6096
 ```
 
-先确认整个管道退出码为零，再计数：上游失败时，筛选程序可能已看到合法的部分流，不能仅据 TSV 存在认定成功。其他参考用重复的 `--reference FILE` 显式指定；每个文件只能有一条参考，其 ID 和序列须匹配实际索引。计数单位是筛选后的定位记录，多个有效 rRNA 定位沿用原政策；不是 UMI 分子数。
+使用其他参考时，重复传入 `--reference FILE`。每个 FASTA 文件只能包含一条序列，其 ID 和序列须与比对索引一致。每条通过筛选的定位单独计数，因此同一 read 的多个有效 rRNA 定位可分别贡献计数；这些计数以定位记录为单位，不进行 UMI 分子合并。
 
 按相同处理步骤分别生成 NC 与所有 TR 的计数，再联合评分：
 

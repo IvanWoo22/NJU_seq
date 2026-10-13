@@ -1,25 +1,25 @@
-# 参考文件与原 data
+# 参考文件
 
-`data/` 保存仓库自带的小型参考，`references/` 存放本地完整参考与索引，`inputs/` 存放测序 FASTQ 或其链接。完整参考和 FASTQ 不纳入 Git；新克隆需要另外复制这些文件。
+`data/` 提供仓库自带的小型参考，`references/` 存放完整参考与索引，`inputs/` 存放测序 FASTQ 或其链接。完整参考和原始 FASTQ 需另行准备。
 
-按旧 README 整理的人 GENCODE v34、小鼠 M25、拟南芥 Ensembl Plants 46 下载链接见 [三物种参考来源](../docs/reference_sources.md)。保留的拟南芥索引和含 UMI 样本用法见 [拟南芥分析流程](../docs/arabidopsis_umi.md)。
+人 GENCODE v34、小鼠 M25、拟南芥 Ensembl Plants 46 的下载链接见 [三物种参考来源](../docs/reference_sources.md)。拟南芥索引和含 UMI 样本的用法见 [拟南芥分析流程](../docs/arabidopsis_umi.md)。
 
-## 当前参考
+## 参考目录
 
 | 目录 | 内容 |
 |---|---|
 | `human/` | 已准备的人源 mRNA、rRNA、细菌 rRNA 索引和 `exon.info` |
-| `human_source/` | 原人源转录本 FASTA、五列 exon 表、GRCh38 基因组及其他注释 |
-| `bacterial/` | 原细菌 rRNA 的六片 Bowtie2 索引 |
-| `arabidopsis/` | 保留的拟南芥参考 |
+| `human_source/` | 人源转录本 FASTA、五列 exon 表、GRCh38 基因组及其他注释 |
+| `bacterial/` | 细菌 rRNA 的六片 Bowtie2 索引 |
+| `arabidopsis/` | 拟南芥参考与索引 |
 
-人源 mRNA 参考含 84,068 条 protein_coding 转录本，对应 762,910 行 exon。人 rRNA 使用原 `data/hsa_rrna/18s.fa`、`28s.fa`、`5-8s.fa`；它们只覆盖这三条参考。
+人源示例的 mRNA 参考含 84,068 条 protein_coding 转录本，对应 762,910 行 exon。rRNA 使用 `data/hsa_rrna/18s.fa`、`28s.fa`、`5-8s.fa` 三条参考。
 
 转录本 FASTA、exon 表和基因组须相互匹配。`human_source/` 中的 basic、代表转录本、区域和 codon 表用于后续注释分析；主流程使用全转录本及其配套 exon 表。
 
-`data/` 中其他物种的 rRNA 及 `MCMV.fa`、`MHV.fa` 均保留。换物种时需要同时准备匹配的转录本和注释。
+`data/` 还包含其他物种的 rRNA 及 `MCMV.fa`、`MHV.fa`。分析其他物种时，需要准备配套的转录本、注释及适用的注释解析方法。
 
-## 重建与搬迁
+## 建立与复制参考
 
 按 [主 README](../README.md) 的命令运行 `scripts/prepare_human_reference.py`。输出为一个新目录，包含 `mrna`、`rrna`、`bac` 三个索引前缀、`exon.info`、FASTA 和 `audit.json`。
 
@@ -43,5 +43,3 @@ chr1          101      200    +         Parent=ENST000001.1;gene_id=ENSG000001.1
 上面的空格仅用于展示。坐标为 1-based 闭区间；脚本仅选取输入 FASTA 中出现的转录本，并保留基因对应关系、负链和 PAR-Y 信息。九列 GFF3 需要先转换，不能直接作为 `--exons`。
 
 基因组须为未压缩 FASTA，转录本和 rRNA FASTA 可用 gzip。细菌索引须是同一种格式的六个 `.bt2` 或 `.bt2l` 文件。
-
-旧目录对应关系见 [迁移说明](../docs/migration.md)。已有 `human/audit.json` 中的旧路径是来源记录，运行时不读取这些路径。

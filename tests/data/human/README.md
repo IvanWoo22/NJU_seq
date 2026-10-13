@@ -1,14 +1,14 @@
-# 人源小份测试数据
+# 人源示例数据
 
-NJU6096（NC）与 NJU6097、NJU6098、NJU6099（TR），各原始双端 FASTQ 的前 **1,000 对 reads**，均 `umi=none`。实验来源沿用根目录 [sample_list.csv](../../../sample_list.csv)：HEK293T rRNA-free RNA，NC without MgR、TR with MgR。
+NJU6096（NC）与 NJU6097、NJU6098、NJU6099（TR），各取原始双端 FASTQ 的前 **1,000 对 reads**，均为 `umi=none`。实验信息见 [sample_list.csv](../../../sample_list.csv)：HEK293T rRNA-free RNA，NC 未经 MgR 处理，TR 经 MgR 处理。
 
-[样本清单](samples.tsv) 为相对路径，可随文件夹搬迁。[audit.json](audit.json) 记录完整输入的实际来源、大小/mtime、所取范围及输出 SHA-256。抽取时仅读取所需片段，未检查完整源 gzip 的 CRC。这是流程测试用连续子集，不能代表整库分布或预估候选数。
+[样本清单](samples.tsv) 使用相对路径，可随数据文件夹一起复制。[数据来源与校验值](audit.json) 包含所取范围及 FASTQ 的 SHA-256。这份连续子集用于演示分析步骤，不代表整库分布，不能用于估计整库候选数。
 
-用根目录 README 的 raw 命令和完整人源参考运行。1,000 对的测试可能缺少 NC/TR 共同覆盖，使用保留参考得到 0 个联合候选与 `normalization_unavailable`，不视为程序失败；合成测试另外检查非空候选和预期计数。
+按 [主 README](../../../README.md) 的 `--from raw` 命令，使用配套人源参考运行。各步计数及 `normalization_unavailable` 状态的解释见 [示例结果](../../../docs/results.md)。
 
-再生成同一范围：
+已有完整 FASTQ 时，可在仓库根目录抽取同一范围：
 
 ```bash
 python3 scripts/subset_fastq.py --samples config/samples.human.tsv \
-  --pairs 1000 --skip 0 --out output/recreated_human_test
+  --pairs 1000 --skip 0 --out output/human_subset
 ```

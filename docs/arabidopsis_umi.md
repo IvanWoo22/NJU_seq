@@ -39,7 +39,7 @@ inputs/arabidopsis/Col_TR31/R2.fq.gz
 
 每个索引前缀对应六个 `.bt2` 文件，复制时须齐全。`ath.fa`、`ath_main_transcript.txt`、`transcript_region.info` 和 `exon_distance.info` 供后续序列及区域注释使用，主计数命令不读取它们。
 
-拟南芥参考的下载清单沿用 Ensembl Plants 46 / TAIR10，见 [三物种参考来源](reference_sources.md)。运行以下命令时，使用上表的索引及配套 exon 表。`prepare_human_reference.py` 专用于人源 GENCODE 格式；拟南芥使用已准备好的索引。
+Ensembl Plants 46 / TAIR10 的文件下载链接见 [三物种参考来源](reference_sources.md)。运行以下命令时，使用上表的索引及配套 exon 表。`prepare_human_reference.py` 专用于人源 GENCODE 格式；拟南芥使用已准备好的索引。
 
 ## 先跑小样本
 
@@ -56,7 +56,7 @@ target/release/nju-seq plan \
   --rrna-index references/arabidopsis/ath_rrna_total \
   --mrna-index references/arabidopsis/ath_protein_coding \
   --exons references/arabidopsis/exon.info \
-  --out output/arabidopsis_umi_test --threads 2 --jobs 1
+  --out output/arabidopsis_umi_example --threads 2 --jobs 1
 
 target/release/nju-seq run \
   --samples output/arabidopsis_umi_subset/samples.tsv --from raw \
@@ -64,12 +64,12 @@ target/release/nju-seq run \
   --rrna-index references/arabidopsis/ath_rrna_total \
   --mrna-index references/arabidopsis/ath_protein_coding \
   --exons references/arabidopsis/exon.info \
-  --out output/arabidopsis_umi_test --threads 2 --jobs 1
+  --out output/arabidopsis_umi_example --threads 2 --jobs 1
 ```
 
 `plan` 只检查路径并列出命令，不执行分析。抽样和运行的输出目录均须尚不存在。小样本用于检查安装、配对处理与输出格式，不能用来估计整库候选数；覆盖不足时可能出现 `normalization_unavailable`。
 
-全量分析沿用相同索引参数，将 `--samples` 改为 `config/samples.arabidopsis_umi.tsv`，`--out` 改为新的 `output/arabidopsis_umi_full`。`--threads` 是每个比对任务的线程数，`--jobs` 是并行样本数。默认成功后清理中间 FASTQ；排查问题时加 `--storage all`。分批比对与资源限制见 [辅助脚本](migration.md)。
+全量分析使用相同索引参数，将 `--samples` 改为 `config/samples.arabidopsis_umi.tsv`，`--out` 改为新的 `output/arabidopsis_umi_full`。`--threads` 是每个比对任务的线程数，`--jobs` 是并行样本数。默认成功后删除中间 FASTQ；需要保留时加 `--storage all`，同时需要 QC 报告时再加 `--qc yes`。分批比对与资源限制见 [辅助脚本](scripts.md)。
 
 ## UMI 在流程中的位置
 

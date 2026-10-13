@@ -32,7 +32,6 @@ __pycache__/
 
 # Detailed historical archives stay local; retain only the cleanup summary in Git.
 /docs/history/*
-!/docs/history/README.md
 !/docs/history/cleanup.json
 !/docs/history/original_data.sha256.json
 /log/2026-09-24_Ath-31_test_run.md

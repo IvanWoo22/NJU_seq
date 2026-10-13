@@ -4,7 +4,7 @@
 
 **N**m-site **J**udged **U**niversally **seq**uencing：比较 NC 对照与 TR 处理样本的 RNA read 末端计数，筛选 2′-*O*-甲基化（Nm）候选位点。
 
-本项目的分析程序为 Rust 实现的 `nju-seq`，当前版本 0.5.0。下面以 **GRCh38 / HEK293T 人源 NJU6096–6099** 为例，介绍从安装、准备参考到比对、计数和评分的用法。原 [data](data) 和 [样本说明](sample_list.csv) 继续使用。
+`nju-seq` 是 Rust 编写的 NJU-seq 分析程序，当前版本 0.5.0。下面以 **GRCh38 / HEK293T 人源 NJU6096–6099** 为例，介绍安装、参考准备、比对、计数和评分。rRNA 参考位于 [data](data)，实验信息见 [样本说明](sample_list.csv)。
 
 含 8 nt UMI 的拟南芥 Col_NC31 / Col_TR31 分析步骤和样本结果见 [拟南芥 UMI 分析流程](docs/arabidopsis_umi.md)。
 
@@ -28,10 +28,9 @@ conda env create -f environment.yml
 conda activate nju-seq
 cargo build --release --offline
 target/release/nju-seq --help
-python3 tests/smoke.py
 ```
 
-环境文件包含 Rust 1.88、Python 3.11、Cutadapt 5.2、Bowtie2 2.5.5、samtools 1.24、gzip 和 Perl。Rust 代码不依赖第三方 crate，安装编译器后可离线构建。最后一条命令用自带的合成数据检查完整流程，临时参考和结果会自动清理。
+环境文件包含 Rust 1.88、Python 3.11、Cutadapt 5.2、Bowtie2 2.5.5、samtools 1.24、gzip 和 Perl。Rust 代码不依赖第三方 crate，安装编译器后可离线构建。
 
 | 工具 | 用途 |
 |---|---|
@@ -41,11 +40,11 @@ python3 tests/smoke.py
 | Python ≥3.11、samtools | 抽取小样本、准备参考；samtools 用于建立 FASTA 索引 |
 | UMI-tools | 仅 `umi=r1_3p8` 的文库需要，示例人源样本不需要 |
 
-其他安装方式、UMI 文库和旧 Perl/R 脚本所需的软件见 [依赖说明](docs/dependencies.md)。完整测试命令见 [测试说明](docs/validation.md)。
+固定版本安装、UMI 文库以及 Perl/R 分析脚本所需的软件见 [依赖说明](docs/dependencies.md)。
 
 ## 2. 准备人源参考
 
-人、小鼠、拟南芥的参考来源沿用旧 README，完整文件名和下载链接见 [三物种参考清单](docs/reference_sources.md)：
+人、小鼠、拟南芥的参考来源如下，完整文件名和下载链接见 [三物种参考清单](docs/reference_sources.md)：
 
 | 物种 | 来源与发布版本 | 基因组 |
 |---|---|---|
@@ -60,10 +59,10 @@ python3 tests/smoke.py
 | `references/human_source/hsa_protein_coding.fa` | 84,068 条 protein_coding 转录本 |
 | `references/human_source/hsa_exon.info` | 与转录本匹配的五列 exon 表 |
 | `references/human_source/GRCh38.primary_assembly.genome.fa` | GRCh38 基因组 FASTA |
-| `references/bacterial/bac_rna.*.bt2` | 原细菌 rRNA 索引的六个文件 |
+| `references/bacterial/bac_rna.*.bt2` | 细菌 rRNA 索引的六个文件 |
 | `data/hsa_rrna/{18s,28s,5-8s}.fa` | 仓库自带的三条人 rRNA 参考 |
 
-从源文件重建一个新参考目录：
+从源文件建立参考目录：
 
 ```bash
 python3 scripts/prepare_human_reference.py \
@@ -72,7 +71,7 @@ python3 scripts/prepare_human_reference.py \
   --genome references/human_source/GRCh38.primary_assembly.genome.fa \
   --bac-index references/bacterial/bac_rna \
   --out references/human_rebuilt --threads 4 \
-  --label 'retained GRCh38 reference; release unspecified' \
+  --label 'GRCh38 human mRNA and rRNA' \
   --copy-inputs
 ```
 
@@ -84,9 +83,9 @@ python3 scripts/prepare_human_reference.py \
 
 [sample_list.csv](sample_list.csv) 中，NJU6096 是未经过 MgR 处理的 NC，NJU6097–6099 是经过 MgR 处理的三个 TR；均为 HEK293T rRNA-free RNA，无 UMI。
 
-仓库已附 [人源小样本](tests/data/human/README.md)：每个样本取原 FASTQ 的前 **1,000 对 reads**，共八个 gzip 文件，约 0.6 MiB。这些文件可直接运行下一节命令，不需要完整 FASTQ。它们是连续截取的流程测试数据，不能用于估计整库候选数。
+仓库附带 [人源示例数据](tests/data/human/README.md)：每个样本取原始 FASTQ 的前 **1,000 对 reads**，共八个 gzip 文件，约 0.6 MiB，可直接用于下一节命令。该连续子集用于演示分析步骤，不代表整库分布，不能用于估计整库候选数。
 
-使用完整数据时，在 `inputs/human/<sample>/R1.fq.gz`、`R2.fq.gz` 放入原 FASTQ 或建立链接，使用 [config/samples.human.tsv](config/samples.human.tsv)。也可直接修改清单中的路径。另取一份小样本：
+使用完整数据时，在 `inputs/human/<sample>/R1.fq.gz`、`R2.fq.gz` 放入原始 FASTQ 或建立链接，使用 [config/samples.human.tsv](config/samples.human.tsv)。也可直接修改清单中的路径。抽取小样本的命令为：
 
 ```bash
 python3 scripts/subset_fastq.py --samples config/samples.human.tsv \
@@ -104,17 +103,17 @@ mkdir -p output
 target/release/nju-seq plan \
   --samples tests/data/human/samples.tsv --from raw \
   --index references/human_rebuilt --exons references/human_rebuilt/exon.info \
-  --out output/human_test --threads 2 --jobs 1
+  --out output/human_example --threads 2 --jobs 1
 
 target/release/nju-seq run \
   --samples tests/data/human/samples.tsv --from raw \
   --index references/human_rebuilt --exons references/human_rebuilt/exon.info \
-  --out output/human_test --threads 2 --jobs 1
+  --out output/human_example --threads 2 --jobs 1
 ```
 
-使用原参考和上述软件版本，小样本应完成全部步骤，生成 `output/human_test/SUCCESS`。四个样本通过 mRNA 筛选的 read 数依次为 **18、13、5、2**。小样本共同覆盖不足，评分摘要为 `normalization_unavailable`，候选为 0；这不表示完整数据没有 Nm 位点。各步计数见 [测试结果](docs/validation.md)。
+成功运行后会生成 `output/human_example/SUCCESS`。在本示例的配套参考下，四个样本通过 mRNA 筛选的 read 数依次为 **18、13、5、2**。小样本共同覆盖不足，评分摘要为 `normalization_unavailable`，候选为 0；该状态表示无法完成联合归一化，不能据此判断完整数据的 Nm 位点。各步计数和输出解释见 [示例结果](docs/results.md)。
 
-完整分析改用 `--samples config/samples.human.tsv` 并指定另一个新输出目录。`--threads` 是每个比对任务的线程数，`--jobs` 是同时分析的样本数。mRNA 使用 `-a` 保留全部定位，全量任务的内存、磁盘和耗时不能由这个小测试直接推算。
+完整分析改用 `--samples config/samples.human.tsv` 并指定新的输出目录。`--threads` 是每个比对任务的线程数，`--jobs` 是同时分析的样本数。mRNA 使用 `-a` 输出全部定位，全量分析需按数据规模设置并行数、磁盘和内存上限，见 [辅助脚本](docs/scripts.md)。
 
 | 主要输出 | 内容 |
 |---|---|
@@ -125,13 +124,13 @@ target/release/nju-seq run \
 | `plan.json`、`logs/`、`stages.tsv` | 命令、日志、各步骤耗时及退出状态 |
 | `SUCCESS` / `FAILED` | 分析完成或失败的标记 |
 
-默认 `--storage compact` 在成功后删除中间 FASTQ；排查问题可用 `--storage all` 保留中间文件。显式指定 UMI 的样本还会生成 UMI 计数与 family 表；只有全部样本都有 UMI 时才联合进行 UMI 评分。
+默认 `--storage compact` 生成 QC 报告，并在成功后删除中间 FASTQ。使用 `--storage all` 可保留中间文件；该模式默认关闭 QC，需要报告时加 `--qc yes`。声明 UMI 的样本还会生成 UMI 计数与家族表；只有全部样本都有 UMI 时才联合进行 UMI 评分。
 
 ### 输入与参数
 
 `--index DIR` 查找 `bac`、`rrna`、`mrna` 三个索引前缀。使用其他名称时分别指定 `--bac-index`、`--rrna-index`、`--mrna-index`。
 
-默认接头为 `AGATCGGAAGAGCACA / GATCGTCGGACTGTAG`，可用 `--adapter-r1`、`--adapter-r2` 修改。未匹配接头的 pairs 会被丢弃；无 UMI 的最短读长为 `10:10`。`r1_3p8` 文库先裁去 R2 起始 8 nt，以 `18:10` 为最短读长裁剪，再提取 R1 末端 8 nt 的 UMI。已裁剪的数据应选 `prepared`。
+默认接头为 `AGATCGGAAGAGCACA / GATCGTCGGACTGTAG`，可用 `--adapter-r1`、`--adapter-r2` 修改。未匹配接头的 pairs 会被丢弃；无 UMI 的最短读长为 `10:10`。`r1_3p8` 文库先裁去 R2 起始 8 nt，以 `18:10` 为最短读长裁剪，再提取 R1 末端 8 nt 的 UMI。已去接头并完成可选 UMI 提取的数据应选 `prepared`。
 
 | `--from` | 所需输入 | 接着执行 |
 |---|---|---|
@@ -143,14 +142,14 @@ target/release/nju-seq run \
 
 rRNA 使用 `-k 5`，mRNA 使用 `-a`，均保留 `--reorder --seed 0`。处理 SAM 时，同一 read 的全部比对必须连续。`--rrna-filter both|bac|host|none` 选择排除对象，默认 `both`。
 
-分批 mRNA 比对、断点继续和 Linux 资源限制的用法见 [辅助脚本](docs/migration.md)。`run` 本身不支持整条流程断点恢复。
+分批 mRNA 比对、断点继续和 Linux 资源限制的用法见 [辅助脚本](docs/scripts.md)。`run` 本身不支持整条流程断点恢复。
 
 ## 5. rRNA 与后续分析
 
-`run` 输出 mRNA 结果。需要 rRNA 位点结果时，按 [rRNA 计数与评分](docs/rrna.md) 单独运行，继续使用原 `data/hsa_rrna` 参考。
+`run` 输出 mRNA 结果。需要 rRNA 位点结果时，使用 `data/hsa_rrna` 参考，按 [rRNA 计数与评分](docs/rrna.md) 单独运行。
 
-`nju-seq score --mode mrna|rrna` 将一个 NC 与全部 TR 联合评分。输出中的 `Candidate`、`EvaluationStatus` 和坐标类型用于解释结果；公式和旧表兼容方式见 [评分说明](docs/scoring.md)。筛选阈值不等同于 FDR 或实验确认。
+`nju-seq score --mode mrna|rrna` 将一个 NC 与全部 TR 联合评分。输出中的 `Candidate`、`EvaluationStatus` 和坐标类型用于解释结果；公式和表格格式见 [评分说明](docs/scoring.md)。筛选阈值不等同于 FDR 或实验确认。
 
-`presentation/` 等目录保留 motif、区域、codon、剪接分析及绘图脚本。使用前需核对其输入表格式与注释版本，所需 R/Perl 包见 [依赖说明](docs/dependencies.md)。旧 HPCC 和 Nextflow 脚本仅供查阅，替换关系见 [迁移说明](docs/migration.md)。
+`mrna_analysis/` 和 `presentation/` 提供 motif、区域、codon、剪接分析及绘图脚本。使用时选择与输入表格式匹配的脚本，并提供配套注释；所需 R/Perl 包见 [依赖说明](docs/dependencies.md)。
 
-原始数据和参考继续保留；历史大体积结果的清理范围见 [历史记录](docs/history/README.md)。许可见 [LICENSE](LICENSE)。
+许可见 [LICENSE](LICENSE)。
