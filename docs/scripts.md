@@ -1,37 +1,39 @@
-# 辅助脚本
+# Helper scripts
 
-以下脚本用于准备数据、分批比对和控制资源占用。所有命令在仓库根目录运行，文件路径按实际样本替换。
+**English** | [简体中文](scripts.zh-CN.md)
 
-| 用途 | 脚本 | 主要输入与输出 |
+These scripts prepare inputs, align reads in batches, and limit resource usage. Run all commands from the repository root and replace example paths with your own inputs.
+
+| Task | Script | Main inputs and outputs |
 |---|---|---|
-| 准备人源参考 | `scripts/prepare_human_reference.py` | 转录本、exon 表、基因组及细菌索引 → 配套参考目录 |
-| 抽取双端小样本 | `scripts/subset_fastq.py` | 六列样本清单 → 配对 FASTQ 和新的样本清单 |
-| 分批 mRNA 比对 | `scripts/align_chunked.py` | 去接头、去 rRNA 后的 FASTQ → 筛选后的五列定位表 |
-| 导出比对断点 | `scripts/chunk_checkpoint.py` | 已完成批次 → 可供继续运行的断点目录 |
-| rRNA 计数 | `scripts/count_rrna.py` | 五列定位表、单条 rRNA FASTA → 四列计数表 |
-| 限制资源占用 | `scripts/guard_run.py` | 分析命令及磁盘、内存、时间上限 → 分析结果及资源统计 |
+| Prepare human references | `scripts/prepare_human_reference.py` | Transcripts, exon table, genome, and bacterial index → matching reference directory |
+| Subset paired reads | `scripts/subset_fastq.py` | Six-column sample manifest → paired FASTQ and a new manifest |
+| Align mRNA in batches | `scripts/align_chunked.py` | FASTQ after trimming and rRNA removal → selected five-column alignment table |
+| Export an alignment checkpoint | `scripts/chunk_checkpoint.py` | Completed batches → checkpoint directory for resuming alignment |
+| Count rRNA ends | `scripts/count_rrna.py` | Five-column alignment table and single-sequence rRNA FASTA → four-column count table |
+| Limit resource usage | `scripts/guard_run.py` | Analysis command and disk, memory, and time limits → results and resource statistics |
 
-参考准备和抽样的完整命令见 [主 README](../README.md)，rRNA 用法见 [rRNA 计数与评分](rrna.md)。各脚本支持 `--help`。
+Complete reference preparation and subsetting commands are in the [main README](../README.md); rRNA commands are in [rRNA counting and scoring](rrna.md). Each script supports `--help`.
 
-## 分步处理
+## Running individual steps
 
-`nju-seq run` 可完成从 FASTQ 到评分的分析，也可根据已有输入调用单独的命令：
+`nju-seq run` performs the workflow from FASTQ to scores. You can also run individual commands on existing inputs:
 
-| 操作 | 命令 |
+| Task | Command |
 |---|---|
-| 比对并筛选定位 | `nju-seq align-select` |
-| 筛选已有 SAM 或五列比对表 | `nju-seq filter` |
-| 结合 R1 序列筛选每个 read 的定位 | `nju-seq almostunique` |
-| 按 ID 同时删除双端 reads | `nju-seq delete-pairs` |
-| exact UMI 合并 | `nju-seq umi` |
-| 末端计数、基因组坐标合并、联合评分 | `nju-seq count`、`merge`、`score` |
-| FASTQ / 定位表质量统计、HTML 报告 | `nju-seq qc`、`qc-report` |
+| Align reads and select alignments | `nju-seq align-select` |
+| Filter an existing SAM or five-column alignment table | `nju-seq filter` |
+| Select each read's alignment using its R1 sequence | `nju-seq almostunique` |
+| Remove both mates by read ID | `nju-seq delete-pairs` |
+| Group UMIs by exact matching | `nju-seq umi` |
+| Count ends, merge at genomic coordinates, and jointly score samples | `nju-seq count`, `merge`, `score` |
+| Calculate FASTQ / alignment QC metrics and generate HTML reports | `nju-seq qc`, `qc-report` |
 
-参数用法见 `target/release/nju-seq --help`。`--index DIR` 使用 `bac`、`rrna`、`mrna` 三个索引前缀；其他命名方式分别指定 `--bac-index`、`--rrna-index`、`--mrna-index`。
+See `target/release/nju-seq --help` for options. `--index DIR` uses the prefixes `bac`, `rrna`, and `mrna`; specify `--bac-index`, `--rrna-index`, and `--mrna-index` separately for other names.
 
-## 分批 mRNA 比对
+## Chunked mRNA alignment
 
-输入为已经去接头、完成可选 UMI 提取并排除 rRNA 的双端 FASTQ。以下以一个样本为例：
+Input FASTQ must already have been trimmed, had any UMIs extracted, and had rRNA reads removed. The following example processes one sample:
 
 ```bash
 mkdir -p output/batch_sample
@@ -45,13 +47,13 @@ python3 scripts/align_chunked.py \
   --stats output/batch_sample/selection.json --threads 4 --chunk-pairs 20000
 ```
 
-`--chunk-pairs` 指定每批的完整 read pairs 数；`--threads` 指定比对线程数。每批仍使用 mRNA `-a` 全定位比对，多重匹配较多的样本可能需要较多内存。`--output`、`--log`、`--stats` 指向三个不同的新文件。
+`--chunk-pairs` sets the number of complete read pairs per batch; `--threads` sets alignment threads. Each batch still uses mRNA `-a` alignment, so samples with many multiple matches may use substantial memory. `--output`, `--log`, and `--stats` must name three distinct files that do not already exist.
 
-各样本完成后，准备 `--from unique` 的六列样本清单：`r1` 指向该样本比对时使用的 R1，`r2` 可填 `-`，`alignment` 指向 `accepted.tsv`，`umi` 填文库实际类型。随后用 `nju-seq run --from unique` 完成计数与评分。
+After processing each sample, prepare a six-column manifest for `--from unique`: set `r1` to the R1 used for alignment, `r2` to `-` if omitted, `alignment` to `accepted.tsv`, and `umi` to the library's UMI type. Then run `nju-seq run --from unique` for counting and scoring.
 
-## 从中断的批次继续
+## Resuming interrupted batches
 
-先停止正在写入的比对进程。若至少有一个批次完成，可从 `accepted.tsv.chunks/` 导出断点：
+First stop any alignment process that is still writing files. If at least one batch has completed, export a checkpoint from `accepted.tsv.chunks/`:
 
 ```bash
 python3 scripts/chunk_checkpoint.py \
@@ -65,7 +67,7 @@ python3 scripts/chunk_checkpoint.py \
   --output output/sample_checkpoint
 ```
 
-保持 FASTQ、索引、exon 表及 Rust/Bowtie2 程序一致，使用新输出目录继续：
+Keep the FASTQ, index, exon table, and Rust/Bowtie2 executables unchanged, and resume with new output paths:
 
 ```bash
 mkdir -p output/batch_sample_resumed
@@ -80,11 +82,11 @@ python3 scripts/align_chunked.py \
   --resume-checkpoint output/sample_checkpoint
 ```
 
-断点只包含已完成批次；未完成的批次会重新计算。此功能适用于 `align_chunked.py` 的 mRNA 比对，`nju-seq run` 不支持整条流程断点恢复。
+A checkpoint contains completed batches only; incomplete batches are processed again. This feature resumes mRNA alignment performed by `align_chunked.py`. `nju-seq run` does not resume an entire interrupted workflow.
 
-## Linux 资源限制
+## Linux resource limits
 
-以下以人源小样本为例，限制输出目录大小、单文件大小、可用磁盘空间和运行时间：
+The following human-subset example limits output directory size, individual file size, free disk space, and elapsed time:
 
 ```bash
 mkdir -p output
@@ -95,13 +97,13 @@ python3 scripts/guard_run.py --output output/human_guarded \
   --out output/human_guarded --threads 2 --jobs 1
 ```
 
-| 参数 | 含义 |
+| Option | Meaning |
 |---|---|
-| `--max-gib` | 输出目录的大小上限，GiB |
-| `--max-file-gib` | 每个输出文件的大小硬限制，GiB |
-| `--min-free-gib` | 输出所在磁盘的最低可用空间，GiB |
-| `--timeout` | 运行时间上限，秒 |
-| `--max-rss-gib` | 进程组常驻内存上限，GiB；0 表示不限制 |
-| `--poll` | 资源检查间隔，秒 |
+| `--max-gib` | Maximum size of the output directory, in GiB |
+| `--max-file-gib` | Hard size limit for each output file, in GiB |
+| `--min-free-gib` | Minimum free space on the output filesystem, in GiB |
+| `--timeout` | Maximum elapsed time, in seconds |
+| `--max-rss-gib` | Maximum resident memory of the process group, in GiB; 0 disables this limit |
+| `--poll` | Resource-check interval, in seconds |
 
-`--output` 与 `nju-seq --out` 须指向同一新目录，父目录需已存在。达到限制时，脚本终止进程组，并在输出目录旁写入 `<目录名>.resources.json`。输出目录和内存按间隔采样；运行全量数据时，按样本规模调整这些上限。
+`--output` and `nju-seq --out` must point to the same new directory, whose parent must already exist. On reaching a limit, the script terminates the process group and writes `<directory-name>.resources.json` beside the output directory. Directory size and memory are sampled at intervals. Adjust the limits for the size of full datasets.

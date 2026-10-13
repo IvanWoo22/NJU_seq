@@ -1,0 +1,5 @@
+# 实验资料与调度脚本
+
+[English](README.md) | **简体中文**
+
+此目录包含实验资料和 HPCC/物种专用 Shell 脚本。使用这些脚本前，需根据运行环境设置数据路径、样本、参考及输入表格式。Rust 分析的运行步骤见 [主 README](../README.zh-CN.md)，分批比对和资源限制见 [辅助脚本](../docs/scripts.zh-CN.md)。

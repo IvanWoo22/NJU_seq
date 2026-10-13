@@ -1,3 +1,5 @@
-# 实验资料与调度脚本
+# Experimental materials and job scripts
 
-此目录包含实验资料和 HPCC/物种专用 Shell 脚本。使用这些脚本前，需根据运行环境设置数据路径、样本、参考及输入表格式。Rust 分析的运行步骤见 [主 README](../README.md)，分批比对和资源限制见 [辅助脚本](../docs/scripts.md)。
+**English** | [简体中文](README.zh-CN.md)
+
+This directory contains experimental materials and shell scripts for HPCC or individual species. Before using a script, set data paths, samples, references, and input table formats for your environment. See the [main README](../README.md) for the Rust analysis workflow and [Helper scripts](../docs/scripts.md) for chunked alignment and resource limits.

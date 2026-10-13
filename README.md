@@ -2,26 +2,28 @@
 
 # NJU-seq
 
-**N**m-site **J**udged **U**niversally **seq**uencing：比较 NC 对照与 TR 处理样本的 RNA read 末端计数，筛选 2′-*O*-甲基化（Nm）候选位点。
+**English** | [简体中文](README.zh-CN.md)
 
-`nju-seq` 是 Rust 编写的 NJU-seq 分析程序，当前版本 0.5.0。下面以 **GRCh38 / HEK293T 人源 NJU6096–6099** 为例，介绍安装、参考准备、比对、计数和评分。rRNA 参考位于 [data](data)，实验信息见 [样本说明](sample_list.csv)。
+**N**m-site **J**udged **U**niversally **seq**uencing compares RNA read-end counts between NC controls and TR treatment samples to identify candidate 2′-*O*-methylation (Nm) sites.
 
-含 8 nt UMI 的拟南芥 Col_NC31 / Col_TR31 分析步骤和样本结果见 [拟南芥 UMI 分析流程](docs/arabidopsis_umi.md)。
+`nju-seq` is the Rust implementation of the NJU-seq analysis workflow, currently version 0.5.0. This guide covers installation, reference preparation, alignment, counting, and scoring using **GRCh38 / HEK293T human samples NJU6096–6099**. Bundled rRNA references are in [data](data); experimental details are in the [sample list](sample_list.csv).
+
+For Col_NC31 / Col_TR31 libraries with 8 nt UMIs, see the [Arabidopsis UMI workflow](docs/arabidopsis_umi.md).
+
+[Installation](#1-installation) · [References](#2-human-references) · [Input data](#3-input-data) · [Analysis](#4-alignment-counting-and-scoring) · [rRNA and downstream analysis](#5-rrna-and-downstream-analysis)
 
 ```mermaid
-flowchart LR
-  A[NC / 多个 TR 双端 FASTQ] --> B[去接头 / 可选 UMI 提取]
-  B --> C[排除细菌 rRNA]
-  C --> D[排除人 rRNA]
-  D --> E[mRNA 比对与筛选]
-  E --> F[read / 可选 UMI 计数]
-  F --> G[合并到基因组坐标]
-  G --> H[NC 与全部 TR 联合评分]
+flowchart TD
+  A["NC / TR paired FASTQ"] --> B["Trim adapters<br/>Extract UMI if present"]
+  B --> C["Remove bacterial<br/>and human rRNA"]
+  C --> D["Align and select<br/>mRNA reads"]
+  D --> E["Read / UMI counts<br/>at genomic positions"]
+  E --> F["Joint NC/TR<br/>scoring"]
 ```
 
-## 1. 安装与构建
+## 1. Installation
 
-以下命令在仓库根目录运行。使用 Linux 和 Conda，按 [environment.yml](environment.yml) 安装：
+Run the following commands from the repository root on Linux. Install the tools with Conda using [environment.yml](environment.yml):
 
 ```bash
 conda env create -f environment.yml
@@ -30,39 +32,39 @@ cargo build --release --offline
 target/release/nju-seq --help
 ```
 
-环境文件包含 Rust 1.88、Python 3.11、Cutadapt 5.2、Bowtie2 2.5.5、samtools 1.24、gzip 和 Perl。Rust 代码不依赖第三方 crate，安装编译器后可离线构建。
+The environment includes Rust 1.88, Python 3.11, Cutadapt 5.2, Bowtie2 2.5.5, samtools 1.24, gzip, and Perl. The Rust code has no third-party crate dependencies and builds offline once the compiler is installed.
 
-| 工具 | 用途 |
+| Tool | Purpose |
 |---|---|
-| Rust / Cargo ≥1.88 | 编译 `nju-seq` |
-| Cutadapt、gzip | 去接头、读写压缩 FASTQ |
-| Bowtie2、bowtie2-build | 比对、建立索引；其启动脚本还需要 Python 和 Perl |
-| Python ≥3.11、samtools | 抽取小样本、准备参考；samtools 用于建立 FASTA 索引 |
-| UMI-tools | 仅 `umi=r1_3p8` 的文库需要，示例人源样本不需要 |
+| Rust / Cargo ≥1.88 | Build `nju-seq` |
+| Cutadapt, gzip | Trim adapters and read/write compressed FASTQ |
+| Bowtie2, bowtie2-build | Align reads and build indices; the launch scripts also require Python and Perl |
+| Python ≥3.11, samtools | Subset reads and prepare references; samtools builds FASTA indices |
+| UMI-tools | Required only for `umi=r1_3p8` libraries; not needed for the human example |
 
-固定版本安装、UMI 文库以及 Perl/R 分析脚本所需的软件见 [依赖说明](docs/dependencies.md)。
+For a pinned installation and the tools required by UMI, Perl, and R workflows, see [Dependencies](docs/dependencies.md).
 
-## 2. 准备人源参考
+## 2. Human references
 
-人、小鼠、拟南芥的参考来源如下，完整文件名和下载链接见 [三物种参考清单](docs/reference_sources.md)：
+The reference sources for human, mouse, and Arabidopsis are listed below. Exact filenames and download links are in [Reference sources](docs/reference_sources.md).
 
-| 物种 | 来源与发布版本 | 基因组 |
+| Species | Source and release | Genome assembly |
 |---|---|---|
-| 人 | [GENCODE v34](https://www.gencodegenes.org/human/release_34.html) | GRCh38.p13 |
-| 小鼠 | [GENCODE M25](https://www.gencodegenes.org/mouse/release_M25.html) | GRCm38.p6 |
-| 拟南芥 | [Ensembl Plants 46](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/) | TAIR10 |
+| Human | [GENCODE v34](https://www.gencodegenes.org/human/release_34.html) | GRCh38.p13 |
+| Mouse | [GENCODE M25](https://www.gencodegenes.org/mouse/release_M25.html) | GRCm38.p6 |
+| Arabidopsis | [Ensembl Plants 46](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/) | TAIR10 |
 
-人源小样本使用下列配套参考，完整文件和索引需另行准备。将文件放在对应目录，具体格式见 [参考说明](references/README.md)。
+The human example uses the matching reference files below. Prepare the complete references and indices separately, using these paths. File formats are described in [Reference files](references/README.md).
 
-| 路径 | 内容 |
+| Path | Contents |
 |---|---|
-| `references/human_source/hsa_protein_coding.fa` | 84,068 条 protein_coding 转录本 |
-| `references/human_source/hsa_exon.info` | 与转录本匹配的五列 exon 表 |
-| `references/human_source/GRCh38.primary_assembly.genome.fa` | GRCh38 基因组 FASTA |
-| `references/bacterial/bac_rna.*.bt2` | 细菌 rRNA 索引的六个文件 |
-| `data/hsa_rrna/{18s,28s,5-8s}.fa` | 仓库自带的三条人 rRNA 参考 |
+| `references/human_source/hsa_protein_coding.fa` | 84,068 protein-coding transcripts |
+| `references/human_source/hsa_exon.info` | Matching five-column exon table |
+| `references/human_source/GRCh38.primary_assembly.genome.fa` | GRCh38 genome FASTA |
+| `references/bacterial/bac_rna.*.bt2` | All six files of the bacterial rRNA index |
+| `data/hsa_rrna/{18s,28s,5-8s}.fa` | Three human rRNA sequences bundled with the repository |
 
-从源文件建立参考目录：
+Build a reference directory from the source files:
 
 ```bash
 python3 scripts/prepare_human_reference.py \
@@ -75,28 +77,28 @@ python3 scripts/prepare_human_reference.py \
   --copy-inputs
 ```
 
-脚本逐条核对转录本与基因组 exon 重建序列，生成 `mrna`、`rrna`、`bac` 索引及 `exon.info`。`--copy-inputs` 使生成的目录可独立复制到其他机器；省略它会用相对链接引用基因组和细菌索引，需要连同源目录一起移动。输出目录必须尚不存在。
+The script checks every transcript against the sequence reconstructed from its genomic exons, then creates the `mrna`, `rrna`, and `bac` indices and `exon.info`. With `--copy-inputs`, the resulting directory can be copied to another machine on its own. Without it, relative symlinks point to the genome and bacterial index, so the source directories must move with it. The output directory must not already exist.
 
-已有的 `references/human/` 也可以直接使用，此时将下面命令中的 `references/human_rebuilt` 统一换为 `references/human`。
+If you already have the prepared `references/human/` directory, replace every `references/human_rebuilt` path below with `references/human`.
 
-## 3. 选择数据
+## 3. Input data
 
-[sample_list.csv](sample_list.csv) 中，NJU6096 是未经过 MgR 处理的 NC，NJU6097–6099 是经过 MgR 处理的三个 TR；均为 HEK293T rRNA-free RNA，无 UMI。
+In [sample_list.csv](sample_list.csv), NJU6096 is the NC without MgR treatment, and NJU6097–6099 are three TR samples with MgR treatment. All four are HEK293T rRNA-free RNA libraries without UMIs.
 
-仓库附带 [人源示例数据](tests/data/human/README.md)：每个样本取原始 FASTQ 的前 **1,000 对 reads**，共八个 gzip 文件，约 0.6 MiB，可直接用于下一节命令。该连续子集用于演示分析步骤，不代表整库分布，不能用于估计整库候选数。
+The bundled [human example data](tests/data/human/README.md) contain the first **1,000 read pairs** from each sample: eight gzip files totaling about 0.6 MiB. Use them directly in the next section. This consecutive subset illustrates the workflow; it does not represent the distribution of the full libraries or support estimates of their candidate counts.
 
-使用完整数据时，在 `inputs/human/<sample>/R1.fq.gz`、`R2.fq.gz` 放入原始 FASTQ 或建立链接，使用 [config/samples.human.tsv](config/samples.human.tsv)。也可直接修改清单中的路径。抽取小样本的命令为：
+For full datasets, place the original FASTQ files or symlinks at `inputs/human/<sample>/R1.fq.gz` and `R2.fq.gz`, then use [config/samples.human.tsv](config/samples.human.tsv). Alternatively, edit the paths in the manifest. To create a subset:
 
 ```bash
 python3 scripts/subset_fastq.py --samples config/samples.human.tsv \
   --pairs 1000 --skip 0 --out output/my_subset
 ```
 
-样本清单为六列 TSV：`sample role r1 r2 alignment umi`，列之间使用实际制表符。需要一个 NC、至少一个 TR；样本名唯一，相对路径以清单所在目录为基准。原始 FASTQ 的 `alignment` 填 `-`，`umi` 填 `none` 或 `r1_3p8`。UMI 类型由建库设计决定。
+The sample manifest is a six-column TSV: `sample role r1 r2 alignment umi`, separated by actual tabs. It requires one NC, at least one TR, and unique sample names. Relative paths are resolved from the manifest's directory. For raw FASTQ input, set `alignment` to `-` and `umi` to `none` or `r1_3p8`, according to the library design.
 
-## 4. 比对、计数与评分
+## 4. Alignment, counting, and scoring
 
-先查看将要执行的命令，再运行分析。`plan` 不创建输出；`run` 的输出目录必须尚不存在。
+Preview the commands with `plan`, then start the analysis with `run`. `plan` creates no output; the output directory for `run` must not already exist.
 
 ```bash
 mkdir -p output
@@ -111,45 +113,45 @@ target/release/nju-seq run \
   --out output/human_example --threads 2 --jobs 1
 ```
 
-成功运行后会生成 `output/human_example/SUCCESS`。在本示例的配套参考下，四个样本通过 mRNA 筛选的 read 数依次为 **18、13、5、2**。小样本共同覆盖不足，评分摘要为 `normalization_unavailable`，候选为 0；该状态表示无法完成联合归一化，不能据此判断完整数据的 Nm 位点。各步计数和输出解释见 [示例结果](docs/results.md)。
+A successful run creates `output/human_example/SUCCESS`. With the matching example references, **18, 13, 5, and 2 reads** pass mRNA selection in the four samples, respectively. Shared coverage in this subset is insufficient for joint normalization: the score summary reports `normalization_unavailable` and zero candidates. This does not establish whether Nm sites are present in the full libraries. See [Example results](docs/results.md) for stage counts and output interpretation.
 
-完整分析改用 `--samples config/samples.human.tsv` 并指定新的输出目录。`--threads` 是每个比对任务的线程数，`--jobs` 是同时分析的样本数。mRNA 使用 `-a` 输出全部定位，全量分析需按数据规模设置并行数、磁盘和内存上限，见 [辅助脚本](docs/scripts.md)。
+For a full analysis, use `--samples config/samples.human.tsv` and a new output directory. `--threads` sets threads per alignment task; `--jobs` sets the number of samples analyzed concurrently. mRNA alignment uses `-a` to report all alignments. Choose concurrency, disk, and memory limits for the size of your data; see [Helper scripts](docs/scripts.md).
 
-| 主要输出 | 内容 |
+| Main output | Contents |
 |---|---|
-| `<sample>/mrna.almostuniquematch.filter.tmp` | 每个通过筛选的 read 一条定位 |
-| `<sample>/reads/mrna.filter.tsv` | 九列基因组末端计数 |
-| `mrna.reads.scored.tsv`、`mrna.reads.score_summary.json` | 候选表及评分状态 |
-| `qc.html`、各样本 QC TSV | 可离线查看的质量报告与指标 |
-| `plan.json`、`logs/`、`stages.tsv` | 命令、日志、各步骤耗时及退出状态 |
-| `SUCCESS` / `FAILED` | 分析完成或失败的标记 |
+| `<sample>/mrna.almostuniquematch.filter.tmp` | One selected alignment per accepted read |
+| `<sample>/reads/mrna.filter.tsv` | Nine-column genomic read-end counts |
+| `mrna.reads.scored.tsv`, `mrna.reads.score_summary.json` | Candidate table and scoring status |
+| `qc.html`, per-sample QC TSV files | Offline quality report and metrics |
+| `plan.json`, `logs/`, `stages.tsv` | Commands, logs, stage durations, and exit status |
+| `SUCCESS` / `FAILED` | Completion or failure marker |
 
-默认 `--storage compact` 生成 QC 报告，并在成功后删除中间 FASTQ。使用 `--storage all` 可保留中间文件；该模式默认关闭 QC，需要报告时加 `--qc yes`。声明 UMI 的样本还会生成 UMI 计数与家族表；只有全部样本都有 UMI 时才联合进行 UMI 评分。
+The default `--storage compact` creates a QC report and removes intermediate FASTQ files after success. Use `--storage all` to retain intermediates; QC is off by default in that mode, so add `--qc yes` for a report. Samples with UMIs also produce UMI counts and family tables. Joint UMI scoring requires UMIs in every sample.
 
-### 输入与参数
+### Inputs and parameters
 
-`--index DIR` 查找 `bac`、`rrna`、`mrna` 三个索引前缀。使用其他名称时分别指定 `--bac-index`、`--rrna-index`、`--mrna-index`。
+`--index DIR` looks for the index prefixes `bac`, `rrna`, and `mrna`. For other names, specify `--bac-index`, `--rrna-index`, and `--mrna-index` separately.
 
-默认接头为 `AGATCGGAAGAGCACA / GATCGTCGGACTGTAG`，可用 `--adapter-r1`、`--adapter-r2` 修改。未匹配接头的 pairs 会被丢弃；无 UMI 的最短读长为 `10:10`。`r1_3p8` 文库先裁去 R2 起始 8 nt，以 `18:10` 为最短读长裁剪，再提取 R1 末端 8 nt 的 UMI。已去接头并完成可选 UMI 提取的数据应选 `prepared`。
+The default adapters are `AGATCGGAAGAGCACA / GATCGTCGGACTGTAG`; change them with `--adapter-r1` and `--adapter-r2`. Pairs without an adapter match are discarded. The minimum lengths for libraries without UMIs are `10:10`. For `r1_3p8`, the workflow removes the first 8 nt of R2, trims with minimum lengths of `18:10`, and then extracts the last 8 nt of R1 as the UMI. Use `prepared` for reads that have already been trimmed and, where applicable, had their UMIs extracted.
 
-| `--from` | 所需输入 | 接着执行 |
+| `--from` | Required input | Remaining steps |
 |---|---|---|
-| `raw` | 原始双端 FASTQ | 去接头、可选 UMI 提取及后续步骤 |
-| `prepared` | 已去接头并完成可选 UMI 提取的 FASTQ | 排除 rRNA 及后续步骤 |
-| `sam` | 去 rRNA 后的 FASTQ、mRNA SAM | SAM 筛选及后续步骤 |
-| `filtered` | 对应 FASTQ、五列比对表 | 合并定位、核对 R1 序列及后续步骤 |
-| `unique` | 原 R1、已筛选且每个 read 一行的五列比对表；R2 可填 `-` | 计数、合并和评分 |
+| `raw` | Raw paired FASTQ | Adapter trimming, optional UMI extraction, and all subsequent steps |
+| `prepared` | Trimmed FASTQ with any UMIs already extracted | rRNA removal and subsequent steps |
+| `sam` | FASTQ after rRNA removal, plus mRNA SAM | SAM filtering and subsequent steps |
+| `filtered` | Corresponding FASTQ and a five-column alignment table | Alignment consolidation, R1 sequence checks, and subsequent steps |
+| `unique` | Original R1 and a selected five-column alignment table with one row per read; R2 may be `-` | Counting, coordinate merging, and scoring |
 
-rRNA 使用 `-k 5`，mRNA 使用 `-a`，均保留 `--reorder --seed 0`。处理 SAM 时，同一 read 的全部比对必须连续。`--rrna-filter both|bac|host|none` 选择排除对象，默认 `both`。
+rRNA alignment uses `-k 5`; mRNA uses `-a`. Both retain `--reorder --seed 0`. All SAM alignments for a given read must be contiguous. `--rrna-filter both|bac|host|none` selects which rRNA references to exclude; the default is `both`.
 
-分批 mRNA 比对、断点继续和 Linux 资源限制的用法见 [辅助脚本](docs/scripts.md)。`run` 本身不支持整条流程断点恢复。
+For chunked mRNA alignment, resuming interrupted batches, and Linux resource limits, see [Helper scripts](docs/scripts.md). `run` does not resume an entire interrupted workflow.
 
-## 5. rRNA 与后续分析
+## 5. rRNA and downstream analysis
 
-`run` 输出 mRNA 结果。需要 rRNA 位点结果时，使用 `data/hsa_rrna` 参考，按 [rRNA 计数与评分](docs/rrna.md) 单独运行。
+`run` produces mRNA results. To analyze rRNA sites, use the `data/hsa_rrna` references and follow [rRNA counting and scoring](docs/rrna.md).
 
-`nju-seq score --mode mrna|rrna` 将一个 NC 与全部 TR 联合评分。输出中的 `Candidate`、`EvaluationStatus` 和坐标类型用于解释结果；公式和表格格式见 [评分说明](docs/scoring.md)。筛选阈值不等同于 FDR 或实验确认。
+`nju-seq score --mode mrna|rrna` jointly scores one NC against all TR samples. Interpret the `Candidate`, `EvaluationStatus`, and coordinate fields together; formulas and table formats are described in [Scoring](docs/scoring.md). Candidate thresholds do not provide FDR control or experimental confirmation.
 
-`mrna_analysis/` 和 `presentation/` 提供 motif、区域、codon、剪接分析及绘图脚本。使用时选择与输入表格式匹配的脚本，并提供配套注释；所需 R/Perl 包见 [依赖说明](docs/dependencies.md)。
+`mrna_analysis/` and `presentation/` contain scripts for motifs, transcript regions, codons, splicing, and plotting. Choose scripts that accept your table format and provide matching annotations. Required R and Perl packages are listed in [Dependencies](docs/dependencies.md).
 
-许可见 [LICENSE](LICENSE)。
+See [LICENSE](LICENSE) for licensing terms.

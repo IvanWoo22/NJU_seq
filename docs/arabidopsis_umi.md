@@ -1,10 +1,14 @@
-# 拟南芥 Col_NC31 / Col_TR31：8 nt UMI 分析
+# Arabidopsis Col_NC31 / Col_TR31: analysis with 8 nt UMIs
 
-Col_NC31 为 NC 对照，Col_TR31 为 TR 处理样本。两份文库在 **MgR 处理后、PCR 前**加入 8 nt UMI，由 R1 的 3′ 端读取；R2 的 5′ 端为同一标签的反向互补方向。本文介绍 Rust 版 `nju-seq` 的运行方法、UMI 计数规则及两份样本的分析结果。
+**English** | [简体中文](arabidopsis_umi.zh-CN.md)
 
-## 软件与输入
+Col_NC31 is the NC control and Col_TR31 is the TR treatment sample. The libraries contain 8 nt UMIs added **after MgR treatment and before PCR**, read from the 3′ end of R1. The 5′ end of R2 contains the same tag in the reverse-complement orientation. This guide describes the Rust `nju-seq` workflow, UMI counting rules, and analysis results for these samples.
 
-在仓库根目录操作。先按 [主 README](../README.md#1-安装与构建) 建立 `nju-seq` 环境，再补装 UMI-tools：
+[Setup](#software-and-inputs) · [References](#arabidopsis-references) · [Small subset](#run-a-small-subset) · [UMI processing](#umi-processing) · [Results](#sample-results) · [rRNA](#optional-rrna-analysis)
+
+## Software and inputs
+
+Work from the repository root. Create the `nju-seq` environment as described in the [main README](../README.md#1-installation), then install UMI-tools:
 
 ```bash
 conda activate nju-seq
@@ -13,9 +17,9 @@ cargo build --release --offline
 umi_tools --version
 ```
 
-UMI 标签由 UMI-tools 提取，分子合并和计数由 Rust 完成。软件依赖见 [依赖说明](dependencies.md)。
+UMI-tools extracts the tags; Rust performs molecule grouping and counting. See [Dependencies](dependencies.md) for the required software.
 
-将原始双端 FASTQ 放在以下位置，也可建立链接或修改 [样本清单](../config/samples.arabidopsis_umi.tsv) 中的路径：
+Place the original paired FASTQ files or symlinks at the following paths, or edit the [sample manifest](../config/samples.arabidopsis_umi.tsv):
 
 ```text
 inputs/arabidopsis/Col_NC31/R1.fq.gz
@@ -24,26 +28,26 @@ inputs/arabidopsis/Col_TR31/R1.fq.gz
 inputs/arabidopsis/Col_TR31/R2.fq.gz
 ```
 
-两行清单的 `umi` 均为 `r1_3p8`，`alignment` 为 `-`。相对路径以清单所在目录为基准。不要将已去接头、已提取 UMI 的 FASTQ 作为 `--from raw` 输入；这类文件应使用 `--from prepared`，两端 read ID 都须保留提取后的 `_UMI` 后缀。
+Both manifest rows use `umi=r1_3p8` and `alignment=-`. Relative paths are resolved from the manifest's directory. For FASTQ files that have already been trimmed and had UMIs extracted, use `--from prepared` and retain the extracted `_UMI` suffix in both read IDs. Passing these files to `--from raw` would trim and extract them again.
 
-## 使用配套的拟南芥参考
+## Arabidopsis references
 
-准备以下配套参考，并放入对应目录。完整参考和索引不随 Git 分发：
+Prepare the following matching references. Complete references and indices are not included in the Git repository.
 
-| 路径或索引前缀 | 用途 |
+| Path or index prefix | Purpose |
 |---|---|
-| `references/bacterial/bac_rna` | 细菌 rRNA 索引 |
-| `references/arabidopsis/ath_rrna_total` | 拟南芥 rRNA 索引，4,131 条参考 |
-| `references/arabidopsis/ath_protein_coding` | mRNA 索引，48,321 条转录本 |
-| `references/arabidopsis/exon.info` | 与 mRNA 索引配套的五列 exon 表 |
+| `references/bacterial/bac_rna` | Bacterial rRNA index |
+| `references/arabidopsis/ath_rrna_total` | Arabidopsis rRNA index containing 4,131 sequences |
+| `references/arabidopsis/ath_protein_coding` | mRNA index containing 48,321 transcripts |
+| `references/arabidopsis/exon.info` | Five-column exon table matching the mRNA index |
 
-每个索引前缀对应六个 `.bt2` 文件，复制时须齐全。`ath.fa`、`ath_main_transcript.txt`、`transcript_region.info` 和 `exon_distance.info` 供后续序列及区域注释使用，主计数命令不读取它们。
+Each index prefix has six `.bt2` files; copy all six. `ath.fa`, `ath_main_transcript.txt`, `transcript_region.info`, and `exon_distance.info` support downstream sequence and region annotation and are not read by the main counting command.
 
-Ensembl Plants 46 / TAIR10 的文件下载链接见 [三物种参考来源](reference_sources.md)。运行以下命令时，使用上表的索引及配套 exon 表。`prepare_human_reference.py` 专用于人源 GENCODE 格式；拟南芥使用已准备好的索引。
+Download links for Ensembl Plants 46 / TAIR10 are in [Reference sources](reference_sources.md). The commands below use the indices and matching exon table above. `prepare_human_reference.py` accepts human GENCODE data; use prepared indices for Arabidopsis.
 
-## 先跑小样本
+## Run a small subset
 
-每个样本先取前 1,000 对 reads。脚本保留清单中的 UMI 类型，并检查截取部分的双端 ID：
+Start with the first 1,000 read pairs from each sample. The subsetting script preserves the UMI setting and checks paired read IDs within the selected range.
 
 ```bash
 python3 scripts/subset_fastq.py \
@@ -67,50 +71,50 @@ target/release/nju-seq run \
   --out output/arabidopsis_umi_example --threads 2 --jobs 1
 ```
 
-`plan` 只检查路径并列出命令，不执行分析。抽样和运行的输出目录均须尚不存在。小样本用于检查安装、配对处理与输出格式，不能用来估计整库候选数；覆盖不足时可能出现 `normalization_unavailable`。
+`plan` checks paths and lists commands without running the analysis. The subsetting and analysis output directories must not already exist. A small subset lets you check the installation, paired-read handling, and output format; it does not support estimates of full-library candidate counts. Insufficient coverage can produce `normalization_unavailable`.
 
-全量分析使用相同索引参数，将 `--samples` 改为 `config/samples.arabidopsis_umi.tsv`，`--out` 改为新的 `output/arabidopsis_umi_full`。`--threads` 是每个比对任务的线程数，`--jobs` 是并行样本数。默认成功后删除中间 FASTQ；需要保留时加 `--storage all`，同时需要 QC 报告时再加 `--qc yes`。分批比对与资源限制见 [辅助脚本](scripts.md)。
+For the full dataset, keep the index arguments, change `--samples` to `config/samples.arabidopsis_umi.tsv`, and set `--out` to a new directory such as `output/arabidopsis_umi_full`. `--threads` sets threads per alignment task; `--jobs` sets concurrent samples. Intermediate FASTQ files are removed after success by default. Add `--storage all` to retain them and `--qc yes` if you also want a QC report in that mode. See [Helper scripts](scripts.md) for chunked alignment and resource limits.
 
-## UMI 在流程中的位置
+## UMI processing
 
-`umi=r1_3p8` 会启用以下处理，两份文库分别运行：
+`umi=r1_3p8` enables the following steps, performed separately for each library:
 
-1. Cutadapt 使用 R1 接头 `AGATCGGAAGAGCACA`、R2 接头 `GATCGTCGGACTGTAG`，以 `-U 8` 裁去 R2 起始标签；其余参数为 `-O 6 -m 18:10 -e 0.1 --discard-untrimmed`。R1 的最低长度包括尚未提取的 8 nt UMI。
-2. UMI-tools 以 `--extract-method=string --bc-pattern=NNNNNNNN --3prime` 提取 R1 末端 8 nt，将标签追加到两端 read ID。提取标签本身不合并分子，R2 标签不参与联合纠错。
-3. 依次排除细菌 rRNA 和拟南芥 rRNA，再比对 mRNA。两轮 rRNA 使用 `-k 5`，mRNA 使用 `-a`；均保留 `--reorder --seed 0`。
-4. 完成 mRNA 定位筛选后，保留 read 计数分支，并按 **染色体、链、R1 完整基因组外显子路径和 UMI** 做 exact 合并。不同起止点或剪接路径分别保留；等价转录本中的同一片段可合并。
-5. 分别生成 read 与 UMI 末端计数，合并到基因组坐标，再进行 NC/TR 联合评分。只有清单中全部样本都声明 UMI 时，才生成联合 UMI 评分。
+1. Cutadapt uses R1 adapter `AGATCGGAAGAGCACA` and R2 adapter `GATCGTCGGACTGTAG`, with `-U 8` to remove the tag at the start of R2. The remaining options are `-O 6 -m 18:10 -e 0.1 --discard-untrimmed`. The minimum R1 length includes its 8 nt UMI, which has not yet been extracted.
+2. UMI-tools extracts the last 8 nt of R1 with `--extract-method=string --bc-pattern=NNNNNNNN --3prime` and appends the tag to both read IDs. Extraction alone does not group molecules. The R2 tag is not used for joint error correction.
+3. Reads mapping to bacterial rRNA and then Arabidopsis rRNA are removed before mRNA alignment. Both rRNA steps use `-k 5`; mRNA uses `-a`. All retain `--reorder --seed 0`.
+4. After mRNA alignment selection, the workflow keeps a read-count branch and groups molecules by an exact match on **chromosome, strand, the complete genomic exon path of R1, and UMI**. Different endpoints or splice paths remain separate; the same fragment mapped to equivalent transcripts can be grouped.
+5. Read and UMI end counts are generated separately, merged at genomic coordinates, and jointly scored between NC and TR. Joint UMI scoring is produced only when all samples in the manifest have UMIs.
 
-每个 UMI 家族选取 CIGAR 错误数最少的 read，平局时按 read ID 选择。含 `N` 的 UMI 逐条保留，避免把未知标签误合并。当前 Rust 版使用 exact 规则，不进行 directional 纠错；也不能只按 UMI 字符串或末端坐标全局去重。
+Each UMI family is represented by the read with the fewest CIGAR errors, with ties resolved by read ID. UMIs containing `N` are retained individually to avoid grouping unknown tags. Rust uses exact matching without directional error correction. Grouping uses the full key above, rather than the UMI string or end coordinate alone.
 
-| 输出 | 含义 |
+| Output | Meaning |
 |---|---|
-| `<sample>/mrna.almostuniquematch.filter.tmp` | 通过 mRNA 筛选的 read 定位 |
-| `<sample>/mrna.umi.filter.tmp` | 每个 UMI 家族的一条代表定位 |
-| `<sample>/mrna.umi.families.tsv.gz`、`mrna.umi.summary.json` | 家族组成与合并统计，均位于样本目录内 |
-| `<sample>/reads/mrna.filter.tsv` | read 计数表 |
-| `<sample>/umi/mrna.filter.tsv` | UMI 计数表 |
-| `mrna.reads.scored.tsv`、`mrna.umi.scored.tsv` | 两种计数下的评分结果，按 `Candidate` 列识别候选 |
-| `mrna.reads.score_summary.json`、`mrna.umi.score_summary.json` | 归一化状态及候选数 |
-| `qc.html`、`SUCCESS` | 质量报告、全部步骤成功标记 |
+| `<sample>/mrna.almostuniquematch.filter.tmp` | Read alignments passing mRNA selection |
+| `<sample>/mrna.umi.filter.tmp` | One representative alignment per UMI family |
+| `<sample>/mrna.umi.families.tsv.gz`, `mrna.umi.summary.json` | Family membership and grouping statistics, both in the sample directory |
+| `<sample>/reads/mrna.filter.tsv` | Read counts |
+| `<sample>/umi/mrna.filter.tsv` | UMI counts |
+| `mrna.reads.scored.tsv`, `mrna.umi.scored.tsv` | Scores for the two counting methods; candidates are identified by the `Candidate` column |
+| `mrna.reads.score_summary.json`, `mrna.umi.score_summary.json` | Normalization status and candidate counts |
+| `qc.html`, `SUCCESS` | Quality report and successful completion marker |
 
-## 样本分析结果
+## Sample results
 
-以下为 Col_NC31 / Col_TR31 使用 Perl/Python 流程、按 exact UMI 规则计算的全量结果。
+The following full-dataset results for Col_NC31 / Col_TR31 were calculated with the Perl/Python workflow using exact UMI grouping.
 
-| 指标 | Col_NC31 | Col_TR31 |
+| Metric | Col_NC31 | Col_TR31 |
 |---|---:|---:|
-| 原始 read pairs | 89,597,181 | 38,795,779 |
-| 去接头后 read pairs | 31,663,953 | 12,546,074 |
-| UMI 提取后 read pairs | 31,663,953 | 12,546,074 |
-| 通过 mRNA 筛选的 reads | 3,239,437 | 575,214 |
-| exact UMI 合并后的计数记录 | 874,050 | 395,251 |
-| 其中含 `N` UMI、单独保留的记录 | 545 | 9,284 |
+| Raw read pairs | 89,597,181 | 38,795,779 |
+| Read pairs after adapter trimming | 31,663,953 | 12,546,074 |
+| Read pairs after UMI extraction | 31,663,953 | 12,546,074 |
+| Reads passing mRNA selection | 3,239,437 | 575,214 |
+| Count records after exact UMI grouping | 874,050 | 395,251 |
+| Of these, records with an `N` in the UMI, retained individually | 545 | 9,284 |
 
-read 分支得到 134 个候选，exact UMI 分支得到 110 个；共有 107 个，read 分支独有 27 个，UMI 分支独有 3 个。候选变化反映计数方式的影响，不能直接解释为准确率提升。样本各只有一份 NC、TR；评分阈值不等同于重复间统计检验或 FDR，详见 [评分说明](scoring.md)。
+The read branch yielded 134 candidates and the exact UMI branch yielded 110: 107 were shared, 27 occurred only in the read branch, and 3 only in the UMI branch. These differences reflect the counting method and do not by themselves demonstrate improved accuracy. There is one NC and one TR sample; the scoring thresholds do not constitute a statistical test across replicates or provide FDR control. See [Scoring](scoring.md).
 
-## 可选 rRNA 分析
+## Optional rRNA analysis
 
-主流程排除 rRNA 是为了分析 mRNA，不会生成 rRNA 的 UMI 分子计数。需要 rRNA 位点结果时，按 [rRNA 独立计数与评分](rrna.md) 操作，并将索引和 FASTQ 换为本批拟南芥输入。
+The main workflow removes rRNA for mRNA analysis and does not produce rRNA UMI molecule counts. For rRNA sites, follow [rRNA counting and scoring](rrna.md), replacing the index and FASTQ paths with the Arabidopsis inputs.
 
-rRNA 计数使用与比对索引一致的参考序列。用 `bowtie2-inspect references/arabidopsis/ath_rrna_total` 导出序列，按 `18s`、`25s`、`5-8s`、`5s` 的参考 ID 分别保存为单条 FASTA，再向 `scripts/count_rrna.py` 重复传入 `--reference FILE`。FASTA 中保留原参考 ID，以便对应比对结果和计数坐标。
+Count against the same reference sequences used for alignment. Export them with `bowtie2-inspect references/arabidopsis/ath_rrna_total`, save the `18s`, `25s`, `5-8s`, and `5s` reference IDs as separate single-sequence FASTA files, and pass each to `scripts/count_rrna.py` with a repeated `--reference FILE` option. Preserve the original FASTA IDs so that alignments and counting coordinates agree.

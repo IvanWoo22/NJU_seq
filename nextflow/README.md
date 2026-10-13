@@ -1,5 +1,7 @@
-# Nextflow 与集群运行
+# Nextflow and cluster execution
 
-此目录的 Nextflow 脚本不支持当前 Rust 程序。使用 `nju-seq` 时，按 [主 README](../README.md) 安装环境，通过 `nju-seq plan/run` 运行分析。
+**English** | [简体中文](README.zh-CN.md)
 
-集群任务可由调度脚本调用 Rust 命令，并指定样本清单、参考、线程数和输出目录。分批比对及资源参数见 [辅助脚本](../docs/scripts.md)。
+The Nextflow scripts in this directory do not support the current Rust program. To use `nju-seq`, install the environment described in the [main README](../README.md) and run the analysis with `nju-seq plan/run`.
+
+A cluster job script can invoke the Rust commands with a sample manifest, references, thread count, and output directory. See [Helper scripts](../docs/scripts.md) for chunked alignment and resource options.

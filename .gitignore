@@ -9,6 +9,7 @@ __pycache__/
 /inputs/
 /references/*
 !/references/README.md
+!/references/README.zh-CN.md
 *.partial
 *.partial/
 

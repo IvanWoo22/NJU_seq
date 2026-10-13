@@ -1,45 +1,47 @@
-# 参考文件
+# Reference files
 
-`data/` 提供仓库自带的小型参考，`references/` 存放完整参考与索引，`inputs/` 存放测序 FASTQ 或其链接。完整参考和原始 FASTQ 需另行准备。
+**English** | [简体中文](README.zh-CN.md)
 
-人 GENCODE v34、小鼠 M25、拟南芥 Ensembl Plants 46 的下载链接见 [三物种参考来源](../docs/reference_sources.md)。拟南芥索引和含 UMI 样本的用法见 [拟南芥分析流程](../docs/arabidopsis_umi.md)。
+`data/` contains small references bundled with the repository, `references/` holds complete references and indices, and `inputs/` holds sequencing FASTQ files or symlinks. Prepare complete references and original FASTQ files separately.
 
-## 参考目录
+Download links for human GENCODE v34, mouse M25, and Arabidopsis Ensembl Plants 46 are in [Reference sources](../docs/reference_sources.md). For Arabidopsis indices and libraries with UMIs, see the [Arabidopsis workflow](../docs/arabidopsis_umi.md).
 
-| 目录 | 内容 |
+## Directory layout
+
+| Directory | Contents |
 |---|---|
-| `human/` | 已准备的人源 mRNA、rRNA、细菌 rRNA 索引和 `exon.info` |
-| `human_source/` | 人源转录本 FASTA、五列 exon 表、GRCh38 基因组及其他注释 |
-| `bacterial/` | 细菌 rRNA 的六片 Bowtie2 索引 |
-| `arabidopsis/` | 拟南芥参考与索引 |
+| `human/` | Prepared human mRNA, rRNA, and bacterial rRNA indices, plus `exon.info` |
+| `human_source/` | Human transcript FASTA, five-column exon table, GRCh38 genome, and other annotations |
+| `bacterial/` | Six files comprising the bacterial rRNA Bowtie2 index |
+| `arabidopsis/` | Arabidopsis references and indices |
 
-人源示例的 mRNA 参考含 84,068 条 protein_coding 转录本，对应 762,910 行 exon。rRNA 使用 `data/hsa_rrna/18s.fa`、`28s.fa`、`5-8s.fa` 三条参考。
+The mRNA reference for the human example contains 84,068 protein-coding transcripts and 762,910 exon rows. Its rRNA references are the three sequences in `data/hsa_rrna/18s.fa`, `28s.fa`, and `5-8s.fa`.
 
-转录本 FASTA、exon 表和基因组须相互匹配。`human_source/` 中的 basic、代表转录本、区域和 codon 表用于后续注释分析；主流程使用全转录本及其配套 exon 表。
+The transcript FASTA, exon table, and genome must match. Basic annotations, representative transcripts, region tables, and codon tables in `human_source/` support downstream annotation. The main workflow uses the full transcript set and its matching exon table.
 
-`data/` 还包含其他物种的 rRNA 及 `MCMV.fa`、`MHV.fa`。分析其他物种时，需要准备配套的转录本、注释及适用的注释解析方法。
+`data/` also contains rRNA references for other species, plus `MCMV.fa` and `MHV.fa`. For another species, prepare matching transcripts and annotations and use an annotation parser that supports their format.
 
-## 建立与复制参考
+## Building and copying references
 
-按 [主 README](../README.md) 的命令运行 `scripts/prepare_human_reference.py`。输出为一个新目录，包含 `mrna`、`rrna`、`bac` 三个索引前缀、`exon.info`、FASTA 和 `audit.json`。
+Run `scripts/prepare_human_reference.py` as shown in the [main README](../README.md#2-human-references). It creates a new directory containing the `mrna`, `rrna`, and `bac` index prefixes, `exon.info`, FASTA files, and `audit.json`.
 
-- 加 `--copy-inputs`：复制基因组和细菌索引，生成的目录可单独搬迁。
-- 不加此选项：使用相对链接，应保持参考目录与源文件目录的相对位置。
-- 使用其他宿主 rRNA：重复传入 `--rrna FILE`，每个 FASTA 分别读取。
+- With `--copy-inputs`, the genome and bacterial index are copied, so the resulting directory can be moved independently.
+- Without this option, relative symlinks are used; preserve the relative locations of the reference and source directories.
+- To use other host rRNA sequences, repeat `--rrna FILE` for each FASTA input.
 
-脚本逐条校验转录本与基因组 exon 重建序列。失败时保留 `.partial` 目录供检查，修正输入后改用新输出目录。既有 `human/` 也使用相对链接，应连同 `human_source/` 和 `bacterial/` 一起复制；仅复制 `human/` 时需要解引用链接，例如 `cp -RL references/human /destination/human`。
+The script checks each transcript against its sequence reconstructed from genomic exons. On failure, it retains a `.partial` directory for inspection; correct the inputs and use a new output directory. The prepared `human/` directory also uses relative symlinks: copy it together with `human_source/` and `bacterial/`, or dereference symlinks when copying it alone, for example with `cp -RL references/human /destination/human`.
 
-## 人源参考准备脚本的输入格式
+## Input format for human reference preparation
 
-转录本 FASTA 使用 GENCODE 风格的 `|` 分隔标题：前两项为带版本号的 ENST、ENSG，第八项为 `protein_coding`，支持 `_PAR_Y`。
+Transcript FASTA headers follow the GENCODE `|`-separated format. The first two fields are versioned ENST and ENSG identifiers; the eighth is `protein_coding`. `_PAR_Y` identifiers are supported.
 
-exon 表无表头，用实际制表符分隔五列：
+The exon table has five columns without a header, separated by actual tabs:
 
 ```text
 chromosome    start    end    strand    attributes
 chr1          101      200    +         Parent=ENST000001.1;gene_id=ENSG000001.1
 ```
 
-上面的空格仅用于展示。坐标为 1-based 闭区间；脚本仅选取输入 FASTA 中出现的转录本，并保留基因对应关系、负链和 PAR-Y 信息。九列 GFF3 需要先转换，不能直接作为 `--exons`。
+Spaces above are for display only. Coordinates are 1-based and inclusive. The script selects transcripts present in the input FASTA and preserves gene associations, negative strands, and PAR-Y information. Convert nine-column GFF3 to this format before passing it to `--exons`.
 
-基因组须为未压缩 FASTA，转录本和 rRNA FASTA 可用 gzip。细菌索引须是同一种格式的六个 `.bt2` 或 `.bt2l` 文件。
+The genome must be an uncompressed FASTA; transcript and rRNA FASTA files may be gzipped. The bacterial index must contain all six `.bt2` or `.bt2l` files, using one format consistently.
