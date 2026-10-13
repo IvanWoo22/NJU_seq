@@ -239,15 +239,22 @@ def main():
     parser.add_argument('--download-dir', type=Path, default=ROOT / 'references/downloads')
     parser.add_argument('--out', type=Path, help='New reference directory')
     parser.add_argument('--source-out', type=Path, help='New host source directory')
-    parser.add_argument('--bac-index', type=Path, default=ROOT / 'references/bacterial/bac_rna')
+    bacterial = parser.add_mutually_exclusive_group()
+    bacterial.add_argument('--bac-index', type=Path, default=ROOT / 'references/bacterial/bac_rna')
+    bacterial.add_argument('--without-bacterial', action='store_true',
+                           help='Build a host package without a bacterial index; run with --rrna-filter host or none')
     parser.add_argument('--threads', type=int, default=4)
     parser.add_argument('--copy-inputs', action='store_true',
-                        help='Copy the host genome and bacterial index into the output')
+                        help='Copy the host genome and any included bacterial index into the output')
     parser.add_argument('--offline', action='store_true', help='Require verified cached downloads')
     parser.add_argument('--download-only', action='store_true', help='Download sources without building')
     args = parser.parse_args()
     if args.threads < 1:
         parser.error('--threads must be positive')
+    if args.without_bacterial:
+        if args.species == 'bacterial':
+            parser.error('--without-bacterial applies to human or arabidopsis references')
+        args.bac_index = None
     manifest = json.loads(MANIFEST.read_text())
     profile = manifest[args.species]
     args.out = args.out or ROOT / 'references' / ('human_rebuilt' if args.species == 'human' else args.species)
@@ -260,11 +267,12 @@ def main():
         for tool in ['bowtie2-build'] + ([] if args.species == 'bacterial' else ['samtools']):
             if not shutil.which(tool):
                 parser.error(f'{tool} is not on PATH; activate the nju-seq environment')
-        if args.species != 'bacterial':
+        if args.species != 'bacterial' and args.bac_index is not None:
             parts = ('1', '2', '3', '4', 'rev.1', 'rev.2')
             if not any(all(Path(f'{args.bac_index}.{p}.{ext}').is_file() for p in parts)
                        for ext in ('bt2', 'bt2l')):
-                parser.error('Build the bacterial index first with: build_references.py bacterial')
+                parser.error('Build the bacterial index first with: build_references.py bacterial; '
+                             'or use --without-bacterial to omit it')
     paths = {key: download(source, args.download_dir, args.offline)
              for key, source in profile['sources'].items()}
     if args.download_only:

@@ -48,9 +48,11 @@ python3 scripts/build_references.py arabidopsis \
 
 If `references/bacterial/` is already prepared, omit the first command. Output/source directories must be new; select other paths with `--out` and `--source-out` if needed.
 
+To skip bacterial rRNA removal, omit the first command and replace `--bac-index references/bacterial/bac_rna` with `--without-bacterial` in the Arabidopsis build. No bacterial download or index is needed in this case.
+
 | Path or index prefix | Purpose |
 |---|---|
-| `references/bacterial/bac_rna` | SILVA 138.2 bacterial rRNA subset, 56,117 sequences |
+| `references/bacterial/bac_rna` | SILVA 138.2 bacterial rRNA subset, 56,117 sequences; required only for bacterial filtering |
 | `references/arabidopsis/ath_rrna_total` | Expanded Arabidopsis rRNA index, 4,131 sequences |
 | `references/arabidopsis/ath_protein_coding` | Ensembl Plants 46 / TAIR10 mRNA index, 48,321 transcripts |
 | `references/arabidopsis/exon.info` | Matching five-column exon table |
@@ -87,6 +89,8 @@ target/release/nju-seq run \
 
 `plan` checks paths and lists commands without running the analysis. The subsetting and analysis output directories must not already exist. A small subset lets you check the installation, paired-read handling, and output format; it does not support estimates of full-library candidate counts. Insufficient coverage can produce `normalization_unavailable`.
 
+The commands above remove bacterial and host rRNA by default (`--rrna-filter both`). To remove only Arabidopsis rRNA, add `--rrna-filter host` to both `plan` and `run`, and omit `--bac-index references/bacterial/bac_rna`. This skips bacterial alignment and removal while retaining UMI extraction and counting. See [rRNA filtering](../README.md#rrna-filtering) for all four choices.
+
 For the full dataset, keep the index arguments, change `--samples` to `config/samples.arabidopsis_umi.tsv`, and set `--out` to a new directory such as `output/arabidopsis_umi_full`. `--threads` sets threads per alignment task; `--jobs` sets concurrent samples. Intermediate FASTQ files are removed after success by default. Add `--storage all` to retain them and `--qc yes` if you also want a QC report in that mode. See [Helper scripts](scripts.md) for chunked alignment and resource limits.
 
 ## UMI processing
@@ -95,7 +99,7 @@ For the full dataset, keep the index arguments, change `--samples` to `config/sa
 
 1. Cutadapt uses R1 adapter `AGATCGGAAGAGCACA` and R2 adapter `GATCGTCGGACTGTAG`, with `-U 8` to remove the tag at the start of R2. The remaining options are `-O 6 -m 18:10 -e 0.1 --discard-untrimmed`. The minimum R1 length includes its 8 nt UMI, which has not yet been extracted.
 2. UMI-tools extracts the last 8 nt of R1 with `--extract-method=string --bc-pattern=NNNNNNNN --3prime` and appends the tag to both read IDs. Extraction alone does not group molecules. The R2 tag is not used for joint error correction.
-3. Reads mapping to bacterial rRNA and then Arabidopsis rRNA are removed before mRNA alignment. Both rRNA steps use `-k 5`; mRNA uses `-a`. All retain `--reorder --seed 0`.
+3. By default, reads mapping to bacterial rRNA and then Arabidopsis rRNA are removed before mRNA alignment. With `--rrna-filter host`, only Arabidopsis rRNA is removed. Enabled rRNA steps use `-k 5`; mRNA uses `-a`. All retain `--reorder --seed 0`.
 4. After mRNA alignment selection, the workflow keeps a read-count branch and groups molecules by an exact match on **chromosome, strand, the complete genomic exon path of R1, and UMI**. Different endpoints or splice paths remain separate; the same fragment mapped to equivalent transcripts can be grouped.
 5. Read and UMI end counts are generated separately, merged at genomic coordinates, and jointly scored between NC and TR. Joint UMI scoring is produced only when all samples in the manifest have UMIs.
 

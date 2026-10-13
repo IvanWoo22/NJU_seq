@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-14",
+  "version": "0.5.0",
+  "checks": {
+    "rust_tests_passed": 59,
+    "python_tests_passed": 101,
+    "cargo_fmt": "passed",
+    "cargo_clippy": "passed",
+    "cargo_build_release_offline": "passed",
+    "rustc": "rustc 1.99.0 (b940084d7 2026-09-28) (Homebrew)"
+  },
+  "reference_preparation": {
+    "human_without_bacterial": "passed",
+    "arabidopsis_without_bacterial": "passed",
+    "prepare_human_reference_without_bac_index": "passed"
+  },
+  "synthetic_workflows": {
+    "filter_choices": [
+      "both",
+      "host",
+      "bac",
+      "none"
+    ],
+    "entry_storage_qc": [
+      {
+        "from": "raw",
+        "storage": "compact",
+        "qc": true
+      },
+      {
+        "from": "raw",
+        "storage": "all",
+        "qc": false
+      },
+      {
+        "from": "prepared",
+        "storage": "compact",
+        "qc": false
+      },
+      {
+        "from": "prepared",
+        "storage": "all",
+        "qc": true
+      }
+    ],
+    "runs": 16,
+    "unused_indices_absent": true,
+    "retained_read_counts": "match truth.json",
+    "skipped_alignment_removal_and_qc_stages_absent": true,
+    "umi_host_filter": {
+      "storage": [
+        "compact",
+        "all"
+      ],
+      "bacterial_index_supplied": false,
+      "molecules_per_sample": 3,
+      "counts_and_scores_equal": true
+    }
+  },
+  "human_host_filter": {
+    "manifest": "tests/data/human/samples.tsv",
+    "pairs_per_sample": 1000,
+    "rrna_filter": "host",
+    "bacterial_index_present": false,
+    "storage": [
+      "compact",
+      "all"
+    ],
+    "samples": {
+      "NJU6096": {
+        "accepted_reads": 19,
+        "counts_sha256": "187295b3e25432a61c8b8aabe93e9246399f45777ab086a04146e54cea57d2be",
+        "prepared_pairs": 207,
+        "after_host_pairs": 192
+      },
+      "NJU6097": {
+        "accepted_reads": 13,
+        "counts_sha256": "88c5c59cb58ba8d53ae0902dc625a4a5c7e524ce82a39d72e07123d7ff637721",
+        "prepared_pairs": 542,
+        "after_host_pairs": 501
+      },
+      "NJU6098": {
+        "accepted_reads": 5,
+        "counts_sha256": "5106967b1517390899af3527edf20affb08a4e2026c4dde34410f6cef9e2ac88",
+        "prepared_pairs": 553,
+        "after_host_pairs": 540
+      },
+      "NJU6099": {
+        "accepted_reads": 2,
+        "counts_sha256": "72639c597b3c9c8473081f075d68e8c48af4a426d7b653038be2883e4185d13c",
+        "prepared_pairs": 547,
+        "after_host_pairs": 518
+      }
+    },
+    "counts_and_scores_equal": true,
+    "joint_evaluation": "normalization_unavailable",
+    "candidate_sites": 0
+  },
+  "documentation": {
+    "pages": 26,
+    "links": 248,
+    "bash_blocks": 54,
+    "errors": []
+  },
+  "original_data_files_unchanged": 29
+}

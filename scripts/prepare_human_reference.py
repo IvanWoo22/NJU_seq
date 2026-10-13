@@ -188,13 +188,14 @@ def references(args, species='human', prefixes=None):
                 rrna_ids.add(identity)
                 dst.write(f'>{header}\n{sequence}\n')
     parts = ('1', '2', '3', '4', 'rev.1', 'rev.2')
-    extension = next((ext for ext in ('bt2', 'bt2l')
-                      if all(Path(f'{args.bac_index}.{part}.{ext}').is_file() for part in parts)), None)
-    if extension is None:
-        raise ValueError('Bacterial index requires six matching .bt2 or .bt2l components')
-    for part in parts:
-        src = Path(f'{args.bac_index}.{part}.{extension}').resolve()
-        include_source(src, stage/f'{prefixes["bac"]}.{part}.{extension}', args.copy_inputs)
+    if args.bac_index is not None:
+        extension = next((ext for ext in ('bt2', 'bt2l')
+                          if all(Path(f'{args.bac_index}.{part}.{ext}').is_file() for part in parts)), None)
+        if extension is None:
+            raise ValueError('Bacterial index requires six matching .bt2 or .bt2l components')
+        for part in parts:
+            src = Path(f'{args.bac_index}.{part}.{extension}').resolve()
+            include_source(src, stage/f'{prefixes["bac"]}.{part}.{extension}', args.copy_inputs)
     for name in ('rrna', 'mrna'):
         cmd = ['bowtie2-build', '--threads', str(args.threads),
                str(stage/f'{name}.fa'), str(stage/prefixes[name])]
@@ -238,13 +239,15 @@ def transcript_identity(header, species='human'):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for option in ('mrna', 'exons', 'genome', 'bac-index', 'out'):
+    for option in ('mrna', 'exons', 'genome', 'out'):
         parser.add_argument('--' + option, type=Path, required=True)
+    parser.add_argument('--bac-index', type=Path,
+                        help='Optional bacterial index; omit when running with --rrna-filter host or none')
     parser.add_argument('--rrna', type=Path, action='append',
                         help='Repeat for each FASTA; default: repository data/hsa_rrna/{18s,28s,5-8s}.fa')
     parser.add_argument('--threads', type=int, default=4)
     parser.add_argument('--copy-inputs', action='store_true',
-                        help='Copy genome and bacterial index for a self-contained package; '
+                        help='Copy genome and any included bacterial index for a self-contained package; '
                              'default: relative links (move sources together with the package)')
     parser.add_argument('--label', default='unspecified release', help='Reference source/release; never inferred')
     args = parser.parse_args()

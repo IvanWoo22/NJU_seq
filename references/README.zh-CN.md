@@ -15,7 +15,7 @@
 | `arabidopsis_source/` | 蛋白编码转录本 FASTA、外显子表、TAIR10 基因组及扩展 rRNA FASTA | `build_references.py arabidopsis` |
 | `arabidopsis/` | `ath_protein_coding`、`ath_rrna_total`、`bac` 索引前缀，`exon.info`、FASTA 及来源信息 | `build_references.py arabidopsis` |
 
-表中路径均相对于 `references/`。输出目录和源文件目录须为新目录；如果已经存在，用 `--out` 和 `--source-out` 指定其他路径，并在后续分析命令中使用对应路径。
+表中路径均相对于 `references/`。输出目录和源文件目录须为新目录；如果已经存在，用 `--out` 和 `--source-out` 指定其他路径，并在后续分析命令中使用对应路径。[不包含细菌 rRNA](#不包含细菌-rrna-的构建方式)时，不生成 `bac` 前缀。
 
 ## 1. 细菌 rRNA
 
@@ -27,7 +27,7 @@ python3 scripts/build_references.py bacterial \
 
 下载 **SILVA 138.2 SSURef NR99 和 LSURef NR99 的 truncated FASTA**，按分类注释中的完整科名筛选 `Enterobacteriaceae`、`Lactobacillaceae` 和 `Streptococcaceae`。脚本将 RNA 的 `U` 转换为 DNA 的 `T`，保留原文件顺序（先 SSU、后 LSU），并检查序列 ID 是否重复。输出为 **34,982 条 SSU + 21,135 条 LSU，共 56,117 条序列**，属于指定细菌科的 rRNA 子集，并非整个 SILVA 数据库。
 
-脚本校验筛选后 FASTA 的校验值，再调用 `bowtie2-build`。分析使用的索引前缀为 `references/bacterial/bac_rna`，人源和拟南芥流程均使用这一索引。
+脚本校验筛选后 FASTA 的校验值，再调用 `bowtie2-build`。分析使用的索引前缀为 `references/bacterial/bac_rna`，人源和拟南芥流程仅在启用细菌 rRNA 筛除时需要这一索引（`--rrna-filter both` 或 `bac`）。
 
 ## 2. 人：GENCODE v34 / GRCh38
 
@@ -66,6 +66,25 @@ BED 使用 **0-based、左闭右开**坐标，提取基因组正向序列；第�
 
 生成的索引前缀为 `ath_protein_coding` 和 `ath_rrna_total`。随后按[拟南芥 UMI 流程](../docs/arabidopsis_umi.zh-CN.md#先跑小样本)分析样本。计数命令使用生成的 `exon.info`，参考目录中的基因组文件名为 `genome.fa`。
 
+## 不包含细菌 rRNA 的构建方式
+
+仅筛除宿主 rRNA 时，跳过细菌参考构建，在人源或拟南芥构建命令中用 `--without-bacterial` 替换 `--bac-index`。例如：
+
+```bash
+python3 scripts/build_references.py human \
+  --download-dir references/downloads \
+  --source-out references/human_host_source \
+  --without-bacterial \
+  --out references/human_host --threads 4 --copy-inputs
+
+target/release/nju-seq run \
+  --samples tests/data/human/samples.tsv --from raw --rrna-filter host \
+  --index references/human_host --exons references/human_host/exon.info \
+  --out output/human_host_example --threads 2 --jobs 1
+```
+
+此命令只下载人源文件，生成 `mrna`、`rrna` 索引和 `exon.info`，不下载 SILVA，也不要求已有细菌索引。该构建选项同样适用于 `arabidopsis`，其宿主索引前缀仍为 `ath_protein_coding` 和 `ath_rrna_total`。分析时使用 `--rrna-filter host`，即可跳过细菌比对与筛除。全部取值见 [rRNA 筛除设置](../README.zh-CN.md#rrna-筛除设置)，其中 `none` 表示直接进行 mRNA 比对。
+
 ## 下载、存储与校验
 
 具体 URL 和 SHA-256 见 [reference_sources.json](../config/reference_sources.json)；[参考来源清单](../docs/reference_sources.zh-CN.md)还列有小鼠 GENCODE M25 和可选参考。下载文件保留原始文件名。若只下载、不建索引，可运行：
@@ -77,7 +96,7 @@ python3 scripts/build_references.py human \
 
 需要时分别对 `bacterial` 和 `arabidopsis` 执行同样操作。已下载的文件通过校验后会直接复用。给构建命令添加 `--offline` 可要求所有源文件已在本地。使用其他方式下载的文件时，按 JSON 清单中的原始文件名放入下载目录，脚本仍会检查校验值。
 
-`--copy-inputs` 将基因组和细菌索引复制进宿主参考目录，生成的参考目录可单独搬迁。不加此选项则创建相对链接，需要保留源文件目录和参考目录的相对位置。人源构建需数 GB 空间存放解压的基因组和索引；复制输入会额外占用空间。完整参考和生成的索引已由 `.gitignore` 排除。
+`--copy-inputs` 将基因组及选用的细菌索引复制进宿主参考目录，生成的参考目录可单独搬迁。不加此选项则创建相对链接，需要保留源文件目录和参考目录的相对位置。人源构建需数 GB 空间存放解压的基因组和索引；复制输入会额外占用空间。完整参考和生成的索引已由 `.gitignore` 排除。
 
 参考目录包含来源及序列校验值、参考条目数和 Bowtie2 构建日志。构建失败时保留 `.partial` 目录供检查，修正问题后请使用新的输出目录和源文件目录；脚本不会覆盖已经生成的参考。下载失败会留下 `.partial` 文件，下次执行时重新下载该文件。
 
@@ -102,4 +121,4 @@ chromosome    start    end    strand    attributes
 chr1          101      200    +         Parent=ENST000001.1;gene_id=ENSG000001.1
 ```
 
-上面的空格仅用于展示。外显子坐标为 **1-based 闭区间**。九列 GFF3 不能直接传给 `--exons`，`build_references.py` 会完成转换。基因组须解压，转录本和 rRNA FASTA 可用 gzip。细菌索引须包含同一种格式的六个 `.bt2` 或 `.bt2l` 文件。需要自定义人源 rRNA 时，重复传入 `--rrna FILE`。
+上面的空格仅用于展示。外显子坐标为 **1-based 闭区间**。九列 GFF3 不能直接传给 `--exons`，`build_references.py` 会完成转换。基因组须解压，转录本和 rRNA FASTA 可用 gzip。若提供细菌索引，须包含同一种格式的六个 `.bt2` 或 `.bt2l` 文件。分析使用 `--rrna-filter host` 或 `none` 时，此底层命令可省略 `--bac-index`。需要自定义人源 rRNA 时，重复传入 `--rrna FILE`。

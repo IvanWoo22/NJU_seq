@@ -2,9 +2,9 @@
 
 [English](rrna.md) | **简体中文**
 
-`nju-seq run` 排除 rRNA 后进行 mRNA 分析。需要 rRNA 位点结果时，单独保留筛选后的五列比对表，并在比对所用的参考序列上计数和评分。
+`nju-seq run` 按 `--rrna-filter` 设置排除指定类别的 rRNA 后进行 mRNA 分析。需要 rRNA 位点结果时，单独保留筛选后的五列比对表，并在比对所用的参考序列上计数和评分。
 
-以下使用已去接头、完成可选 UMI 提取并排除细菌 rRNA 的双端 FASTQ。将示例路径替换为实际输入；`pipefail` 使比对或筛选失败时停止后续计数：
+以下使用已去接头、完成可选 UMI 提取和可选细菌 rRNA 筛除的双端 FASTQ。若未启用细菌筛除，直接使用准备好的 FASTQ。将示例路径替换为实际输入；`pipefail` 使比对或筛选失败时停止后续计数：
 
 ```bash
 set -euo pipefail

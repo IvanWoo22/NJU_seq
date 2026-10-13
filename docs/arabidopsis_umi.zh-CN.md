@@ -48,9 +48,11 @@ python3 scripts/build_references.py arabidopsis \
 
 如果已经生成 `references/bacterial/`，跳过第一个命令。输出目录和源文件目录须为新目录，需要时用 `--out` 和 `--source-out` 指定其他路径。
 
+若不筛除细菌 rRNA，跳过第一个命令，将拟南芥构建命令中的 `--bac-index references/bacterial/bac_rna` 换成 `--without-bacterial`。此时不需要下载细菌参考或准备细菌索引。
+
 | 路径或索引前缀 | 用途 |
 |---|---|
-| `references/bacterial/bac_rna` | SILVA 138.2 细菌 rRNA 子集，56,117 条序列 |
+| `references/bacterial/bac_rna` | SILVA 138.2 细菌 rRNA 子集，56,117 条序列；仅启用细菌筛除时需要 |
 | `references/arabidopsis/ath_rrna_total` | 拟南芥扩展 rRNA 索引，4,131 条序列 |
 | `references/arabidopsis/ath_protein_coding` | Ensembl Plants 46 / TAIR10 mRNA 索引，48,321 条转录本 |
 | `references/arabidopsis/exon.info` | 配套的五列外显子表 |
@@ -87,6 +89,8 @@ target/release/nju-seq run \
 
 `plan` 只检查路径并列出命令，不执行分析。抽样和运行的输出目录均须尚不存在。小样本用于检查安装、配对处理与输出格式，不能用来估计整库候选数；覆盖不足时可能出现 `normalization_unavailable`。
 
+以上命令默认依次筛除细菌和宿主 rRNA（`--rrna-filter both`）。仅筛除拟南芥 rRNA 时，在 `plan` 和 `run` 中都加上 `--rrna-filter host`，并省略 `--bac-index references/bacterial/bac_rna`。这样会跳过细菌比对与筛除，保留 UMI 提取和计数。全部四种取值见 [rRNA 筛除设置](../README.zh-CN.md#rrna-筛除设置)。
+
 全量分析使用相同索引参数，将 `--samples` 改为 `config/samples.arabidopsis_umi.tsv`，`--out` 改为新的 `output/arabidopsis_umi_full`。`--threads` 是每个比对任务的线程数，`--jobs` 是并行样本数。默认成功后删除中间 FASTQ；需要保留时加 `--storage all`，同时需要 QC 报告时再加 `--qc yes`。分批比对与资源限制见 [辅助脚本](scripts.zh-CN.md)。
 
 ## UMI 在流程中的位置
@@ -95,7 +99,7 @@ target/release/nju-seq run \
 
 1. Cutadapt 使用 R1 接头 `AGATCGGAAGAGCACA`、R2 接头 `GATCGTCGGACTGTAG`，以 `-U 8` 裁去 R2 起始标签；其余参数为 `-O 6 -m 18:10 -e 0.1 --discard-untrimmed`。R1 的最低长度包括尚未提取的 8 nt UMI。
 2. UMI-tools 以 `--extract-method=string --bc-pattern=NNNNNNNN --3prime` 提取 R1 末端 8 nt，将标签追加到两端 read ID。提取标签本身不合并分子，R2 标签不参与联合纠错。
-3. 依次排除细菌 rRNA 和拟南芥 rRNA，再比对 mRNA。两轮 rRNA 使用 `-k 5`，mRNA 使用 `-a`；均保留 `--reorder --seed 0`。
+3. 默认依次排除细菌 rRNA 和拟南芥 rRNA，再比对 mRNA。使用 `--rrna-filter host` 时，仅筛除拟南芥 rRNA。启用的 rRNA 步骤使用 `-k 5`，mRNA 使用 `-a`；均保留 `--reorder --seed 0`。
 4. 完成 mRNA 定位筛选后，保留 read 计数分支，并按 **染色体、链、R1 完整基因组外显子路径和 UMI** 做 exact 合并。不同起止点或剪接路径分别保留；等价转录本中的同一片段可合并。
 5. 分别生成 read 与 UMI 末端计数，合并到基因组坐标，再进行 NC/TR 联合评分。只有清单中全部样本都声明 UMI 时，才生成联合 UMI 评分。
 

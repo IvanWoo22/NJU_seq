@@ -178,6 +178,33 @@ class Cases(unittest.TestCase):
                      '--exons',self.exons,'--out',self.out/'absent',success=False)
         self.assertFalse((self.out/'absent').exists())
 
+    def test_filter_options_require_only_enabled_indices(self):
+        fq = self.write('r.fq', '@q\nACGTACGTACGT\n+\nIIIIIIIIIIII\n')
+        manifest = self.write('samples.tsv', 'sample\trole\tr1\tr2\talignment\tumi\n' +
+            ''.join(f'{name}\t{role}\t{fq}\t{fq}\t-\tnone\n'
+                    for name, role in [('NC', 'NC'), ('TR', 'TR')]))
+        for mode, required in [('both', ('bac', 'rrna', 'mrna')), ('host', ('rrna', 'mrna')),
+                               ('bac', ('bac', 'mrna')), ('none', ('mrna',))]:
+            indices = [arg for prefix in required
+                       for arg in (f'--{prefix}-index', self.root/'references'/prefix)]
+            for entry in ('raw', 'prepared'):
+                for storage in ('compact', 'all'):
+                    for qc in ('yes', 'no'):
+                        with self.subTest(mode=mode, entry=entry, storage=storage, qc=qc):
+                            args = [BIN, 'plan', '--samples', manifest, '--from', entry,
+                                    '--rrna-filter', mode, '--storage', storage, '--qc', qc,
+                                    '--exons', self.exons, '--out', self.out/'absent']
+                            self.command(*args, *indices)
+                            self.assertFalse((self.out/'absent').exists())
+                for missing in required:
+                    args = [BIN, 'run', '--samples', manifest, '--from', entry, '--rrna-filter', mode,
+                            '--exons', self.exons, '--out', self.out/'absent']
+                    for prefix in required:
+                        args += [f'--{prefix}-index', self.out/'missing' if prefix == missing
+                                 else self.root/'references'/prefix]
+                    self.command(*args, success=False)
+                    self.assertFalse((self.out/'absent').exists())
+
     def test_pair_desynchronization_truncation_and_gzip_error(self):
         ids=self.write('ids','')
         good=self.write('good.fq','@q/1\nAAA\n+\nIII\n')

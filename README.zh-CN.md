@@ -18,7 +18,7 @@
 ```mermaid
 flowchart TD
   A["NC / TR 双端 FASTQ"] --> B["去接头<br/>可选 UMI 提取"]
-  B --> C["排除细菌与人 rRNA"]
+  B --> C["可选：排除细菌与人 rRNA"]
   C --> D["mRNA 比对与筛选"]
   D --> E["read / UMI 计数<br/>合并到基因组坐标"]
   E --> F["NC 与全部 TR 联合评分"]
@@ -73,6 +73,8 @@ python3 scripts/build_references.py human \
   --out references/human_rebuilt --threads 4 --copy-inputs
 ```
 
+若不筛除细菌 rRNA，跳过细菌参考构建，将人源构建命令中的 `--bac-index references/bacterial/bac_rna` 换成 `--without-bacterial`，分析时使用 `--rrna-filter host`，见 [rRNA 筛除设置](#rrna-筛除设置)。
+
 细菌参考包含 SILVA 138.2 中 Enterobacteriaceae、Lactobacillaceae 和 Streptococcaceae 三个科的 56,117 条 SSU/LSU 序列。人源参考包含 GENCODE v34 的 84,068 条蛋白编码转录本和 762,910 行 exon；宿主 rRNA 使用 `data/hsa_rrna/{18s,28s,5-8s}.fa` 三条序列。
 
 人源构建会逐条核对转录本与基因组外显子序列，在 `references/human_rebuilt` 生成 `mrna`、`rrna`、`bac` 三个索引前缀及 `exon.info`。`--copy-inputs` 使参考目录可独立搬迁。下载文件缓存在 `references/downloads`，输出目录和源文件目录须为新目录。文件布局、仅下载/离线用法、自定义输入及拟南芥构建方法见[参考文件生成](references/README.zh-CN.md)。
@@ -126,7 +128,7 @@ target/release/nju-seq run \
 
 ### 输入与参数
 
-`--index DIR` 查找 `bac`、`rrna`、`mrna` 三个索引前缀。使用其他名称时分别指定 `--bac-index`、`--rrna-index`、`--mrna-index`。
+`--index DIR` 提供 `bac`、`rrna`、`mrna` 三个索引前缀，只要求所选筛除步骤实际使用的索引存在。使用其他名称时分别指定 `--bac-index`、`--rrna-index`、`--mrna-index`。
 
 默认接头为 `AGATCGGAAGAGCACA / GATCGTCGGACTGTAG`，可用 `--adapter-r1`、`--adapter-r2` 修改。未匹配接头的 pairs 会被丢弃；无 UMI 的最短读长为 `10:10`。`r1_3p8` 文库先裁去 R2 起始 8 nt，以 `18:10` 为最短读长裁剪，再提取 R1 末端 8 nt 的 UMI。已去接头并完成可选 UMI 提取的数据应选 `prepared`。
 
@@ -138,7 +140,29 @@ target/release/nju-seq run \
 | `filtered` | 对应 FASTQ、五列比对表 | 合并定位、核对 R1 序列及后续步骤 |
 | `unique` | 原 R1、已筛选且每个 read 一行的五列比对表；R2 可填 `-` | 计数、合并和评分 |
 
-rRNA 使用 `-k 5`，mRNA 使用 `-a`，均保留 `--reorder --seed 0`。处理 SAM 时，同一 read 的全部比对必须连续。`--rrna-filter both|bac|host|none` 选择排除对象，默认 `both`。
+rRNA 使用 `-k 5`，mRNA 使用 `-a`，均保留 `--reorder --seed 0`。处理 SAM 时，同一 read 的全部比对必须连续。
+
+### rRNA 筛除设置
+
+对于 `--from raw` 或 `--from prepared`，`--rrna-filter` 决定 mRNA 比对前执行哪些 rRNA 比对和筛除步骤：
+
+| 取值 | 细菌 rRNA | 宿主 rRNA | 所需索引前缀 |
+|---|---|---|---|
+| `both`（默认） | 先筛除 | 再筛除 | `bac`、`rrna`、`mrna` |
+| `host` | 跳过 | 筛除 | `rrna`、`mrna` |
+| `bac` | 筛除 | 跳过 | `bac`、`mrna` |
+| `none` | 跳过 | 跳过 | `mrna` |
+
+仅筛除宿主 rRNA：
+
+```bash
+target/release/nju-seq run \
+  --samples tests/data/human/samples.tsv --from raw --rrna-filter host \
+  --index references/human_rebuilt --exons references/human_rebuilt/exon.info \
+  --out output/human_host_only --threads 2 --jobs 1
+```
+
+选择 `host` 后不需要细菌索引，也不执行细菌比对、筛除或对应质控，reads 直接进入宿主 rRNA 筛除。四种设置均支持 `--storage compact` 和 `all`，适用于有、无 UMI 的文库。`plan` 和 `run` 应使用相同的 `--rrna-filter` 值。上方示例计数使用 `both`；更改筛除设置可能改变保留的 reads 和候选位点数量。从 `sam`、`filtered` 或 `unique` 开始时已有比对结果，不再执行这些筛除步骤。
 
 分批 mRNA 比对、断点继续和 Linux 资源限制的用法见 [辅助脚本](docs/scripts.zh-CN.md)。`run` 本身不支持整条流程断点恢复。
 

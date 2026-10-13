@@ -2,9 +2,9 @@
 
 **English** | [简体中文](rrna.zh-CN.md)
 
-`nju-seq run` removes rRNA before mRNA analysis. To analyze rRNA sites separately, retain the selected five-column alignment table and count and score against the reference sequences used for alignment.
+`nju-seq run` removes the selected rRNA classes before mRNA analysis, according to `--rrna-filter`. To analyze rRNA sites separately, retain the selected five-column alignment table and count and score against the reference sequences used for alignment.
 
-The following commands use paired FASTQ after adapter trimming, any UMI extraction, and bacterial rRNA removal. Replace the example paths with your inputs. `pipefail` stops subsequent counting if alignment or filtering fails.
+The following commands use paired FASTQ after adapter trimming, any UMI extraction, and optional bacterial rRNA removal. If bacterial filtering is disabled, use the prepared FASTQ directly. Replace the example paths with your inputs. `pipefail` stops subsequent counting if alignment or filtering fails.
 
 ```bash
 set -euo pipefail

@@ -15,7 +15,7 @@ Run the commands below from the repository root after [installing the environmen
 | `arabidopsis_source/` | Coding transcript FASTA, exon table, TAIR10 genome, and expanded rRNA FASTA | `build_references.py arabidopsis` |
 | `arabidopsis/` | `ath_protein_coding`, `ath_rrna_total`, and `bac` index prefixes; `exon.info`; FASTA files and source information | `build_references.py arabidopsis` |
 
-Paths in this table are relative to `references/`. The output and source directories must be new. If they already exist, select new paths with `--out` and `--source-out` and use those paths in subsequent analysis commands.
+Paths in this table are relative to `references/`. The output and source directories must be new. If they already exist, select new paths with `--out` and `--source-out` and use those paths in subsequent analysis commands. The `bac` prefix is omitted when building [without bacterial rRNA](#building-without-bacterial-rrna).
 
 ## 1. Bacterial rRNA
 
@@ -27,7 +27,7 @@ python3 scripts/build_references.py bacterial \
 
 This downloads the **SILVA 138.2 SSURef NR99 and LSURef NR99 truncated FASTA** files and selects entries whose taxonomy contains one of three complete family names: `Enterobacteriaceae`, `Lactobacillaceae`, or `Streptococcaceae`. It converts RNA `U` to DNA `T`, retains source order (SSU followed by LSU), and rejects duplicate sequence IDs. The result contains **34,982 SSU + 21,135 LSU = 56,117 sequences**. This is a defined bacterial rRNA subset, not the whole SILVA database.
 
-The script verifies the selected FASTA checksum before running `bowtie2-build`. The index prefix used by the analysis is `references/bacterial/bac_rna`. Both the human and Arabidopsis workflows use this index.
+The script verifies the selected FASTA checksum before running `bowtie2-build`. The index prefix used by the analysis is `references/bacterial/bac_rna`. Human and Arabidopsis workflows require this index only when bacterial rRNA removal is enabled (`--rrna-filter both` or `bac`).
 
 ## 2. Human: GENCODE v34 / GRCh38
 
@@ -66,6 +66,25 @@ The BED file uses **0-based, half-open** coordinates and genomic forward-strand 
 
 The output prefixes are `ath_protein_coding` and `ath_rrna_total`. Continue with the [Arabidopsis UMI workflow](../docs/arabidopsis_umi.md#run-a-small-subset). The counting command uses the generated `exon.info`; the genome in the package is named `genome.fa`.
 
+## Building without bacterial rRNA
+
+To remove host rRNA only, skip the bacterial build and pass `--without-bacterial` instead of `--bac-index` to either host builder. For example:
+
+```bash
+python3 scripts/build_references.py human \
+  --download-dir references/downloads \
+  --source-out references/human_host_source \
+  --without-bacterial \
+  --out references/human_host --threads 4 --copy-inputs
+
+target/release/nju-seq run \
+  --samples tests/data/human/samples.tsv --from raw --rrna-filter host \
+  --index references/human_host --exons references/human_host/exon.info \
+  --out output/human_host_example --threads 2 --jobs 1
+```
+
+This downloads only the human sources and builds `mrna` and `rrna`, plus `exon.info`. It neither downloads SILVA nor requires an existing bacterial index. The same build option applies to `arabidopsis`; its host prefixes remain `ath_protein_coding` and `ath_rrna_total`. In either workflow, select `--rrna-filter host` during analysis to skip bacterial alignment and removal. See [all filtering choices](../README.md#rrna-filtering), including `none` for direct mRNA alignment.
+
 ## Downloads, storage, and checks
 
 Exact URLs and SHA-256 values are in [reference_sources.json](../config/reference_sources.json); the [reference source list](../docs/reference_sources.md) also includes mouse GENCODE M25 and optional references. Downloaded data retain their original filenames. To download without building, for example:
@@ -77,7 +96,7 @@ python3 scripts/build_references.py human \
 
 Run this separately for `bacterial` and `arabidopsis` if needed. Completed downloads are reused only after checksum verification. Add `--offline` to a build command to require a complete local cache. To use files downloaded elsewhere, put them under the exact filenames listed in the JSON manifest; the same checksum checks apply.
 
-`--copy-inputs` copies the genome and bacterial index into each host package, allowing that package to move independently. Without it, relative symlinks are created, so preserve the relative locations of the source and reference directories. The human build needs several GB of disk space for the decompressed genome and indices; copying inputs requires additional space. Complete references and generated indices are excluded by `.gitignore`.
+`--copy-inputs` copies the genome and any included bacterial index into each host package, allowing that package to move independently. Without it, relative symlinks are created, so preserve the relative locations of the source and reference directories. The human build needs several GB of disk space for the decompressed genome and indices; copying inputs requires additional space. Complete references and generated indices are excluded by `.gitignore`.
 
 Each package includes source/sequence checksums, reference counts, and Bowtie2 build logs. A failed build leaves a `.partial` directory for inspection. Correct the problem and choose new output/source directories; successful packages are never overwritten. Download failures leave a `.partial` file and a subsequent attempt downloads that file again.
 
@@ -102,4 +121,4 @@ chromosome    start    end    strand    attributes
 chr1          101      200    +         Parent=ENST000001.1;gene_id=ENSG000001.1
 ```
 
-Spaces above are for display only. Exon coordinates are **1-based and inclusive**. Nine-column GFF3 cannot be passed directly to `--exons`; `build_references.py` performs this conversion. The genome must be uncompressed; transcript and rRNA FASTA inputs may be gzipped. The bacterial index must contain all six `.bt2` or `.bt2l` files in one format. Repeat `--rrna FILE` to use custom human rRNA sequences.
+Spaces above are for display only. Exon coordinates are **1-based and inclusive**. Nine-column GFF3 cannot be passed directly to `--exons`; `build_references.py` performs this conversion. The genome must be uncompressed; transcript and rRNA FASTA inputs may be gzipped. If supplied, the bacterial index must contain all six `.bt2` or `.bt2l` files in one format. Omit `--bac-index` from this lower-level command when running with `--rrna-filter host` or `none`. Repeat `--rrna FILE` to use custom human rRNA sequences.

@@ -18,7 +18,7 @@ For Col_NC31 / Col_TR31 libraries with 8 nt UMIs, see the [Arabidopsis UMI workf
 ```mermaid
 flowchart TD
   A["NC / TR paired FASTQ"] --> B["Trim adapters<br/>Extract UMI if present"]
-  B --> C["Remove bacterial<br/>and human rRNA"]
+  B --> C["Optional removal of<br/>bacterial and human rRNA"]
   C --> D["Align and select<br/>mRNA reads"]
   D --> E["Read / UMI counts<br/>at genomic positions"]
   E --> F["Joint NC/TR<br/>scoring"]
@@ -73,6 +73,8 @@ python3 scripts/build_references.py human \
   --out references/human_rebuilt --threads 4 --copy-inputs
 ```
 
+To skip bacterial rRNA removal, omit the bacterial build and replace `--bac-index references/bacterial/bac_rna` with `--without-bacterial` in the human build. Use `--rrna-filter host` when running the analysis; see [rRNA filtering](#rrna-filtering).
+
 The bacterial reference contains 56,117 SILVA 138.2 SSU/LSU sequences from Enterobacteriaceae, Lactobacillaceae, and Streptococcaceae. The human reference contains 84,068 protein-coding transcripts and 762,910 exon rows from GENCODE v34. Host rRNA uses the three sequences in `data/hsa_rrna/{18s,28s,5-8s}.fa`.
 
 The human build checks every transcript against its genomic exons, then creates `mrna`, `rrna`, and `bac` index prefixes and `exon.info` in `references/human_rebuilt`. `--copy-inputs` makes this directory independently portable. Downloaded sources are cached in `references/downloads`; output and source directories must be new. For file layouts, download-only/offline use, custom inputs, and Arabidopsis construction, see [Building reference files](references/README.md).
@@ -126,7 +128,7 @@ The default `--storage compact` creates a QC report and removes intermediate FAS
 
 ### Inputs and parameters
 
-`--index DIR` looks for the index prefixes `bac`, `rrna`, and `mrna`. For other names, specify `--bac-index`, `--rrna-index`, and `--mrna-index` separately.
+`--index DIR` supplies the index prefixes `bac`, `rrna`, and `mrna`. Only indices used by the selected filtering steps are required. For other names, specify `--bac-index`, `--rrna-index`, and `--mrna-index` separately.
 
 The default adapters are `AGATCGGAAGAGCACA / GATCGTCGGACTGTAG`; change them with `--adapter-r1` and `--adapter-r2`. Pairs without an adapter match are discarded. The minimum lengths for libraries without UMIs are `10:10`. For `r1_3p8`, the workflow removes the first 8 nt of R2, trims with minimum lengths of `18:10`, and then extracts the last 8 nt of R1 as the UMI. Use `prepared` for reads that have already been trimmed and, where applicable, had their UMIs extracted.
 
@@ -138,7 +140,29 @@ The default adapters are `AGATCGGAAGAGCACA / GATCGTCGGACTGTAG`; change them with
 | `filtered` | Corresponding FASTQ and a five-column alignment table | Alignment consolidation, R1 sequence checks, and subsequent steps |
 | `unique` | Original R1 and a selected five-column alignment table with one row per read; R2 may be `-` | Counting, coordinate merging, and scoring |
 
-rRNA alignment uses `-k 5`; mRNA uses `-a`. Both retain `--reorder --seed 0`. All SAM alignments for a given read must be contiguous. `--rrna-filter both|bac|host|none` selects which rRNA references to exclude; the default is `both`.
+rRNA alignment uses `-k 5`; mRNA uses `-a`. Both retain `--reorder --seed 0`. All SAM alignments for a given read must be contiguous.
+
+### rRNA filtering
+
+For `--from raw` or `--from prepared`, `--rrna-filter` selects the rRNA alignment and removal steps before mRNA alignment:
+
+| Value | Bacterial rRNA | Host rRNA | Required index prefixes |
+|---|---|---|---|
+| `both` (default) | Remove first | Remove next | `bac`, `rrna`, `mrna` |
+| `host` | Skip | Remove | `rrna`, `mrna` |
+| `bac` | Remove | Skip | `bac`, `mrna` |
+| `none` | Skip | Skip | `mrna` |
+
+To remove only host rRNA:
+
+```bash
+target/release/nju-seq run \
+  --samples tests/data/human/samples.tsv --from raw --rrna-filter host \
+  --index references/human_rebuilt --exons references/human_rebuilt/exon.info \
+  --out output/human_host_only --threads 2 --jobs 1
+```
+
+With `host`, no bacterial index is needed and no bacterial alignment, removal, or QC stage is run. Reads proceed directly to host rRNA filtering. All four choices work with `--storage compact` or `all`, with or without UMIs. Use the same `--rrna-filter` value for `plan` and `run`. The example counts above use `both`; changing the filters can change retained reads and candidate counts. Inputs starting at `sam`, `filtered`, or `unique` already have alignments and do not run these filtering steps.
 
 For chunked mRNA alignment, resuming interrupted batches, and Linux resource limits, see [Helper scripts](docs/scripts.md). `run` does not resume an entire interrupted workflow.
 

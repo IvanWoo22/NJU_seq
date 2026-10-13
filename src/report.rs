@@ -124,7 +124,7 @@ fn alignment_table(path: &Path) -> Result<String, String> {
     let input = match stage {
         "bac" => prepared,
         "rrna" => after_bac.or(prepared),
-        "mrna" => after_host,
+        "mrna" => after_host.or(after_bac).or(prepared),
         _ => None,
     };
     if total.is_none() && input == Some(0) {
@@ -236,19 +236,24 @@ mod tests {
                 .unwrap()
                 .as_nanos()
         ));
-        std::fs::create_dir_all(dir.join("qc_after_host")).unwrap();
-        std::fs::write(
-            dir.join("qc_after_host/summary.tsv"),
-            "sample\tstage\tunit\tmate\treads\nS\tafter_host\treads\tR1\t0\n",
-        )
-        .unwrap();
+        std::fs::create_dir_all(&dir).unwrap();
         let log = dir.join("mrna.bowtie2.log");
         std::fs::write(&log, "").unwrap();
-        let result = super::alignment_table(&log).unwrap();
+        for stage in ["qc_after_host", "qc_after_bac", "qc_prepared"] {
+            let qc = dir.join(stage);
+            std::fs::create_dir(&qc).unwrap();
+            std::fs::write(
+                qc.join("summary.tsv"),
+                "sample\tstage\tunit\tmate\treads\nS\tinput\treads\tR1\t0\n",
+            )
+            .unwrap();
+            let result = super::alignment_table(&log).unwrap();
+            assert!(result.contains("\"input_pairs\":\"0\""), "{stage}");
+            assert!(result.contains("\"rate\":\"NA\""));
+            assert!(result.contains("\"search_time\":\"NA\""));
+            std::fs::remove_dir_all(qc).unwrap();
+        }
         std::fs::remove_dir_all(dir).unwrap();
-        assert!(result.contains("\"input_pairs\":\"0\""));
-        assert!(result.contains("\"rate\":\"NA\""));
-        assert!(result.contains("\"search_time\":\"NA\""));
     }
     fn batch(n: u64, unique: u64, multi: u64, time: &str) -> String {
         format!(

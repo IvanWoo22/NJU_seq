@@ -7,7 +7,7 @@
 | 用途 | 脚本 | 主要输入与输出 |
 |---|---|---|
 | 下载并生成参考 | `scripts/build_references.py` | 固定版本的公开下载 → 细菌、人源或拟南芥参考，见[生成命令](../references/README.zh-CN.md) |
-| 准备人源参考 | `scripts/prepare_human_reference.py` | 转录本、exon 表、基因组及细菌索引 → 配套参考目录 |
+| 准备人源参考 | `scripts/prepare_human_reference.py` | 转录本、exon 表、基因组及可选细菌索引 → 配套参考目录 |
 | 抽取双端小样本 | `scripts/subset_fastq.py` | 六列样本清单 → 配对 FASTQ 和新的样本清单 |
 | 分批 mRNA 比对 | `scripts/align_chunked.py` | 去接头、去 rRNA 后的 FASTQ → 筛选后的五列定位表 |
 | 导出比对断点 | `scripts/chunk_checkpoint.py` | 已完成批次 → 可供继续运行的断点目录 |
@@ -31,6 +31,8 @@
 | FASTQ / 定位表质量统计、HTML 报告 | `nju-seq qc`、`qc-report` |
 
 参数用法见 `target/release/nju-seq --help`。`--index DIR` 使用 `bac`、`rrna`、`mrna` 三个索引前缀；其他命名方式分别指定 `--bac-index`、`--rrna-index`、`--mrna-index`。
+
+对于 `raw` 和 `prepared` 输入，`--rrna-filter host` 跳过细菌比对与筛除，只需要宿主 rRNA 和 mRNA 索引。`both`（默认）、`bac`、`none` 分别表示两类均筛除、仅筛除细菌、两类均不筛除，见 [rRNA 筛除设置](../README.zh-CN.md#rrna-筛除设置)。构建不含细菌索引的参考时，使用 `build_references.py human|arabidopsis --without-bacterial`，或在 `prepare_human_reference.py` 中省略 `--bac-index`。
 
 ## 分批 mRNA 比对
 

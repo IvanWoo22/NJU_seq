@@ -7,7 +7,7 @@ These scripts prepare inputs, align reads in batches, and limit resource usage. 
 | Task | Script | Main inputs and outputs |
 |---|---|---|
 | Download and build references | `scripts/build_references.py` | Pinned public downloads → bacterial, human, or Arabidopsis references; see [construction commands](../references/README.md) |
-| Prepare human references | `scripts/prepare_human_reference.py` | Transcripts, exon table, genome, and bacterial index → matching reference directory |
+| Prepare human references | `scripts/prepare_human_reference.py` | Transcripts, exon table, genome, and optional bacterial index → matching reference directory |
 | Subset paired reads | `scripts/subset_fastq.py` | Six-column sample manifest → paired FASTQ and a new manifest |
 | Align mRNA in batches | `scripts/align_chunked.py` | FASTQ after trimming and rRNA removal → selected five-column alignment table |
 | Export an alignment checkpoint | `scripts/chunk_checkpoint.py` | Completed batches → checkpoint directory for resuming alignment |
@@ -31,6 +31,8 @@ Complete reference preparation and subsetting commands are in the [main README](
 | Calculate FASTQ / alignment QC metrics and generate HTML reports | `nju-seq qc`, `qc-report` |
 
 See `target/release/nju-seq --help` for options. `--index DIR` uses the prefixes `bac`, `rrna`, and `mrna`; specify `--bac-index`, `--rrna-index`, and `--mrna-index` separately for other names.
+
+For `raw` and `prepared` inputs, `--rrna-filter host` skips bacterial alignment and removal and requires only the host rRNA and mRNA indices. `both` (default), `bac`, and `none` select both, bacterial only, or neither rRNA filter. See [rRNA filtering](../README.md#rrna-filtering). To prepare references without a bacterial index, use `build_references.py human|arabidopsis --without-bacterial`, or omit `--bac-index` from `prepare_human_reference.py`.
 
 ## Chunked mRNA alignment
 

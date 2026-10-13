@@ -32,7 +32,9 @@ Commands:\n\
   plan|run --samples TSV --from raw|prepared|sam|filtered|unique --exons PATH --out DIR [--threads 4] [--jobs 1]\n\
       [--storage compact|all] [--rrna-filter both|bac|host|none] [--qc yes|no]\n\
       [--adapter-r1 DNA] [--adapter-r2 DNA]; --index DIR uses bac / rrna / mrna prefixes\n\
-      raw/prepared also require --index DIR or --bac-index PREFIX --rrna-index PREFIX --mrna-index PREFIX\n\
+      raw/prepared require an mRNA index and only the enabled rRNA indices (--index DIR or individual prefixes).\n\
+      Individual prefixes: --bac-index PREFIX, --rrna-index PREFIX, --mrna-index PREFIX.\n\
+      rrna-filter: both (default), host (skip bacterial alignment/removal), bac (skip host), none (skip both).\n\
       compact (default): streamed SAM selection, automatic QC, remove generated scratch FASTQ only after success.\n\
       prepared: adapters and optional UMI already removed; unique: accepted one-alignment-per-read five-column TSV.\n\
 Manifest columns: sample role r1 r2 alignment [umi] (tabs; one NC, >=1 TR).\n\

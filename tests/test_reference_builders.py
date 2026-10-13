@@ -9,11 +9,12 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from build_references import (build_arabidopsis_rrna, build_bacterial, download,
-                              extract_sources)
+                              extract_sources, main as build_main)
 from prepare_human_reference import fasta, references
 
 
@@ -110,11 +111,43 @@ class ReferenceBuilders(unittest.TestCase):
         self.assertEqual(audit['negative_strand_transcripts'], 1)
         self.assertEqual(audit['genome_sequence_mismatches'], [])
         self.assertTrue((args.out / 'ath_protein_coding.1.bt2').is_file())
+        args.out = self.root / 'plant without bacteria'
+        args.bac_index = None
+        references(args, species='arabidopsis',
+                   prefixes={'mrna': 'ath_protein_coding', 'rrna': 'ath_rrna_total', 'bac': 'bac'})
+        self.assertEqual(json.loads((args.out / 'audit.json').read_text())['bacterial_index'], [])
+        self.assertFalse(list(args.out.glob('bac*')))
         args.out = self.root / 'bad sequence'
         genome.write_text('>1\nTTTTTTTT\n')
         with self.assertRaisesRegex(ValueError, 'sequence mismatches'):
             references(args, species='arabidopsis')
         self.assertFalse(args.out.exists())
+
+    @unittest.skipUnless(shutil.which('bowtie2-build') and shutil.which('samtools'), 'reference tools required')
+    def test_human_build_without_bacterial_index(self):
+        paths = self.inputs()
+        manifest = self.root / 'sources.json'
+        manifest.write_text(json.dumps({'human': dict(release='fixture', sources={
+            key: dict(file=p.name, url=p.as_uri(), sha256=hashlib.sha256(p.read_bytes()).hexdigest())
+            for key, p in zip(('transcripts', 'annotation', 'genome'), paths)})}))
+        out, source = self.root / 'public ref', self.root / 'source'
+        args = ['build_references.py', 'human', '--without-bacterial', '--download-dir', str(self.root),
+                '--source-out', str(source), '--out', str(out), '--threads', '1', '--offline', '--copy-inputs']
+        with patch('build_references.MANIFEST', manifest), patch.object(sys, 'argv', args):
+            build_main()
+        self.assertEqual(json.loads((out / 'audit.json').read_text())['bacterial_index'], [])
+        self.assertFalse(list(out.glob('bac*')))
+        self.assertTrue((out / 'mrna.1.bt2').is_file())
+        self.assertTrue((out / 'rrna.1.bt2').is_file())
+        # The lower-level CLI also permits omitting --bac-index.
+        custom = self.root / 'custom ref'
+        result = subprocess.run([sys.executable, str(ROOT / 'scripts/prepare_human_reference.py'),
+            '--mrna', str(source / 'hsa_protein_coding.fa'), '--exons', str(source / 'hsa_exon.info'),
+            '--genome', str(source / 'GRCh38.primary_assembly.genome.fa'), '--out', str(custom),
+            '--threads', '1'], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads((custom / 'audit.json').read_text())['bacterial_index'], [])
+        self.assertFalse(list(custom.glob('bac*')))
 
     def test_rrna_edits_and_public_genome_coordinates(self):
         canonical = self.root / 'canonical'

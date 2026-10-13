@@ -44,6 +44,17 @@ pub struct Config {
     pub qc: bool,
 }
 
+impl Config {
+    fn aligns_to(&self, mode: &str) -> bool {
+        match mode {
+            "mrna" => true,
+            "bac" => matches!(self.rrna_filter.as_str(), "both" | "bac"),
+            "rrna" => matches!(self.rrna_filter.as_str(), "both" | "host"),
+            _ => false,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum UmiDesign {
     None,
@@ -303,32 +314,21 @@ fn legacy_sample_steps(c: &Config, s: &Sample, root: &Path) -> Vec<Step> {
                 ]),
             ));
         }
-        for (number, mode, index, input, sam, output) in [
-            (
-                3,
-                "bac",
-                c.bac_index.as_ref().unwrap(),
-                if s.umi.enabled() { "origin" } else { "cut" },
-                "bac_rna.raw.sam",
-                "filter",
-            ),
+        let mut input = if s.umi.enabled() { "origin" } else { "cut" };
+        for (number, mode, index, sam, output) in [
+            (3, "bac", c.bac_index.as_ref(), "bac_rna.raw.sam", "filter"),
             (
                 6,
                 "rrna",
-                c.rrna_index.as_ref().unwrap(),
-                "filter",
+                c.rrna_index.as_ref(),
                 "rrna.filter.sam",
                 "filter.mrna",
             ),
-            (
-                9,
-                "mrna",
-                c.mrna_index.as_ref().unwrap(),
-                "filter.mrna",
-                "mrna.filter.sam",
-                "",
-            ),
+            (9, "mrna", c.mrna_index.as_ref(), "mrna.filter.sam", ""),
         ] {
+            if !c.aligns_to(mode) {
+                continue;
+            }
             let mut a = strings(&[
                 "--end-to-end",
                 "-p",
@@ -379,7 +379,7 @@ fn legacy_sample_steps(c: &Config, s: &Sample, root: &Path) -> Vec<Step> {
             }
             a.extend(strings(&[
                 "-x",
-                &p(index),
+                &p(index.unwrap()),
                 "-1",
                 &f(&format!("R1.{input}.fq.gz")),
                 "-2",
@@ -422,9 +422,10 @@ fn legacy_sample_steps(c: &Config, s: &Sample, root: &Path) -> Vec<Step> {
                         &f(&format!("R2.{output}.fq.gz")),
                     ]),
                 ));
+                input = output;
             }
         }
-        r1 = f("R1.filter.mrna.fq.gz");
+        r1 = f(&format!("R1.{input}.fq.gz"));
         alignment = f("mrna.filter.sam");
     }
     steps.push(native(
@@ -567,10 +568,7 @@ fn sample_steps(c: &Config, s: &Sample, root: &Path) -> Vec<Step> {
             ("rrna", 6, c.rrna_index.as_ref(), "filter.mrna"),
             ("mrna", 9, c.mrna_index.as_ref(), ""),
         ] {
-            if mode != "mrna"
-                && c.rrna_filter != "both"
-                && c.rrna_filter != if mode == "rrna" { "host" } else { mode }
-            {
+            if !c.aligns_to(mode) {
                 continue;
             }
             let output = if mode == "mrna" {
@@ -737,17 +735,21 @@ pub fn execute(c: Config, dry_run: bool) -> Result<(), String> {
     {
         return Err("storage=compact|all; rrna-filter=both|bac|host|none".into());
     }
-    if c.from == "raw" && c.storage == "all" && c.rrna_filter != "both" {
-        return Err("Raw factorial filters require --storage compact".into());
-    }
     if !c.exons.is_file() {
         return Err("Missing exon annotation".into());
     }
     if ["raw", "prepared"].contains(&c.from.as_str()) {
-        for prefix in [&c.bac_index, &c.rrna_index, &c.mrna_index] {
-            let prefix = prefix
-                .as_ref()
-                .ok_or("Raw entry requires three index prefixes")?;
+        for (mode, prefix) in [
+            ("bac", &c.bac_index),
+            ("rrna", &c.rrna_index),
+            ("mrna", &c.mrna_index),
+        ] {
+            if !c.aligns_to(mode) {
+                continue;
+            }
+            let prefix = prefix.as_ref().ok_or_else(|| {
+                format!("{} entry requires --{mode}-index or --index DIR", c.from)
+            })?;
             let complete = |extension: &str| {
                 ["1", "2", "3", "4", "rev.1", "rev.2"].iter().all(|part| {
                     PathBuf::from(format!("{}.{part}.{extension}", p(prefix))).is_file()

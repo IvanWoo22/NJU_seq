@@ -13,3 +13,5 @@ python3 tests/smoke.py
 ```
 
 The command builds indices, aligns reads, and scores sites in a temporary directory, then removes the generated files. No complete references are needed, so this example can help you become familiar with installation and use. Results from synthetic sequences do not support biological conclusions.
+
+All four rRNA filtering choices are exercised with raw and prepared reads. If UMI-tools is installed, the script also adds known 8 nt tags and checks UMI extraction and counting with bacterial filtering disabled.
