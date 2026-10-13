@@ -12,6 +12,9 @@ For Col_NC31 / Col_TR31 libraries with 8 nt UMIs, see the [Arabidopsis UMI workf
 
 [Installation](#1-installation) · [References](#2-human-references) · [Input data](#3-input-data) · [Analysis](#4-alignment-counting-and-scoring) · [rRNA and downstream analysis](#5-rrna-and-downstream-analysis)
 
+<details>
+<summary>Workflow overview</summary>
+
 ```mermaid
 flowchart TD
   A["NC / TR paired FASTQ"] --> B["Trim adapters<br/>Extract UMI if present"]
@@ -20,6 +23,8 @@ flowchart TD
   D --> E["Read / UMI counts<br/>at genomic positions"]
   E --> F["Joint NC/TR<br/>scoring"]
 ```
+
+</details>
 
 ## 1. Installation
 

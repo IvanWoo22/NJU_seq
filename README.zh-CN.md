@@ -12,6 +12,9 @@
 
 [安装](#1-安装与构建) · [参考](#2-准备人源参考) · [数据](#3-选择数据) · [分析](#4-比对计数与评分) · [rRNA 与后续分析](#5-rrna-与后续分析)
 
+<details>
+<summary>流程概览</summary>
+
 ```mermaid
 flowchart TD
   A["NC / TR 双端 FASTQ"] --> B["去接头<br/>可选 UMI 提取"]
@@ -20,6 +23,8 @@ flowchart TD
   D --> E["read / UMI 计数<br/>合并到基因组坐标"]
   E --> F["NC 与全部 TR 联合评分"]
 ```
+
+</details>
 
 ## 1. 安装与构建
 
