@@ -43,7 +43,7 @@ The script downloads the v34 transcript FASTA, comprehensive GFF3 annotation, an
 
 The resulting mRNA reference contains **84,068 transcripts and 762,910 exon rows**. Every transcript must match its genomic exons, including negative-strand reverse complements and `_PAR_Y` identifiers. The three host rRNA inputs are [18s.fa](../data/hsa_rrna/18s.fa), [28s.fa](../data/hsa_rrna/28s.fa), and [5-8s.fa](../data/hsa_rrna/5-8s.fa).
 
-Use `--index references/human_rebuilt --exons references/human_rebuilt/exon.info` with `nju-seq`; the [main README](../README.md#4-alignment-counting-and-scoring) supplies the complete human example.
+Use `--index references/human_rebuilt --exons references/human_rebuilt/exon.info` with `nju-seq`; the [main README](../README.md#6-human-example-hek293t) supplies the complete human example.
 
 ## 3. Arabidopsis: Ensembl Plants 46 / TAIR10
 

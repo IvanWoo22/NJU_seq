@@ -43,7 +43,7 @@ python3 scripts/build_references.py human \
 
 生成的 mRNA 参考含 **84,068 条转录本和 762,910 行 exon**。每条转录本须与基因组外显子重建的序列一致，包括负链的反向互补和 `_PAR_Y` 标识。宿主 rRNA 使用仓库自带的 [18s.fa](../data/hsa_rrna/18s.fa)、[28s.fa](../data/hsa_rrna/28s.fa) 和 [5-8s.fa](../data/hsa_rrna/5-8s.fa)。
 
-在 `nju-seq` 中使用 `--index references/human_rebuilt --exons references/human_rebuilt/exon.info`，完整人源示例见[主 README](../README.zh-CN.md#4-比对计数与评分)。
+在 `nju-seq` 中使用 `--index references/human_rebuilt --exons references/human_rebuilt/exon.info`，完整人源示例见[主 README](../README.zh-CN.md#6-人源示例hek293t)。
 
 ## 3. 拟南芥：Ensembl Plants 46 / TAIR10
 
