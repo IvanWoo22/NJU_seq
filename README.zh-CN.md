@@ -10,7 +10,7 @@
 
 含 8 nt UMI 的拟南芥 Col_NC31 / Col_TR31 分析步骤和样本结果见 [拟南芥 UMI 分析流程](docs/arabidopsis_umi.zh-CN.md)。
 
-[安装](#1-安装与构建) · [参考](#2-准备人源参考) · [数据](#3-选择数据) · [分析](#4-比对计数与评分) · [rRNA 与后续分析](#5-rrna-与后续分析)
+[安装](#1-安装与构建) · [参考](#2-参考准备) · [数据](#3-选择数据) · [分析](#4-比对计数与评分) · [rRNA 与后续分析](#5-rrna-与后续分析)
 
 <details>
 <summary>流程概览</summary>
@@ -18,7 +18,7 @@
 ```mermaid
 flowchart TD
   A["NC / TR 双端 FASTQ"] --> B["去接头<br/>可选 UMI 提取"]
-  B --> C["可选：排除细菌与人 rRNA"]
+  B --> C["可选：排除细菌与宿主 rRNA"]
   C --> D["mRNA 比对与筛选"]
   D --> E["read / UMI 计数<br/>合并到基因组坐标"]
   E --> F["NC 与全部 TR 联合评分"]
@@ -49,9 +49,9 @@ target/release/nju-seq --help
 
 固定版本安装、UMI 文库以及 Perl/R 分析脚本所需的软件见 [依赖说明](docs/dependencies.zh-CN.md)。
 
-## 2. 准备人源参考
+## 2. 参考准备
 
-人、小鼠、拟南芥的参考来源如下，完整文件名和下载链接见 [三物种参考清单](docs/reference_sources.zh-CN.md)：
+按样本物种选择参考。人、小鼠、拟南芥的参考来源如下，完整文件名和下载链接见 [三物种参考清单](docs/reference_sources.zh-CN.md)：
 
 | 物种 | 来源与发布版本 | 基因组 |
 |---|---|---|
@@ -59,7 +59,7 @@ target/release/nju-seq --help
 | 小鼠 | [GENCODE M25](https://www.gencodegenes.org/mouse/release_M25.html) | GRCm38.p6 |
 | 拟南芥 | [Ensembl Plants 46](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/) | TAIR10 |
 
-用以下两个命令从公开源文件生成参考。脚本会下载并校验固定版本、筛选序列、转换 GFF3 外显子注释，并建立所需索引：
+以下命令为人源示例准备参考。脚本会下载并校验固定版本、筛选序列、转换 GFF3 外显子注释，并建立所需索引：
 
 ```bash
 python3 scripts/build_references.py bacterial \

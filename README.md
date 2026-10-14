@@ -6,11 +6,11 @@
 
 **N**m-site **J**udged **U**niversally **seq**uencing compares RNA read-end counts between NC controls and TR treatment samples to identify candidate 2′-*O*-methylation (Nm) sites.
 
-`nju-seq` is the Rust implementation of the NJU-seq analysis workflow, currently version 0.5.0. This guide covers installation, reference preparation, alignment, counting, and scoring using **GRCh38 / HEK293T human samples NJU6096–6099**. Bundled rRNA references are in [data](data); experimental details are in the [sample list](sample_list.csv).
+`nju-seq` is the Rust implementation of the NJU-seq analysis workflow, currently version 0.5.0. This guide covers installation, reference preparation, alignment, counting, and scoring using **GRCh38 / HEK293T human samples NJU6096–6099** as an example. Bundled rRNA references are in [data](data); experimental details are in the [sample list](sample_list.csv).
 
 For Col_NC31 / Col_TR31 libraries with 8 nt UMIs, see the [Arabidopsis UMI workflow](docs/arabidopsis_umi.md).
 
-[Installation](#1-installation) · [References](#2-human-references) · [Input data](#3-input-data) · [Analysis](#4-alignment-counting-and-scoring) · [rRNA and downstream analysis](#5-rrna-and-downstream-analysis)
+[Installation](#1-installation) · [References](#2-reference-preparation) · [Input data](#3-input-data) · [Analysis](#4-alignment-counting-and-scoring) · [rRNA and downstream analysis](#5-rrna-and-downstream-analysis)
 
 <details>
 <summary>Workflow overview</summary>
@@ -18,7 +18,7 @@ For Col_NC31 / Col_TR31 libraries with 8 nt UMIs, see the [Arabidopsis UMI workf
 ```mermaid
 flowchart TD
   A["NC / TR paired FASTQ"] --> B["Trim adapters<br/>Extract UMI if present"]
-  B --> C["Optional removal of<br/>bacterial and human rRNA"]
+  B --> C["Optional removal of<br/>bacterial and host rRNA"]
   C --> D["Align and select<br/>mRNA reads"]
   D --> E["Read / UMI counts<br/>at genomic positions"]
   E --> F["Joint NC/TR<br/>scoring"]
@@ -49,9 +49,9 @@ The environment includes Rust 1.88, Python 3.11, Cutadapt 5.2, Bowtie2 2.5.5, sa
 
 For a pinned installation and the tools required by UMI, Perl, and R workflows, see [Dependencies](docs/dependencies.md).
 
-## 2. Human references
+## 2. Reference preparation
 
-The reference sources for human, mouse, and Arabidopsis are listed below. Exact filenames and download links are in [Reference sources](docs/reference_sources.md).
+Choose references for the species being analyzed. Sources for human, mouse, and Arabidopsis are listed below. Exact filenames and download links are in [Reference sources](docs/reference_sources.md).
 
 | Species | Source and release | Genome assembly |
 |---|---|---|
@@ -59,7 +59,7 @@ The reference sources for human, mouse, and Arabidopsis are listed below. Exact 
 | Mouse | [GENCODE M25](https://www.gencodegenes.org/mouse/release_M25.html) | GRCm38.p6 |
 | Arabidopsis | [Ensembl Plants 46](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-46/) | TAIR10 |
 
-Build the references from public source files with the following two commands. The scripts download and verify fixed releases, select sequences, convert GFF3 exons, and create the required indices:
+The following commands prepare references for the human example. The scripts download and verify fixed releases, select sequences, convert GFF3 exons, and create the required indices:
 
 ```bash
 python3 scripts/build_references.py bacterial \
